@@ -216,6 +216,11 @@ p.import_message{
 	font-size:18px;
 	}
 
+#deliveryCompanyId{
+	height:31px;
+	font-size:18px;
+	}
+
 p.import_elements{
 	margin:0px 0px 30px 210px;
 }

@@ -66,7 +66,14 @@ $(function() {
 				//返品処理中であるか否か
 				if ($("#returnFlg").val() == "0") {
 					//配送情報
-					$(".delivery_area").attr("disabled","disabled");
+					
+					// $(".delivery_area").attr("disabled","disabled");
+					$('input[name ="salesSlipDTO.slipNo"]').removeAttr('disabled');
+					$('select[name ="salesSlipDTO.transportCorporationSystem"]').attr("disabled","disabled");
+					$('select[name ="salesSlipDTO.invoiceClassification"]').attr("disabled","disabled");
+					$('input[name ="salesSlipDTO.cashOnDeliveryCommission"]').attr("disabled","disabled");
+					$('input[name ="salesSlipDTO.destinationAppointTime"]').attr("disabled","disabled");
+					
 					$(".price_area").attr("disabled","disabled");
 					//個数入力欄
 					$(".num").attr("disabled","disabled");

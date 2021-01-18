@@ -2,24 +2,29 @@ package jp.co.kts.service.fileExport;
 
 import java.awt.Color;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.itextpdf.awt.AsianFontMapper;
 import com.itextpdf.awt.PdfGraphics2D;
+import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
@@ -27,6 +32,7 @@ import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.Barcode;
+import com.itextpdf.text.pdf.BarcodeCodabar;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -34,9 +40,13 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import jp.co.keyaki.cleave.common.util.StringUtil;
+import jp.co.kts.app.extendCommon.entity.ExtendCorporateSalesItemDTO;
+import jp.co.kts.app.extendCommon.entity.ExtendCorporateSalesSlipDTO;
+import jp.co.kts.app.extendCommon.entity.ExtendMstClientDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendSalesItemDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendSalesSlipDTO;
 import jp.co.kts.app.output.entity.StoreDTO;
+import jp.co.kts.service.mst.ClientService;
 import jp.co.kts.service.sale.SaleDisplayService;
 import net.arnx.jsonic.JSON;
 
@@ -48,7 +58,7 @@ public class ExportPickListService {
 			"yyyy/MM/dd  HH:mm:ss");
 
 	// static int testrow = 40;
-	public void pickList(HttpServletResponse response,
+	public void pickList(HttpServletRequest request, HttpServletResponse response,
 			List<ExtendSalesSlipDTO> salesSlipList) throws Exception {
 
 		SaleDisplayService saleDisplayService = new SaleDisplayService();
@@ -113,7 +123,7 @@ public class ExportPickListService {
 			if (slipDto.getRslLeaveFlag() == null || StringUtils.equals(slipDto.getRslLeaveFlag(), "0")) {
 				/** ピッキングリスト */
 				pickHeader(document, writer, baseFont, date);
-				pickList(document, writer, font, baseFont, slipDto);
+				pickList(request, document, writer, font, baseFont, slipDto);
 				document.newPage();
 
 				/** 納品書 */
@@ -138,9 +148,185 @@ public class ExportPickListService {
 
 	}
 
+	private static boolean addNewRow(PdfWriter writer, PdfPTable pdfPTable, Font font, int rowNum, ExtendSalesItemDTO item /*ExtendSalesSlipDTO slipDto*/) {
+		// 表の要素を作成		
+		PdfPCell cell3_1;
+		
+		if (item /*slipDto*/ != null) {
+			cell3_1 = new PdfPCell(new Paragraph(/*slipDto.getPickItemList().get(rowNum)*/item.getItemCode(), font));
+
+			// cell3_2, cell3_3がnullの場合,当該セルが表示されなくなる現象を修正
+			if (/*slipDto.getPickItemList().get(rowNum)*/item.getWarehouseNm() == null) {
+				/*slipDto.getPickItemList().get(rowNum)*/item.setWarehouseNm("　");
+			}
+			if (/*slipDto.getPickItemList().get(rowNum)*/item.getLocationNo() == null){
+				/*slipDto.getPickItemList().get(rowNum)*/item.setLocationNo("　");
+			}
+		}
+		else { 
+			cell3_1 = new PdfPCell(new Paragraph("", font));
+		}
+
+
+		// 表の要素を作成
+		PdfPCell cell3_3;
+		PdfPCell cell3_4;
+		PdfPCell cell3_5;
+		PdfPCell cell4_1;
+		
+		if (item/*slipDto*/ != null) {
+			cell3_3 = new PdfPCell(new Paragraph(/*slipDto.getPickItemList().get(rowNum)*/item.getLocationNo(), font));
+			cell3_4 = new PdfPCell(new Paragraph(String.valueOf(1) + "/" + 
+						String.valueOf(/*slipDto.getPickItemList().get(rowNum)*/item.getOrderNum()), font));
+
+			// 4996740500084
+			// 表の要素を作成
+
+			com.itextpdf.text.Image image = null;
+			image = makeBarcode(writer, /*slipDto.getPickItemList().get(rowNum)*/item.getItemCode());
+
+			if (image != null) {
+				cell3_5 = new PdfPCell(image);
+			} else {
+				cell3_5 = new PdfPCell(new Paragraph("", font));
+			}
+
+			cell4_1 = new PdfPCell(new Paragraph(/*slipDto.getPickItemList().get(rowNum)*/item.getItemNm(), font));
+		}
+		else {
+			cell3_3 = new PdfPCell(new Paragraph("", font));
+			cell3_4 = new PdfPCell(new Paragraph("", font));
+			cell3_5 = new PdfPCell(new Paragraph("", font));
+			cell4_1 = new PdfPCell(new Paragraph("", font));
+		}
+
+		cell3_1.setHorizontalAlignment(1);
+		cell3_3.setHorizontalAlignment(1);
+		cell3_4.setHorizontalAlignment(1);
+		cell3_5.setHorizontalAlignment(1);
+		cell4_1.setHorizontalAlignment(1);
+
+//		if (image != null) {
+			cell3_1.setPaddingTop(10f);
+			cell3_1.setPaddingBottom(5f);
+			cell3_1.setPaddingLeft(5f);
+			cell3_1.setPaddingRight(5f);
+			cell3_1.setFixedHeight(50f);
+			
+			cell3_3.setPaddingTop(10f);
+			cell3_3.setPaddingBottom(5f);
+			cell3_3.setPaddingLeft(5f);
+			cell3_3.setPaddingRight(5f);
+			cell3_3.setFixedHeight(50f);
+			
+			cell3_4.setPaddingTop(10f);
+			cell3_4.setPaddingBottom(5f);
+			cell3_4.setPaddingLeft(5f);
+			cell3_4.setPaddingRight(5f);
+			cell3_4.setFixedHeight(50f);
+			
+			cell3_5.setPaddingTop(10f);
+			cell3_5.setPaddingBottom(5f);
+			cell3_5.setPaddingLeft(5f);
+			cell3_5.setPaddingRight(5f);
+			cell3_5.setFixedHeight(50f);
+			
+			cell4_1.setPaddingTop(10f);
+			cell4_1.setPaddingBottom(5f);
+			cell4_1.setPaddingLeft(5f);
+			cell4_1.setPaddingRight(5f);
+			cell4_1.setFixedHeight(50f);
+//		}
+		
+		if (rowNum % 2 == 1) {
+			cell3_1.setGrayFill(0.8f);
+			cell4_1.setGrayFill(0.8f);
+			cell3_4.setGrayFill(0.8f);
+			cell3_5.setGrayFill(0.8f);
+			cell3_3.setGrayFill(0.8f);
+		}
+
+		pdfPTable.addCell(cell3_1);
+		pdfPTable.addCell(cell4_1);
+		pdfPTable.addCell(cell3_4);
+		pdfPTable.addCell(cell3_5);
+		pdfPTable.addCell(cell3_3);
+		
+		return true;
+	}
+
+	private static Image loadImageFromWebContent(HttpServletRequest request, String relativeWebPath) {
+		InputStream stream = request.getServletContext().getResourceAsStream("/WEB-INF/img/pagefooter.png"); 
+		ByteArrayOutputStream bis = new ByteArrayOutputStream();
+
+		try {
+		    int i;
+		    byte[] data = new byte[1024];
+		    while ((i = stream.read(data, 0, data.length)) != -1) {
+		      bis.write(data, 0, i);
+		    }
+		    bis.flush();
+		    stream.close();
+		    return Image.getInstance(bis.toByteArray());
+		}
+		catch (Exception e) {
+			System.out.println(e.getMessage());
+			return null;
+		}
+		
+//		String scheme = request.getScheme();
+//		String serverName = request.getServerName();
+//		int portNumber = request.getServerPort();
+//		String contextPath = request.getContextPath();
+//		
+//		String fullPath = "https://stage.kind-alpha.jp/kts_/img/pagefooter.png";
+//		System.out.println("Image's Path : = " + fullPath);
+//		
+//		try {
+//			return Image.getInstance(fullPath);
+//		} catch (BadElementException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (MalformedURLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//		// static path 
+//		String fullPath1 = scheme + "://" + serverName + ":" +portNumber + contextPath + relativeWebPath;
+//		try {
+//			return Image.getInstance(fullPath1);
+//		} catch (BadElementException | IOException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();				
+//		}			
+//
+//		return null;
+	}
+	
+	private static Image makeCodaBarCode(PdfWriter writer, String value) {
+		com.itextpdf.text.Image image = null;
+		
+		try {
+			BarcodeCodabar codabar = new BarcodeCodabar();
+			// codabar.setGenerateChecksum(true);
+		    codabar.setCode(value);
+		    
+		    PdfContentByte cb = writer.getDirectContent();		    
+		    image = codabar.createImageWithBarcode(cb, null, null);
+		    return image;
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+			return null;
+		}
+	}
 	private static void pickHeader(Document document, PdfWriter writer,
 			BaseFont baseFont, Date date) throws Exception {
-
+	
 		PdfContentByte pdfContentByte = writer.getDirectContent();
 		// テキストの開始
 		pdfContentByte.beginText();
@@ -151,7 +337,7 @@ public class ExportPickListService {
 		pdfContentByte.setTextMatrix(210, 820);
 
 		// 表示する文字列の設定
-		pdfContentByte.showText("★★ピッキングリスト★★");
+		pdfContentByte.showText("ピッキングリスト");
 
 		// フォントとサイズの設定
 		pdfContentByte.setFontAndSize(baseFont, 8);
@@ -163,62 +349,14 @@ public class ExportPickListService {
 
 		// テキストの終了
 		pdfContentByte.endText();
-
-//		Font font = new Font(BaseFont.createFont(
-//				AsianFontMapper.JapaneseFont_Go,
-//				AsianFontMapper.JapaneseEncoding_H, BaseFont.NOT_EMBEDDED), 8);
-
-		Font font = new Font(BaseFont.createFont(
-				AsianFontMapper.JapaneseFont_Min,
-				AsianFontMapper.JapaneseEncoding_H, BaseFont.NOT_EMBEDDED), 8);
-
-		PdfPTable pdfPTable = new PdfPTable(2);
-
-		PdfPCell cell1_1 = new PdfPCell(new Paragraph("開始", font));
-		PdfPCell cell1_2 = new PdfPCell(new Paragraph("：", font));
-
-		PdfPCell cell2_1 = new PdfPCell(new Paragraph("終了", font));
-		PdfPCell cell2_2 = new PdfPCell(new Paragraph("：", font));
-
-		PdfPCell cell3_1 = new PdfPCell(new Paragraph("担当", font));
-		PdfPCell cell3_2 = new PdfPCell(new Paragraph("", font));
-
-		/**
-		 * ALIGN_LEFT 左詰め 0 ALIGN_CENTER 中央（左右） 1 ALIGN_RIGHT 右詰め 2
-		 * ALIGN_JUSTIFIED 両端揃え 3 ALIGN_TOP 上詰め 4 ALIGN_MIDDLE 中央（上下） 5
-		 * ALIGN_BOTTOM 下詰め 6 ALIGN_BASELINE ベースライン 7
-		 */
-		cell1_1.setHorizontalAlignment(1);
-		cell1_2.setHorizontalAlignment(1);
-
-		cell2_1.setHorizontalAlignment(1);
-		cell2_2.setHorizontalAlignment(1);
-
-		cell3_1.setHorizontalAlignment(1);
-		cell3_2.setHorizontalAlignment(1);
-
-		// 線消すメモ
-		// cell1_1.setBorder(Rectangle.NO_BORDER);
-		pdfPTable.addCell(cell1_1);
-
-		pdfPTable.addCell(cell1_2);
-
-		pdfPTable.addCell(cell2_1);
-		pdfPTable.addCell(cell2_2);
-
-		pdfPTable.addCell(cell3_1);
-		pdfPTable.addCell(cell3_2);
-
-		pdfPTable.setTotalWidth(80);
-		int width[] = { 25, 55 };
-		pdfPTable.setWidths(width);
-		pdfPTable.writeSelectedRows(0, 3, 485, 820, writer.getDirectContent());
-
 	}
 
-	private static void pickList(Document document, PdfWriter writer,
+	private static void pickList(HttpServletRequest request, Document document, PdfWriter writer,
 			Font font, BaseFont baseFont, ExtendSalesSlipDTO slipDto)
 			throws Exception {
+
+		int PAGE_HEIGHT = 820;
+
 		PdfContentByte pdfContentByte = writer.getDirectContent();
 
 		/**
@@ -235,141 +373,218 @@ public class ExportPickListService {
 		pdfContentByte.setTextMatrix(30, 800);
 
 		// 表示する文字列の設定
-		pdfContentByte.showText("■注文者");
+		pdfContentByte.showText("■注文情報");
 
 		// 表示位置の設定
-		pdfContentByte.setTextMatrix(100, 800);
+		pdfContentByte.setTextMatrix(40, 780);
 
 		// 表示する文字列の設定
 		pdfContentByte.showText("受注ルート");
-
+		
 		// 表示位置の設定
-		pdfContentByte.setTextMatrix(170, 800);
+		pdfContentByte.setTextMatrix(100, 780);
 
 		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getCorporationNm() + "　"
-				+ slipDto.getChannelNm());
-
+		if (slipDto.getCorporationNm() != null)
+			pdfContentByte.showText(slipDto.getCorporationNm());
+		else 
+			pdfContentByte.showText("");
+		
 		// 表示位置の設定
-		pdfContentByte.setTextMatrix(100, 785);
+		pdfContentByte.setTextMatrix(40, 760);
 
 		// 表示する文字列の設定
 		pdfContentByte.showText("受注番号");
 
 		// 表示位置の設定
-		pdfContentByte.setTextMatrix(170, 785);
+		pdfContentByte.setTextMatrix(100, 760);
 
 		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getOrderNo());
-
+		if (slipDto.getOrderNo() != null)
+			pdfContentByte.showText(slipDto.getOrderNo());
+		else 
+			pdfContentByte.showText("");
+		
 		// 表示位置の設定
-		pdfContentByte.setTextMatrix(100, 770);
+		pdfContentByte.setTextMatrix(40, 740);
 
 		// 表示する文字列の設定
-		pdfContentByte.showText("注文日時");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(170, 770);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getOrderDate() + " "
-				+ slipDto.getOrderTime());
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(420, 770);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("支払方法");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(470, 770);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getAccountMethod());
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(100, 755);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("注文者名");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(170, 755);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getOrderFullNm() + "("
-				+ slipDto.getOrderFullNmKana() + ")" + "様");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(420, 755);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("電話番号");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(470, 755);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getOrderTel());
+		pdfContentByte.showText("お届先名");
 
 		// 表示位置の設定
 		pdfContentByte.setTextMatrix(100, 740);
 
 		// 表示する文字列の設定
-		pdfContentByte.showText("注文者住所");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(170, 740);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("〒" + slipDto.getOrderZip() + " "
-				+ slipDto.getOrderPrefectures()
-				+ slipDto.getOrderMunicipality() + slipDto.getOrderAddress()
-				+ slipDto.getOrderBuildingNm());
-
-		pdfContentByte.setTextMatrix(100, 725);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("メール");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(170, 725);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getOrderMailAddress());
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(30, 710);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("一言メモ/備考欄：");
-
-		String orderRemarksMemo = slipDto.getOrderRemarksMemo();
-
-		orderRemarksMemo = replaceNewline(orderRemarksMemo);
-		int yPos = 710;
-		int newlineCount = 58;
-		/**
-		 * 暫定。継続条件に＝が入っているから58文字くらいの時、無駄に空行作られるかも。＝
-		 * 外すと備考が空のときypos加算しないから同じとこに書かれるのかな。
-		 */
-		for (int strNum = 0; strNum <= orderRemarksMemo.length();) {
-			pdfContentByte.setTextMatrix(100, yPos);
-			pdfContentByte.showText(StringUtils.substring(orderRemarksMemo, strNum,
-					strNum + newlineCount));
-
-			strNum += newlineCount;
-			yPos -= 10;
+		{
+			String name = "";
+			if (slipDto.getDestinationFullNm() != null)
+				name += slipDto.getDestinationFullNm();
+			
+			if (slipDto.getDestinationFullNmKana() != null)
+				name += ("(" + slipDto.getDestinationFullNmKana() + ")");
+			
+			name += "様";
+			
+			pdfContentByte.showText(name);
 		}
-		/**
-		 * この辺暫定。とりあえず、２バイト文字と１バイト文字によって改行の桁数変わるから判断する。時間あるときAPI読んで全体的に作りかえる
-		 */
+		
+		// 表示位置の設定
+		pdfContentByte.setTextMatrix(40, 720);
 
-		yPos -= 5;
+		// 表示する文字列の設定
+		pdfContentByte.showText("お届先住所");
 
-		// テキストの終了
+		// 表示位置の設定
+		pdfContentByte.setTextMatrix(100, 720);
+
+		// 表示する文字列の設定
+		{
+			String destination = "〒";
+			if (slipDto.getDestinationZip() != null)
+				destination += slipDto.getDestinationZip() + " ";
+			
+			if (slipDto.getDestinationPrefectures() != null)
+				destination += slipDto.getDestinationPrefectures();
+			
+			if (slipDto.getDestinationMunicipality() != null)
+				destination += slipDto.getDestinationMunicipality();
+			
+			if (slipDto.getDestinationAddress() != null)
+				destination += slipDto.getDestinationAddress();
+			
+			if (slipDto.getDestinationBuildingNm() != null)
+				destination += slipDto.getDestinationBuildingNm();
+			
+			pdfContentByte.showText(destination);
+		}
+		
+		// 表示位置の設定
+		pdfContentByte.setTextMatrix(40, 700);
+
+		// 表示する文字列の設定
+		pdfContentByte.showText("電話番号");
+
+		// 表示位置の設定
+		pdfContentByte.setTextMatrix(100, 700);
+
+		// 表示する文字列の設定
+		if (slipDto.getDestinationTel() != null)
+			pdfContentByte.showText(slipDto.getDestinationTel());
+		else 
+			pdfContentByte.showText("");
+		
+		// 表示位置の設定
+		pdfContentByte.setTextMatrix(40, 680);
+
+		// 表示する文字列の設定
+		pdfContentByte.showText("運送会社");
+
+		// 表示位置の設定
+		pdfContentByte.setTextMatrix(100, 680);
+
+		// 表示する文字列の設定
+		if (slipDto.getTransportCorporationSystem() != null)
+			pdfContentByte.showText(slipDto.getTransportCorporationSystem());
+		else 
+			pdfContentByte.showText("");
+		
+		// 表示位置の設定
+		pdfContentByte.setTextMatrix(40, 660);
+
+		// 表示する文字列の設定
+		pdfContentByte.showText("送り状種別");
+
+		// 表示位置の設定
+		pdfContentByte.setTextMatrix(100, 660);
+
+		// 表示する文字列の設定
+		if (slipDto.getInvoiceClassification() != null)
+			pdfContentByte.showText(slipDto.getInvoiceClassification());
+		else
+			pdfContentByte.showText("");
+
+		{
+			// Get SlipNo 
+			
+			String slipNo = "";
+			if (slipDto.getSlipNo() != null)
+				slipNo += slipDto.getSlipNo();
+			
+			String slipSystem = "";
+			if (slipDto.getTransportCorporationSystem() != null)
+				slipSystem += slipDto.getTransportCorporationSystem();
+			
+			System.out.println("slipSystem = " + slipSystem);
+
+			boolean isCodaBar = false;
+			if (slipSystem.equals("ヤマト運輸")) {
+				slipNo = "a" + slipNo + "a";
+				isCodaBar = true;
+			}
+			else if (slipSystem.equals("日本郵便")) {
+				slipNo = "a" + slipNo + "a";
+				isCodaBar = true;
+			}
+			else if (slipSystem.equals("西濃運輸")) {
+				slipNo = "a" + slipNo + "a";
+				isCodaBar = true;
+			}
+			else if (slipSystem.equals("佐川急便")) {
+				slipNo = "d" + slipNo + "d";
+				isCodaBar = true;
+			}
+
+			System.out.println("SlipNo = " + slipNo);
+			
+			com.itextpdf.text.Image image = null;
+			
+			if (!slipNo.equals("")) {
+				if (isCodaBar == true)
+					image = makeCodaBarCode(writer, slipNo);
+				else 
+					image = makeBarcode(writer, slipNo);
+				
+			    image.setAbsolutePosition(430, 770);
+			    writer.getDirectContent().addImage(image, false);					    
+			}
+			
+		}
+
+		
+		// create
+		{
+			PdfPTable pdfPTable = new PdfPTable(2);
+	
+			PdfPCell cell1_1 = new PdfPCell(new Paragraph("梱包", font));
+			PdfPCell cell1_2 = new PdfPCell(new Paragraph("ピッキング", font));
+	
+			PdfPCell cell2_1 = new PdfPCell(new Paragraph("", font));
+			PdfPCell cell2_2 = new PdfPCell(new Paragraph("", font));
+	
+			cell1_1.setHorizontalAlignment(1);
+			cell1_2.setHorizontalAlignment(1);
+	
+			cell2_1.setHorizontalAlignment(1);
+			cell2_1.setFixedHeight(40f);
+			cell2_2.setHorizontalAlignment(1);
+			cell2_2.setFixedHeight(40f);
+	
+			// 線消すメモ
+			// cell1_1.setBorder(Rectangle.NO_BORDER);
+			pdfPTable.addCell(cell1_1);
+	
+			pdfPTable.addCell(cell1_2);
+	
+			pdfPTable.addCell(cell2_1);
+			pdfPTable.addCell(cell2_2);
+	
+			pdfPTable.setTotalWidth(120);
+			int width[] = { 60, 60 };
+			pdfPTable.setWidths(width);
+			pdfPTable.writeSelectedRows(0, 2, 430, 720, writer.getDirectContent());
+		}
+		
 		pdfContentByte.endText();
-		yPos += 5;
 
 		int pageHeight = (int) document.getPageSize().getHeight();
 
@@ -378,413 +593,207 @@ public class ExportPickListService {
 				document.getPageSize().getWidth(), document.getPageSize()
 						.getHeight());
 		pdfGraphics2D.setColor(new Color(0, 0, 0));
-		pdfGraphics2D.drawLine(30, pageHeight - yPos, 565, pageHeight - yPos);
+		pdfGraphics2D.drawLine(30, pageHeight - 650, 565, pageHeight - 650);
 		pdfGraphics2D.dispose();
+
 		/**
-		 * ---------------------------------------------------お届け先START--------
+		 * ---------------------------------------------------一言メモ︓ START--------
 		 * ---------------------------------------------------------
 		 */
 		// テキストの開始
 		pdfContentByte.beginText();
 
+		pdfContentByte.setTextMatrix(40, 630);
+
+		// 表示する文字列の設定
+		pdfContentByte.showText("一言メモ︓ ");
+		
 		// フォントとサイズの設定
-		pdfContentByte.setFontAndSize(baseFont, 8);
-		// 表示位置の設定
-		yPos -= 15;
-		pdfContentByte.setTextMatrix(30, yPos);
+		pdfContentByte.setFontAndSize(baseFont, 11);
+		
+		pdfContentByte.setTextMatrix(100, 630);
 
 		// 表示する文字列の設定
-		pdfContentByte.showText("■お届け先");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(100, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("お届け先名");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(170, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getDestinationFullNm() + "("
-				+ slipDto.getDestinationFullNmKana() + ")" + "様");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(420, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("電話番号");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(470, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getDestinationTel());
-
-		// 表示位置の設定
-		yPos -= 15;
-		pdfContentByte.setTextMatrix(100, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("お届け先住所");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(170, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("〒" + slipDto.getDestinationZip() + " "
-				+ slipDto.getDestinationPrefectures()
-				+ slipDto.getDestinationMunicipality()
-				+ slipDto.getDestinationAddress()
-				+ slipDto.getDestinationBuildingNm());
-
-		// 表示位置の設定
-		yPos -= 15;
-		pdfContentByte.setTextMatrix(30, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("備考欄：");
-
-		String deliveryRemarks = slipDto.getSenderRemarks();
-		deliveryRemarks = replaceNewline(deliveryRemarks);
-		for (int strNum = 0; strNum <= deliveryRemarks.length();) {
-			pdfContentByte.setTextMatrix(100, yPos);
-			pdfContentByte.showText(StringUtils.substring(deliveryRemarks,
-					strNum, strNum + newlineCount));
-
-			strNum += newlineCount;
-			yPos -= 10;
-		}
-
-		yPos -= 5;
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(30, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("一言メモ：");
-
-		String senderMemo = slipDto.getSenderMemo();
-
-		senderMemo = replaceNewline(senderMemo);
-
-		for (int strNum = 0; strNum <= senderMemo.length();) {
-			pdfContentByte.setTextMatrix(100, yPos);
-			pdfContentByte.showText(StringUtils.substring(senderMemo, strNum,
-					strNum + newlineCount));
-
-			strNum += newlineCount;
-			yPos -= 10;
-		}
-
+		if (slipDto.getOrderRemarks() != null)
+			pdfContentByte.showText(slipDto.getOrderRemarks());
+		else
+			pdfContentByte.showText("");
+		
 		// テキストの終了
 		pdfContentByte.endText();
 
-		yPos += 5;
 		pdfGraphics2D.setColor(new Color(0, 0, 0));
-		pdfGraphics2D.drawLine(30, pageHeight - yPos, 565, pageHeight - yPos);
+		pdfGraphics2D.drawLine(30, pageHeight - 620, 565, pageHeight - 620);
 		pdfGraphics2D.dispose();
 
-		/**
-		 * ---------------------------------------------------伝票情報START--------
-		 * ---------------------------------------------------------
-		 */
-		// テキストの開始
-		pdfContentByte.beginText();
-
-		// フォントとサイズの設定
-		pdfContentByte.setFontAndSize(baseFont, 8);
-		// 表示位置の設定
-		yPos -= 15;
-		pdfContentByte.setTextMatrix(30, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("■伝票情報");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(100, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("運送会社");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(170, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getTransportCorporationSystem());
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(420, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("出荷予定日");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(470, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getShipmentPlanDate());
-
-		// 表示位置の設定
-		yPos -= 15;
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(100, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("送り状種別");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(170, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getInvoiceClassification());
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(420, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("配送指定日");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(470, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getDestinationAppointDate());
-
-		// 表示位置の設定
-		yPos -= 15;
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(420, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("時間帯指定");
-
-		// 表示位置の設定
-		pdfContentByte.setTextMatrix(470, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText(slipDto.getDestinationAppointTime());
-
-		yPos -= 15;
-		pdfContentByte.setTextMatrix(30, yPos);
-
-		// 表示する文字列の設定
-		pdfContentByte.showText("一言メモ：");
-
-		String slipMemo = slipDto.getSlipMemo();
-		slipMemo = replaceNewline(slipMemo);
-		for (int strNum = 0; strNum <= slipMemo.length();) {
-			pdfContentByte.setTextMatrix(100, yPos);
-			pdfContentByte.showText(StringUtils.substring(slipMemo, strNum,
-					strNum + newlineCount));
-
-			strNum += newlineCount;
-			yPos -= 10;
-		}
-
-		// テキストの終了
-		pdfContentByte.endText();
-
-		yPos += 5;
-		pdfGraphics2D.setColor(new Color(0, 0, 0));
-		pdfGraphics2D.drawLine(30, pageHeight - yPos, 565, pageHeight - yPos);
-		pdfGraphics2D.dispose();
-
-		PdfPTable pdfPTable = new PdfPTable(6);
+		int yPos = 620;
+		PdfPTable pdfPTable = new PdfPTable(5);
 
 		// 表の要素(列タイトル)を作成
 		PdfPCell cell1_1 = new PdfPCell(new Paragraph("品番", font));
-		cell1_1.setRowspan(2); // セルを2行分結合
-		cell1_1.setGrayFill(0.8f); // セルを灰色に設定
+		cell1_1.setGrayFill(0.6f); // セルを灰色に設定
 
-		PdfPCell cell1_2 = new PdfPCell(new Paragraph("倉庫場所", font));
-		cell1_2.setGrayFill(0.8f); // セルを灰色に設定
-
-		PdfPCell cell1_3 = new PdfPCell(new Paragraph("ロケーションNo", font));
-		cell1_3.setGrayFill(0.8f); // セルを灰色に設定
+		// 表の要素(列タイトル)を作成
+		PdfPCell cell1_2 = new PdfPCell(new Paragraph("商品名", font));
+		cell1_2.setGrayFill(0.6f); // セルを灰色に設定
 
 		// 表の要素(列タイトル)を作成
 		PdfPCell cell1_4 = new PdfPCell(new Paragraph("個数", font));
-		cell1_4.setRowspan(2); // セルを2行分結合
-		cell1_4.setGrayFill(0.8f); // セルを灰色に設定
+		cell1_4.setGrayFill(0.6f); // セルを灰色に設定
 
 		PdfPCell cell1_5 = new PdfPCell(new Paragraph("バーコード", font));
-		cell1_5.setRowspan(2); // セルを2行分結合
-		cell1_5.setGrayFill(0.8f); // セルを灰色に設定
+		cell1_5.setGrayFill(0.6f); // セルを灰色に設定
 
 		// 表の要素(列タイトル)を作成
-		PdfPCell cell1_6 = new PdfPCell(new Paragraph("チェック", font));
-		cell1_6.setRowspan(2); // セルを2行分結合
-		cell1_6.setGrayFill(0.8f); // セルを灰色に設定
-
-		// 表の要素(列タイトル)を作成
-		PdfPCell cell2_1 = new PdfPCell(new Paragraph("商品名", font));
-		cell2_1.setColspan(2); // セルを2列分結合
-		cell2_1.setGrayFill(0.8f); // セルを灰色に設定
+		PdfPCell cell1_6 = new PdfPCell(new Paragraph("棚番号", font));
+		cell1_6.setGrayFill(0.6f); // セルを灰色に設定
 
 		cell1_1.setHorizontalAlignment(1);
 		cell1_2.setHorizontalAlignment(1);
-		cell1_3.setHorizontalAlignment(1);
 		cell1_4.setHorizontalAlignment(1);
 		cell1_5.setHorizontalAlignment(1);
 		cell1_6.setHorizontalAlignment(1);
-		cell2_1.setHorizontalAlignment(1);
 
 		// 表の要素を表に追加する
 		pdfPTable.addCell(cell1_1);
 		pdfPTable.addCell(cell1_2);
-		pdfPTable.addCell(cell1_3);
 		pdfPTable.addCell(cell1_4);
 		pdfPTable.addCell(cell1_5);
 		pdfPTable.addCell(cell1_6);
-		pdfPTable.addCell(cell2_1);
 
 		yPos -= 15;
 		pdfPTable.setTotalWidth(535);
-		int width[] = { 70, 145, 100, 25, 150, 45 };
+		int width[] = { 70, 220, 45, 150, 50 };
 		pdfPTable.setWidths(width);
 
 		int repaginationRow = 0;
 		float pageHight = 0;
 		int rowNum = 0;
+		
 		//総描画行数
-		int totalRowNum = 0;
+		int totalRowNum = 1;
 		int itemNum = 0;
+		int pageNumber = 1;
+		
+		int orgYPos = yPos;
 
-		// 書き込みと改ページの判定のために、一行分の高さを保持する変数
-		float oneHeight = 0;
-
-		// 商品毎のループ
-		for (rowNum = 0; rowNum < slipDto.getPickItemList().size(); rowNum++) {
-
-			// 複数個の商品も1個につき1バーコードを出力するよう修正
-			// 商品の数量毎のループ
-			for (itemNum = 0; itemNum < slipDto.getPickItemList().get(rowNum).getOrderNum(); itemNum++) {
-
-				// 一行分の高さを算出するために、PDFへ設定前の高さを保持する。
-				float beforHeigt = pdfPTable.calculateHeights();
-
-
-				// 表の要素を作成
-				PdfPCell cell3_1 = new PdfPCell(new Paragraph(slipDto
-						.getPickItemList().get(rowNum).getItemCode(), font));
-				cell3_1.setRowspan(2); // セルを2行分結合
-
-				// cell3_2, cell3_3がnullの場合,当該セルが表示されなくなる現象を修正
-				if (slipDto.getPickItemList().get(rowNum).getWarehouseNm() == null) {
-					slipDto.getPickItemList().get(rowNum).setWarehouseNm("　");
+		// merge same itemcode 
+		List<ExtendSalesItemDTO> sortedPickItemList = new ArrayList<ExtendSalesItemDTO>();
+		{
+			for (int i=0; i<slipDto.getPickItemList().size(); i++) 
+			{
+				ExtendSalesItemDTO selectedItemDto = slipDto.getPickItemList().get(i); 
+				
+				if (selectedItemDto.getItemCode() == null)
+					continue;
+				
+				boolean bFound = false;
+				for (int j=0; j<sortedPickItemList.size(); j++) {
+					ExtendSalesItemDTO targetItemDto = sortedPickItemList.get(j);
+					
+					if (targetItemDto.getItemCode() == null)
+						continue;
+					
+					if (targetItemDto.getItemCode().equals(selectedItemDto.getItemCode())) {
+						targetItemDto.setOrderNum(targetItemDto.getOrderNum() + selectedItemDto.getOrderNum());
+						bFound = true;
+						break;
+					}
 				}
-				if (slipDto.getPickItemList().get(rowNum).getLocationNo() == null){
-					slipDto.getPickItemList().get(rowNum).setLocationNo("　");
+				
+				if (bFound == false) 
+				{
+					sortedPickItemList.add(selectedItemDto);
 				}
-
-				// 表の要素を作成
-				PdfPCell cell3_2 = new PdfPCell(new Paragraph(slipDto
-						.getPickItemList().get(rowNum).getWarehouseNm(), font));
-
-				PdfPCell cell3_3 = new PdfPCell(new Paragraph(slipDto
-						.getPickItemList().get(rowNum).getLocationNo(), font));
-
-				PdfPCell cell3_4 = new PdfPCell(new Paragraph(
-						String.valueOf(1), font));
-				cell3_4.setRowspan(2); // セルを2行分結合
-				// 4996740500084
-				// 表の要素を作成
-
-				com.itextpdf.text.Image image = null;
-				image = makeBarcode(writer, slipDto.getPickItemList().get(rowNum)
-						.getItemCode());
-
-				PdfPCell cell3_5;
-				if (image != null) {
-					cell3_5 = new PdfPCell(image);
-				} else {
-					cell3_5 = new PdfPCell(new Paragraph("", font));
-				}
-
-				cell3_5.setRowspan(2); // セルを2行分結合
-
-				PdfPCell cell3_6 = new PdfPCell(new Paragraph("", font));
-				cell3_6.setRowspan(2); // セルを2行分結合
-
-				PdfPCell cell4_1 = new PdfPCell(new Paragraph(slipDto
-						.getPickItemList().get(rowNum).getItemNm(), font));
-				cell4_1.setColspan(2); // セルを2列分結合
-
-				cell3_1.setHorizontalAlignment(1);
-				cell3_2.setHorizontalAlignment(1);
-				cell3_3.setHorizontalAlignment(1);
-				cell3_4.setHorizontalAlignment(1);
-				cell3_5.setHorizontalAlignment(1);
-				cell3_6.setHorizontalAlignment(1);
-				cell4_1.setHorizontalAlignment(1);
-
-				if (image != null) {
-					cell3_1.setPaddingTop(10f);
-					cell3_1.setPaddingBottom(5f);
-					cell3_2.setPaddingTop(10f);
-					cell3_2.setPaddingBottom(5f);
-					cell3_3.setPaddingTop(10f);
-					cell3_3.setPaddingBottom(5f);
-					cell3_4.setPaddingTop(10f);
-					cell3_4.setPaddingBottom(5f);
-					cell3_5.setPaddingTop(10f);
-					cell3_5.setPaddingBottom(5f);
-					cell3_6.setPaddingTop(10f);
-					cell3_6.setPaddingBottom(5f);
-					cell4_1.setPaddingTop(10f);
-					cell4_1.setPaddingBottom(5f);
-				}
-
-				pdfPTable.addCell(cell3_1);
-				pdfPTable.addCell(cell3_2);
-				pdfPTable.addCell(cell3_3);
-				pdfPTable.addCell(cell3_4);
-				pdfPTable.addCell(cell3_5);
-				pdfPTable.addCell(cell3_6);
-				pdfPTable.addCell(cell4_1);
-
-				// 2ページ目以降書き込みや改ページが必要か判定するために、
-				// PDFへ設定前の高さと設定後の高さから、一商品分の高さを算出する。
-				oneHeight = pdfPTable.calculateHeights() - beforHeigt;
-
-				// ２ページ以降で書き込みや改ページが必要な場合の判定、650を超える場合は書き込みと改ページを実行する。
-				if (repaginationRow > 0 && pdfPTable.calculateHeights() - pageHight + oneHeight > 650) {
-					pageHight = pdfPTable.calculateHeights();
-					/** 大枠の線から10px上を越えていたらその行削除し次ページに表示 */
-					pdfPTable.writeSelectedRows(0, 6, repaginationRow - 1,
-							totalRowNum - 1, 30, 800, writer.getDirectContent());
-					repaginationRow = totalRowNum;
-
-					// この分岐に入った場合は改ページ後も商品が存在するので改ページする。
-					document.newPage();
-
-				// １ページ目で改ページ後も出力する商品が存在し改ページが必要な場合
-				// XXX バーコードなしの行が混在すると1頁分の印刷範囲を超えてしまうので、一頁目が全てバーコード無商品の場合の高さを判断基準とした。
-				} else if (pdfPTable.calculateHeights() > 516 && repaginationRow == 0) {
-					/** 大枠の線から10px上を越えていたらその行削除し次ページに表示 */
-					pageHight = pdfPTable.calculateHeights();
-					totalRowNum -= 1;
-					pdfPTable.writeSelectedRows(0, 6, 0, totalRowNum - 1, 30, yPos,
-							writer.getDirectContent());
-					repaginationRow = totalRowNum;
-
-					// この分岐に入った場合は改ページ後も商品が存在するので改ページする。
-					document.newPage();
-
-				}
-
-				totalRowNum += 2;
 			}
 		}
-		if (totalRowNum > repaginationRow && repaginationRow == 0) {
-			pdfPTable.writeSelectedRows(0, 6, 0, -1, 30, yPos,
-					writer.getDirectContent());
-		} else if (totalRowNum > repaginationRow) {
-			pdfPTable.writeSelectedRows(0, 6, repaginationRow - 1, -1, 30, 800,
-					writer.getDirectContent());
+		
+		for (rowNum = 0; rowNum < /*slipDto.getPickItemList().size()*/sortedPickItemList.size(); rowNum++) {
 
+			//複数個の商品も1個につき1バーコードを出力するよう修正			
+			for (itemNum = 0; itemNum < /*slipDto.getPickItemList().get(rowNum).getOrderNum()*/sortedPickItemList.get(rowNum).getOrderNum(); itemNum++) {
+
+				addNewRow(writer, pdfPTable, font, rowNum, /*slipDto*/sortedPickItemList.get(rowNum));
+
+				if (pdfPTable.calculateHeights() >= orgYPos - 20 + (pageNumber -1) * (PAGE_HEIGHT - 70)) {
+					System.out.print("Render before new page: row(start, end) = " + repaginationRow + " : " + totalRowNum + ", yPos = " + yPos + "\n");		
+					pdfPTable.writeSelectedRows(0, 5, repaginationRow, totalRowNum, 30, yPos, writer.getDirectContent());
+					
+					// draw page footer 
+					{
+						// Adding image to the document footer       
+						String relativeWebPath = "/img/pagefooter.png";
+						Image image = loadImageFromWebContent(request, relativeWebPath);
+						if (image != null) {
+						    image.setAbsolutePosition(35, 10);
+						    writer.getDirectContent().addImage(image, false);
+						}
+					}
+
+					document.newPage();
+
+					yPos = PAGE_HEIGHT - 30;
+					repaginationRow = totalRowNum;
+					pageNumber++;		
+					
+					
+				}
+				totalRowNum ++;
+
+// --------------------------------------------------				
+// Comment : Original Source code
+// --------------------------------------------------
+//				if (pdfPTable.calculateHeights() > yPos + 10
+//						&& repaginationRow == 0) {
+//					/** 大枠の線から10px上を越えていたらその行削除し次ページに表示 */
+//					pageHight = pdfPTable.calculateHeights();
+//					totalRowNum -= 1;
+//					pdfPTable.writeSelectedRows(0, 5, 0, totalRowNum, 30, yPos + 10,
+//							writer.getDirectContent());
+//					repaginationRow = totalRowNum;
+//
+//				} else if (pdfPTable.calculateHeights() - pageHight > 750) {
+//					/** 行の高さがページ超えてくると無限ループ発生するはずなのであとで対処 */
+//					document.newPage();
+//					pageHight = pdfPTable.calculateHeights();
+//					/** 大枠の線から10px上を越えていたらその行削除し次ページに表示 */
+//					pdfPTable.writeSelectedRows(0, 5, repaginationRow,
+//							totalRowNum, 30, 800, writer.getDirectContent());
+//					repaginationRow = totalRowNum;
+//				}
+//
+//				totalRowNum += 2;
+			}
 		}
+
+		// Here, rendering remain rows
+		// 		 and adding space cells for it
+		while (pdfPTable.calculateHeights() < orgYPos - 20 - 50/* default cell height*/ + (pageNumber -1) * (PAGE_HEIGHT - 70)) 
+		{
+			addNewRow(writer, pdfPTable, font, 0, null);
+
+			System.out.print("BLANK CELL : PdfTable.calculateHeight() = " + pdfPTable.calculateHeights() + 
+					 "New Page height :" + (orgYPos - 20 - 50/* default cell height*/ + (pageNumber -1) * (PAGE_HEIGHT - 70)) + " \n");
+			System.out.print("BLANK CELL : YPOS = " + yPos + 
+					 " repaginationRow = " + repaginationRow + 
+					 " totalRowNum = " + totalRowNum + 
+					 " pageNumber = " + pageNumber + "\n");
+			
+			totalRowNum++;
+		}
+		
+		System.out.print("Render : row(start, end) = " + repaginationRow + " : " + totalRowNum + ", yPos = " + yPos + "\n");		
+		pdfPTable.writeSelectedRows(0, 5, repaginationRow, totalRowNum, 30, yPos, writer.getDirectContent());
+		
+//		if (totalRowNum > repaginationRow && repaginationRow == 0) {
+//			pdfPTable.writeSelectedRows(0, 5, 0, -1, 30, yPos + 10,
+//					writer.getDirectContent());
+//		} else if (totalRowNum > repaginationRow) {
+//			document.newPage();
+//			pdfPTable.writeSelectedRows(0, 5, repaginationRow, -1, 30, 800,
+//					writer.getDirectContent());
+//
+//		}
 
 	}
 

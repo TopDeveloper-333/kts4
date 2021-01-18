@@ -1889,6 +1889,9 @@ public class WebConst {
 	public static final String DOWNLOAD_TYPE_CODE4 = "3";
 	/**ダウンロード区分コード5：新在庫DLExcel*/
 	public static final String DOWNLOAD_TYPE_CODE5 = "4";
+	// added by Wahaha
+	/** 受注情報 */
+	public static final String DOWNLOAD_TYPE_CODE6 = "5";
 
 	/**ダウンロード区分名1：商品情報*/
 	public static final String DOWNLOAD_TYPE_NAME1 = "商品情報";
@@ -1900,6 +1903,10 @@ public class WebConst {
 	public static final String DOWNLOAD_TYPE_NAME4 = "助ネコCSV";
 	/**ダウンロード区分名1：商品情報*/
 	public static final String DOWNLOAD_TYPE_NAME5 = "新在庫DLExcel";
+	// added by Wahaha
+	/** 受注情報 */
+	public static final String DOWNLOAD_TYPE_NAME6 = "受注情報";
+	
 
 	public static final Map<String, String> DOWNLOAD_TYPE_CODE_MAP;
 	static {
@@ -1910,6 +1917,7 @@ public class WebConst {
 		downloadTypeCodeMap.put(DOWNLOAD_TYPE_CODE3, DOWNLOAD_TYPE_NAME3);
 		downloadTypeCodeMap.put(DOWNLOAD_TYPE_CODE4, DOWNLOAD_TYPE_NAME4);
 		downloadTypeCodeMap.put(DOWNLOAD_TYPE_CODE5, DOWNLOAD_TYPE_NAME5);
+		downloadTypeCodeMap.put(DOWNLOAD_TYPE_CODE6, DOWNLOAD_TYPE_NAME6);
 		DOWNLOAD_TYPE_CODE_MAP = downloadTypeCodeMap;
 	}
 

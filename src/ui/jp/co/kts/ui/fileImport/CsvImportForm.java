@@ -9,6 +9,8 @@ import jp.co.keyaki.cleave.fw.ui.web.struts.AppActionMapping;
 import jp.co.keyaki.cleave.fw.ui.web.struts.AppBaseForm;
 import jp.co.kts.app.common.entity.CsvImportDTO;
 import jp.co.kts.app.common.entity.MstCorporationDTO;
+import jp.co.kts.app.common.entity.MstDeliveryCompanyDTO;
+import jp.co.kts.app.common.entity.MstDeliveryDTO;
 import jp.co.kts.app.input.entity.CsvInputDTO;
 import jp.co.kts.app.output.entity.ErrorDTO;
 import jp.co.kts.app.output.entity.RegistryMessageDTO;
@@ -43,6 +45,12 @@ public class CsvImportForm extends AppBaseForm{
 	private int trueCount = 0;
 	/** メッセージ */
 	private RegistryMessageDTO registryDto = new RegistryMessageDTO();
+	
+	// added by wahaha
+	private int deliveryCompanyId;
+	
+	private List<MstDeliveryCompanyDTO> deliveryCompanyList = new ArrayList<>();
+	
 
 	@Override
 	protected void doReset(AppActionMapping appMapping,
@@ -219,4 +227,58 @@ public class CsvImportForm extends AppBaseForm{
 	    this.registryDto = registryDto;
 	}
 
+	
+	/**
+	 * Delivery company DTO list
+	 * @return deliveryCompanyList
+	 */
+	public List<MstDeliveryCompanyDTO> getDeliveryCompanyList() {
+		if (deliveryCompanyList.size() == 0) {
+			
+			MstDeliveryCompanyDTO yamatoDto = new MstDeliveryCompanyDTO();
+			yamatoDto.setCompanyId(1);
+			yamatoDto.setCompanyName("ヤマト");
+			deliveryCompanyList.add(yamatoDto);
+			
+			MstDeliveryCompanyDTO sagawaDto = new MstDeliveryCompanyDTO();
+			sagawaDto.setCompanyId(2);
+			sagawaDto.setCompanyName("佐川");
+			deliveryCompanyList.add(sagawaDto);
+			
+			MstDeliveryCompanyDTO seinoDto = new MstDeliveryCompanyDTO();
+			seinoDto.setCompanyId(3);
+			seinoDto.setCompanyName("西濃");
+			deliveryCompanyList.add(seinoDto);
+			
+			MstDeliveryCompanyDTO jpPostDto = new MstDeliveryCompanyDTO();
+			jpPostDto.setCompanyId(4);
+			jpPostDto.setCompanyName("郵政");
+			deliveryCompanyList.add(jpPostDto);
+		}
+		return deliveryCompanyList;
+	}
+	
+	/**
+	 * DeliveryCompanyList を 設定します。
+	 * @param deliveryCompanyList メッセージ
+	 */
+	public void setDeliveryCompanyList(List<MstDeliveryCompanyDTO> deliveryCompanyList) {
+		this.deliveryCompanyList = deliveryCompanyList;		
+	}
+	
+	/**
+	 * @return deliveryCompanyId
+	 */
+	public int getDeliveryCompanyId() {
+		return deliveryCompanyId;
+	}
+
+	/**
+	 * @param deliveryCompanyId セットする deliveryCompanyId
+	 */
+	public void setDeliveryCompanyId(int deliveryCompanyId) {
+		this.deliveryCompanyId = deliveryCompanyId;
+	}
+	
+	
 }

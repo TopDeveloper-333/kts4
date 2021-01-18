@@ -136,7 +136,7 @@ public class ExportCorporateBillService extends CorporationService {
 		bill(document, writer, font, baseFont, date, billList, accountId);
 
 		/** 商品一覧 */
-		orderItemDetail(document, writer, font, baseFont, billList, billItemList, 595);
+		orderItemDetailNew(document, writer, font, baseFont, billList, billItemList, 595);
 
 		// 改ページ
 		document.newPage();
@@ -1233,6 +1233,900 @@ public class ExportCorporateBillService extends CorporationService {
 		float height = pdfPTable.calculateHeights() - pageHight;
 	}
 
+	private static boolean isNewPageForOrderItemTable(PdfPTable pdfPTable, Document document, PdfWriter writer, 
+			float yPos, int pageNumber, int repaginationRow, int totalRowNum, float orderCurrentHeight) {
+		
+		if (pdfPTable.calculateHeights() >= orderCurrentHeight - 30 + (pageNumber - 1) * (820 - 40)) {
+			pdfPTable.writeSelectedRows(0, 7, repaginationRow, totalRowNum, 30, yPos, writer.getDirectContent());			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	private static void orderItemDetailNew(Document document, PdfWriter writer,
+			Font font, BaseFont baseFont, ExportCorporateBillDTO billDto,
+			List<CorporateBillItemDTO> billItemList,
+			float orderCurrentHeight) throws IOException, ParseException, DocumentException, DaoException {
+
+		int PAGE_HEIGHT = 820;
+		int pageNumber  = 1;
+		float yPos = orderCurrentHeight;
+		int repaginationRow = 0;
+		int totalRowNum = 0;
+				
+		CorporateSaleDisplayService corporateSaleDisplayService = new CorporateSaleDisplayService();
+		CorporateBillDAO corporateBillDAO = new CorporateBillDAO();
+
+		int TABLE_COLS = 7;
+		PdfPTable pdfPTable = new PdfPTable(TABLE_COLS);
+		pdfPTable.setTotalWidth(535);
+		int width[] = { 55, 60, 250, 40, 40, 35, 55 };
+		pdfPTable.setWidths(width);
+
+		// 表の要素(列タイトル)を作成
+		PdfPCell cellSalesDateHeader = new PdfPCell(new Paragraph("日付", font));
+		PdfPCell cellItemCdHeader = new PdfPCell(new Paragraph("伝票番号", font));
+		PdfPCell cellItemNmHeader = new PdfPCell(new Paragraph("商品名", font));
+		PdfPCell cellTaxRateHeader = new PdfPCell(new Paragraph("税率", font));
+		PdfPCell cellQuantityHeader = new PdfPCell(new Paragraph("数量", font));
+		PdfPCell cellUnitPriceHeader = new PdfPCell(new Paragraph("単価", font));
+		PdfPCell cellPriceHeader = new PdfPCell(new Paragraph("金額", font));
+
+		// 表の要素(列タイトル)を作成
+		cellSalesDateHeader.setHorizontalAlignment(1);
+		cellItemCdHeader.setHorizontalAlignment(1);
+		cellItemNmHeader.setHorizontalAlignment(1);
+		cellTaxRateHeader.setHorizontalAlignment(1);
+		cellUnitPriceHeader.setHorizontalAlignment(1);
+		cellQuantityHeader.setHorizontalAlignment(1);
+		cellPriceHeader.setHorizontalAlignment(1);
+
+		// 表の要素を表に追加する
+		pdfPTable.addCell(cellSalesDateHeader);
+		pdfPTable.addCell(cellItemCdHeader);
+		pdfPTable.addCell(cellItemNmHeader);
+		pdfPTable.addCell(cellTaxRateHeader);
+		pdfPTable.addCell(cellUnitPriceHeader);
+		pdfPTable.addCell(cellQuantityHeader);
+		pdfPTable.addCell(cellPriceHeader);
+
+		/**
+		 * ループ(商品LISTのDTOをループさせる予定)
+		 */
+		int taxAreaSize = 3;
+
+		ItemService itemService = new ItemService();
+		String itemCd;
+
+		//空白セル定義
+		PdfPCell blankCell = new PdfPCell(new Paragraph(" ", font));
+
+		// 伝票番号
+		PdfPCell cellItemCd = blankCell;
+		PdfPCell cellItemNm = blankCell;
+		PdfPCell cellTaxRate = blankCell;
+		PdfPCell cellQuantity = blankCell;
+		PdfPCell cellUnitPrice = blankCell;
+		PdfPCell cellPrice = blankCell;
+		PdfPCell slipTax = blankCell;
+		String slipNo = "";
+
+		//個別税計算用
+		int slipPriceSum = 0;
+		//最初の伝票の消費税率を初期値とする。
+		int taxRate = 0;
+		if (billItemList.size() > 0
+				&& (billItemList.get(0).getSlipNo() != null || !billItemList.get(0).getSlipNo().isEmpty())) {
+			taxRate = corporateBillDAO.getTaxRateOfSlip(billItemList.get(0).getSlipNo());
+		}
+
+		//消費税率毎に税抜金額と消費税額を分けて出力するために変数を用意しました。
+		int highRateTax = 0;
+		int lowRateTax = 0;
+		int highRateSlipPriceSum = 0;
+		int lowRateSlipPriceSum = 0;
+
+		int billTaxSum = 0;
+
+		//備考欄用
+		String slipBillingRemarks = "";
+		cellItemCd.setHorizontalAlignment(2);
+		cellUnitPrice.setHorizontalAlignment(2);
+		cellQuantity.setHorizontalAlignment(2);
+		cellPrice.setHorizontalAlignment(2);
+
+		for (CorporateBillItemDTO item : billItemList) {
+			// 伝票番号がないとき処理しない
+			if (item.getSlipNo().isEmpty()) {
+				continue;
+			}
+
+			// 伝票番号の切り替わり（1行目のみ必須）
+			if (!slipNo.equals(item.getSlipNo())) {
+				//1行目でない場合、これまでの伝票分の消費税＋空白行を挟む
+				if (totalRowNum != 0) {
+					//税計算と消費税合計
+					//消費税率によって出力を変更するため格納する変数を分ける。
+					if (taxRate == WebConst.TAX_RATE_8) {
+						lowRateTax += (int) ((double) slipPriceSum * taxRate / 100);
+						lowRateSlipPriceSum += slipPriceSum;
+					} else if (taxRate == WebConst.TAX_RATE_10) {
+						highRateTax += (int) ((double) slipPriceSum * taxRate / 100);
+						;
+						highRateSlipPriceSum += slipPriceSum;
+					}
+
+					slipPriceSum = (int) ((double) slipPriceSum * taxRate / 100);
+					billTaxSum += slipPriceSum;
+					//記入
+					cellItemNm = new PdfPCell(new Paragraph("＜ 消 費 税 ＞　", font));
+					cellItemNm.setHorizontalAlignment(2);
+					slipTax = new PdfPCell(new Paragraph(String.valueOf(slipPriceSum), font));
+					slipTax.setHorizontalAlignment(2);
+					pdfPTable.addCell(blankCell);
+					pdfPTable.addCell(blankCell);
+					pdfPTable.addCell(cellItemNm);
+					pdfPTable.addCell(blankCell);
+					pdfPTable.addCell(blankCell);
+					pdfPTable.addCell(blankCell);
+					pdfPTable.addCell(slipTax);
+					cellItemNm.setHorizontalAlignment(1);
+
+					if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+						document.newPage();
+						yPos = PAGE_HEIGHT - 20;
+						repaginationRow = totalRowNum;
+						pageNumber++;
+					}
+					totalRowNum++;
+
+					pdfPTable.addCell(blankCell);
+					pdfPTable.addCell(blankCell);
+					pdfPTable.addCell(blankCell);
+					pdfPTable.addCell(blankCell);
+					pdfPTable.addCell(blankCell);
+					pdfPTable.addCell(blankCell);
+					pdfPTable.addCell(blankCell);
+
+					if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+						document.newPage();
+						yPos = PAGE_HEIGHT - 20;
+						repaginationRow = totalRowNum;
+						pageNumber++;
+					}
+					totalRowNum++;
+
+					//次の伝票の処理を行うため、伝票税計算リセット
+					taxRate = corporateBillDAO.getTaxRateOfSlip(item.getSlipNo());
+					slipPriceSum = 0;
+
+				}
+				//日付
+				PdfPCell cellSalesDate = new PdfPCell(new Paragraph(item.getSalesDate(), font));
+				//伝票番号
+				cellItemNm = new PdfPCell(new Paragraph(item.getSlipNo(), font));
+
+				pdfPTable.addCell(cellSalesDate);
+				pdfPTable.addCell(cellItemNm);
+
+				//伝票単位の備考欄を取得
+				slipBillingRemarks = corporateBillDAO.getBillRemarks(item.getSlipNo());
+				//備考欄に入力あれば記入
+				if (!StringUtils.isEmpty(slipBillingRemarks)) {
+
+					cellItemNm = new PdfPCell(new Paragraph(slipBillingRemarks, font));
+					pdfPTable.addCell(cellItemNm);
+					cellItemNm.setHorizontalAlignment(2);
+				} else {
+					pdfPTable.addCell(blankCell);
+				}
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+
+				if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+					document.newPage();
+					yPos = PAGE_HEIGHT - 20;
+					repaginationRow = totalRowNum;
+					pageNumber++;
+				}
+				totalRowNum++;
+
+			}
+
+			long itemId = item.getSysItemId();
+			if (itemId != 0) {
+
+				//				itemCd = corporateSaleDisplayService.getMstItemDTO(itemId).getItemCode();
+				itemCd = itemService.getMstItemDTO(itemId).getItemCode();
+			} else {
+				itemCd = item.getItemCode();
+			}
+
+			//商品コード
+			//			cellItemCd = new PdfPCell(new Paragraph(itemCd, font));
+			// 商品名
+			cellItemNm = new PdfPCell(new Paragraph("　" + item.getItemNm(), font));
+			// 数量
+			cellQuantity = new PdfPCell(new Paragraph(
+					String.valueOf(item.getOrderNum()), font));
+			//税率
+			cellTaxRate = new PdfPCell(new Paragraph(
+					String.valueOf(taxRate + "％"), font));
+			// 単価
+			cellUnitPrice = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(item.getPieceRate())), font));
+			// 金額
+			cellPrice = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(item.getPieceRate()
+							* item.getOrderNum())),
+					font));
+			//伝票税計算リセット用に金額加算
+			slipPriceSum += item.getPieceRate() * item.getOrderNum();
+
+			//			cellSalesDate.setHorizontalAlignment(1);
+			//			cellItemCd.setHorizontalAlignment(2);
+			cellItemNm.setHorizontalAlignment(0);
+			cellTaxRate.setHorizontalAlignment(1);
+			cellUnitPrice.setHorizontalAlignment(2);
+			cellQuantity.setHorizontalAlignment(2);
+			cellPrice.setHorizontalAlignment(2);
+
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(cellItemNm);
+			pdfPTable.addCell(cellTaxRate);
+			pdfPTable.addCell(cellUnitPrice);
+			pdfPTable.addCell(cellQuantity);
+			pdfPTable.addCell(cellPrice);
+
+			//ループ時の比較用
+			slipNo = item.getSlipNo();
+
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+		}
+
+		if (billItemList.size() > 0) {
+			//最後の伝票の消費税
+			//税計算と消費税合計
+			//消費税率によって出力を変更するため格納する変数を分ける。
+			if (taxRate == WebConst.TAX_RATE_8) {
+				lowRateTax += (int) ((double) slipPriceSum * taxRate / 100);
+				lowRateSlipPriceSum += slipPriceSum;
+			} else if (taxRate == WebConst.TAX_RATE_10) {
+				highRateTax += (int) ((double) slipPriceSum * taxRate / 100);
+				;
+				highRateSlipPriceSum += slipPriceSum;
+			}
+			taxRate = corporateBillDAO.getTaxRateOfSlip(slipNo);
+			slipPriceSum = (int) ((double) slipPriceSum * taxRate / 100);
+			billTaxSum += slipPriceSum;
+			//記入
+			cellItemNm = new PdfPCell(new Paragraph("＜ 消 費 税 ＞　", font));
+			cellItemNm.setHorizontalAlignment(2);
+			slipTax = new PdfPCell(new Paragraph(String.valueOf(slipPriceSum), font));
+			slipTax.setHorizontalAlignment(2);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(cellItemNm);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(slipTax);
+			cellItemNm.setHorizontalAlignment(1);
+
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+			
+			//伝票税計算リセット
+			slipPriceSum = 0;
+
+			//空白行
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+		}
+
+		//----------------------- 振込金額（入金額欄）、フリーワード(手数料欄)がない場合は非表示
+		if (!StringUtils.isEmpty(billDto.getReceiveDate()) || !StringUtils.isEmpty(billDto.getFreeWord()) ||
+				billDto.getReceivePrice() != 0 || !StringUtils.isEmpty(billDto.getFreeWord2()) ||
+				billDto.getCharge2() != 0 || !StringUtils.isEmpty(billDto.getFreeWord3()) ||
+				billDto.getCharge3() != 0) {
+
+			// 振込金額、フリーワード(手数料)エリアの表示
+			//空白行
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			// フリーワードの設定
+			//入金日
+			PdfPCell cellSalesDateCArea = new PdfPCell(new Paragraph(billDto.getReceiveDate(), font));
+			PdfPCell cellItemNmCArea = new PdfPCell(new Paragraph("入金額", font));
+			PdfPCell cellOne = new PdfPCell(new Paragraph("1", font));
+			//単価用入金額
+			PdfPCell cellUnitPriceCArea = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(billDto.getReceivePrice())), font));
+			//金額用入金額
+			PdfPCell cellPriceCArea = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(billDto.getReceivePrice())), font));
+
+			//単価用金額1
+			PdfPCell cellUnitChargeCArea = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(billDto.getCharge())), font));
+			//金額用金額1
+			PdfPCell cellChargeCArea = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(billDto.getCharge())), font));
+			//単価用金額2
+			PdfPCell cellUnitCharge2CArea = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(billDto.getCharge2())), font));
+			//金額用金額2
+			PdfPCell cellCharge2CArea = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(billDto.getCharge2())), font));
+			//単価用金額3
+			PdfPCell cellUnitCharge3CArea = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(billDto.getCharge3())), font));
+			//金額用金額3
+			PdfPCell cellCharge3CArea = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(billDto.getCharge3())), font));
+			//フリーワード1
+			PdfPCell cellFreeWord1CArea = new PdfPCell(new Paragraph(billDto.getFreeWord(), font));
+			//フリーワード2
+			PdfPCell cellFreeWord2CArea = new PdfPCell(new Paragraph(billDto.getFreeWord2(), font));
+			//フリーワード3
+			PdfPCell cellFreeWord3CArea = new PdfPCell(new Paragraph(billDto.getFreeWord3(), font));
+
+			// 表の要素(列タイトル)を揃え（アライン）を設定する
+			cellSalesDateCArea.setHorizontalAlignment(1);
+			cellOne.setHorizontalAlignment(2);
+			cellUnitPriceCArea.setHorizontalAlignment(2);
+			cellPriceCArea.setHorizontalAlignment(2);
+			cellUnitChargeCArea.setHorizontalAlignment(2);
+			cellChargeCArea.setHorizontalAlignment(2);
+			cellUnitCharge2CArea.setHorizontalAlignment(2);
+			cellCharge2CArea.setHorizontalAlignment(2);
+			cellUnitCharge3CArea.setHorizontalAlignment(2);
+			cellCharge3CArea.setHorizontalAlignment(2);
+
+			// 表の要素を表に追加する
+			//入金日
+			if (billDto.getReceiveDate() == null) {
+				pdfPTable.addCell(blankCell);
+			} else {
+				pdfPTable.addCell(cellSalesDateCArea);
+			}
+
+			pdfPTable.addCell(blankCell);
+
+			//入金額があれば入金額表示
+			if (billDto.getReceivePrice() == 0) {
+				pdfPTable.addCell(blankCell);
+			} else {
+				pdfPTable.addCell(cellItemNmCArea);
+			}
+
+			//入金額
+			if (billDto.getReceivePrice() == 0) {
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+			} else {
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(cellUnitPriceCArea);
+				pdfPTable.addCell(cellOne);
+				pdfPTable.addCell(cellPriceCArea);
+			}
+
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+
+			//フリーワード1
+			if (billDto.getFreeWord() == null) {
+				pdfPTable.addCell(blankCell);
+			} else {
+				pdfPTable.addCell(cellFreeWord1CArea);
+			}
+
+			//金額1
+			if (billDto.getCharge() == 0) {
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+			} else {
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(cellUnitChargeCArea);
+				pdfPTable.addCell(cellOne);
+				pdfPTable.addCell(cellChargeCArea);
+			}
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+
+			//フリーワード2
+			if (billDto.getFreeWord2() == null) {
+				pdfPTable.addCell(blankCell);
+			} else {
+				pdfPTable.addCell(cellFreeWord2CArea);
+			}
+
+			//金額2
+			if (billDto.getCharge2() == 0) {
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+			} else {
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(cellUnitCharge2CArea);
+				pdfPTable.addCell(cellOne);
+				pdfPTable.addCell(cellCharge2CArea);
+			}
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+
+			//フリーワード3
+			if (billDto.getFreeWord3() == null) {
+				pdfPTable.addCell(blankCell);
+			} else {
+				pdfPTable.addCell(cellFreeWord3CArea);
+			}
+
+			//金額3
+			if (billDto.getCharge3() == 0) {
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(blankCell);
+			} else {
+				pdfPTable.addCell(blankCell);
+				pdfPTable.addCell(cellUnitCharge3CArea);
+				pdfPTable.addCell(cellOne);
+				pdfPTable.addCell(cellCharge3CArea);
+			}
+
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			// 手数料がある場合、出力する。
+			//			if(billDto.getCharge() != 0){
+			//				// 手数料の設定（フリーワードに入力があれば名称を変更）
+			//				if (billDto.getFreeWord().isEmpty()) {
+			//					cellItemNmCArea =  new PdfPCell(new Paragraph("手数料" ,font));
+			//				} else {
+			//					//フリーワード1
+			//					cellItemNmCArea =  new PdfPCell(new Paragraph(billDto.getFreeWord() ,font));
+			//				}
+			//				cellUnitPriceCArea =  new PdfPCell(new Paragraph(
+			//						StringUtil.formatCalc(BigDecimal.valueOf(billDto.getCharge())) ,font));
+			//				cellPriceCArea =  new PdfPCell(new Paragraph(
+			//						StringUtil.formatCalc(BigDecimal.valueOf(billDto.getCharge())) ,font));
+			//
+			//				// 表の要素(列タイトル)を揃え（アライン）を設定する
+			//				cellUnitPriceCArea.setHorizontalAlignment(2);
+			//				cellPriceCArea.setHorizontalAlignment(2);
+			//
+			//				// 表の要素を表に追加する
+			//				pdfPTable.addCell(blankCell);
+			//				pdfPTable.addCell(blankCell);
+			//				pdfPTable.addCell(cellItemNmCArea);
+			//				pdfPTable.addCell(cellUnitPriceCArea);
+			//				pdfPTable.addCell(blankCell);
+			//				pdfPTable.addCell(cellPriceCArea);
+			//				rowNum++;
+			//			}
+		}
+
+		//外税の場合は消費税を表示
+		if (billDto.getConsumptionTax() != 0) {
+			//改ページの判断
+			//空白行(1)＋税抜合計(1)＋消費税(1)+空白行(2)+10%消費税(2)+8%消費税(2)+空白行(1)+請求額(1)を表示しきれるかどうか
+
+//			int nextRowNum = rowNum + taxAreaSize;
+//			if (nextRowNum >= MAX_ROW_WITH_HEADER + (MAX_ROW_NO_HEADER * (pageNum - 1))) {
+//				for (int i = rowNum; i < maxRow - 1; i++) {
+//					pdfPTable.addCell(blankCell);
+//					pdfPTable.addCell(blankCell);
+//					pdfPTable.addCell(blankCell);
+//					pdfPTable.addCell(blankCell);
+//					pdfPTable.addCell(blankCell);
+//					pdfPTable.addCell(blankCell);
+//					pdfPTable.addCell(blankCell);
+//					rowNum++;
+//				}
+//				// 表の要素を表に追加する
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(cellItemCdHeader);
+//				pdfPTable.addCell(cellItemNmHeader);
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(cellUnitPriceHeader);
+//				pdfPTable.addCell(cellQuantityHeader);
+//				pdfPTable.addCell(cellPriceHeader);
+//				rowNum++;
+//
+//				maxRow += MAX_ROW_NO_HEADER;
+//				pageNum++;
+//			} else {
+//				//空白行
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//				rowNum++;
+//			}
+			
+			//空白行
+//			for (int i = 0; i < taxAreaSize; i++) {
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//				pdfPTable.addCell(blankCell);
+//
+//				if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+//					document.newPage();
+//					yPos = PAGE_HEIGHT - 20;
+//					repaginationRow = totalRowNum;
+//					pageNumber++;
+//				}
+//				totalRowNum++;
+//			}
+
+			//税抜き合計金額
+			cellItemNm = new PdfPCell(new Paragraph("＜税抜合計金額＞　", font));
+			PdfPCell sumPriceRateCell = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(billDto.getSumClaimPrice() - billDto.getConsumptionTax())),
+					font));
+
+			cellItemNm.setHorizontalAlignment(2);
+			sumPriceRateCell.setHorizontalAlignment(2);
+
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(cellItemNm);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(sumPriceRateCell);
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			//消費税表示
+			cellItemNm = new PdfPCell(new Paragraph("＜消費税合計＞　", font));
+			PdfPCell taxSumCell = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(billTaxSum)), font));
+
+			cellItemNm.setHorizontalAlignment(2);
+			taxSumCell.setHorizontalAlignment(2);
+
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(cellItemNm);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(taxSumCell);
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			//空白行
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			//空白行
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			//10%対象（税抜）表示
+			cellItemNm = new PdfPCell(new Paragraph("＜10％対象(税抜き)＞　", font));
+			PdfPCell highRateSlipPriceSumCell = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(highRateSlipPriceSum)), font));
+
+			cellItemNm.setHorizontalAlignment(2);
+			highRateSlipPriceSumCell.setHorizontalAlignment(2);
+
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(cellItemNm);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(highRateSlipPriceSumCell);
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			//10%対象消費税表示
+			cellItemNm = new PdfPCell(new Paragraph("＜10％対象消費税＞　", font));
+			PdfPCell highRateTaxCell = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(highRateTax)), font));
+
+			cellItemNm.setHorizontalAlignment(2);
+			highRateTaxCell.setHorizontalAlignment(2);
+
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(cellItemNm);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(highRateTaxCell);
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			//8%対象（税抜）表示
+			cellItemNm = new PdfPCell(new Paragraph("＜8％対象(税抜き)＞　", font));
+			PdfPCell lowRateSlipPriceSumCell = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(lowRateSlipPriceSum)), font));
+
+			cellItemNm.setHorizontalAlignment(2);
+			lowRateSlipPriceSumCell.setHorizontalAlignment(2);
+
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(cellItemNm);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(lowRateSlipPriceSumCell);
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			//8%対象消費税表示
+			cellItemNm = new PdfPCell(new Paragraph("＜8％対象消費税＞　", font));
+			PdfPCell lowRateTaxCell = new PdfPCell(new Paragraph(
+					StringUtil.formatCalc(BigDecimal.valueOf(lowRateTax)), font));
+
+			cellItemNm.setHorizontalAlignment(2);
+			lowRateTaxCell.setHorizontalAlignment(2);
+
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(cellItemNm);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(lowRateTaxCell);
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			//空白行
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+
+			//請求金額表示
+			cellItemNm = new PdfPCell(new Paragraph("＜請求金額＞　", font));
+			PdfPCell CurrentBillAmount = new PdfPCell(
+					new Paragraph(StringUtil.formatCalc(BigDecimal.valueOf(billDto.getBillAmount())), font));
+			cellItemNm.setHorizontalAlignment(2);
+			CurrentBillAmount.setHorizontalAlignment(2);
+
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(cellItemNm);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(CurrentBillAmount);
+			if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+				document.newPage();
+				yPos = PAGE_HEIGHT - 20;
+				repaginationRow = totalRowNum;
+				pageNumber++;
+			}
+			totalRowNum++;
+		}
+
+		//一番下までテーブルを埋める
+//		for (int i = rowNum; i < maxRow - 2; i++) {
+//
+//			pdfPTable.addCell(blankCell);
+//			pdfPTable.addCell(blankCell);
+//			pdfPTable.addCell(blankCell);
+//			pdfPTable.addCell(blankCell);
+//			pdfPTable.addCell(blankCell);
+//			pdfPTable.addCell(blankCell);
+//			pdfPTable.addCell(blankCell);
+//			rowNum++;
+//		}
+
+		//最下段行
+		PdfPCell blankSpanCell = new PdfPCell(new Paragraph(" ", font));
+		blankSpanCell.setColspan(3);
+
+		PdfPCell cellSum = new PdfPCell(new Paragraph("合計", font));
+		PdfPCell cellSumClaimPrice = new PdfPCell(new Paragraph(
+				StringUtil.formatCalc(BigDecimal.valueOf(billDto.getSumClaimPrice())), font));
+
+		blankSpanCell.setPaddingTop(7f);
+		cellSum.setPaddingTop(7f);
+		cellSum.setPadding(3f);
+		cellSumClaimPrice.setPaddingTop(7f);
+		cellSumClaimPrice.setPadding(3f);
+
+		cellSum.setHorizontalAlignment(1);
+		cellSumClaimPrice.setHorizontalAlignment(2);
+
+		pdfPTable.addCell(blankSpanCell);
+		pdfPTable.addCell(cellSum);
+		pdfPTable.addCell(cellSumClaimPrice);
+
+		if (isNewPageForOrderItemTable(pdfPTable, document, writer, yPos, pageNumber, repaginationRow, totalRowNum, orderCurrentHeight)) {
+			document.newPage();
+			yPos = PAGE_HEIGHT - 20;
+			repaginationRow = totalRowNum;
+			pageNumber++;
+		}
+		totalRowNum++;
+
+		//テーブル描画
+//		pdfPTable.writeSelectedRows(0, TABLE_COLS, 0, MAX_ROW_WITH_HEADER, 30, orderCurrentHeight,
+//				writer.getDirectContent());
+//		if (pageNum > 1) {
+//			for (int i = 1; i < pageNum; i++) {
+//				document.newPage();
+//				int rowStart = MAX_ROW_WITH_HEADER + (MAX_ROW_NO_HEADER * (i - 1));
+//				int rowEnd = MAX_ROW_WITH_HEADER + (MAX_ROW_NO_HEADER * i);
+//				pdfPTable.writeSelectedRows(0, TABLE_COLS, rowStart, rowEnd, 30, 800,
+//						writer.getDirectContent());
+//			}
+//		}
+
+		/** 多分、計算式違う、下の計算から、テーブルを記述始めているyposから以下の値を引かないと欲しい値が算出されない。 */
+//		float height = pdfPTable.calculateHeights() - pageHight;
+		
+		while (pdfPTable.calculateHeights() < orderCurrentHeight - 100 + (pageNumber - 1) * (PAGE_HEIGHT - 40)) {
+			// blank cell
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+			pdfPTable.addCell(blankCell);
+
+			totalRowNum++;
+		}
+		pdfPTable.writeSelectedRows(0, 7, repaginationRow, totalRowNum, 30, yPos, writer.getDirectContent());			
+	}
+
 	public void outPut(HttpServletResponse response, String filePath,
 			String fname) throws IOException {
 
@@ -2237,7 +3131,7 @@ public class ExportCorporateBillService extends CorporationService {
 			bill(document, writer, font, baseFont, date, ecbDto, accountId);
 
 			/** 商品一覧 */
-			orderItemDetail(document, writer, font, baseFont, ecbDto, billItemListMap.get(key), 595);
+			orderItemDetailNew(document, writer, font, baseFont, ecbDto, billItemListMap.get(key), 595);
 
 			// 改ページ
 			document.newPage();

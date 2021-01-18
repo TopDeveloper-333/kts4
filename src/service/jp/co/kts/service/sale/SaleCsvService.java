@@ -9,9 +9,11 @@ import org.apache.commons.lang.StringUtils;
 
 import jp.co.keyaki.cleave.common.util.StringUtil;
 import jp.co.keyaki.cleave.fw.dao.DaoException;
+import jp.co.kts.app.common.entity.CorporateSalesSlipDTO;
 import jp.co.kts.app.common.entity.CsvImportDTO;
 import jp.co.kts.app.common.entity.ItemCostDTO;
 import jp.co.kts.app.common.entity.SalesSlipDTO;
+import jp.co.kts.app.extendCommon.entity.ExtendCorporateSalesSlipDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendSalesItemDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendSalesSlipDTO;
 import jp.co.kts.app.output.entity.ErrorDTO;
@@ -19,6 +21,7 @@ import jp.co.kts.app.output.entity.ErrorMessageDTO;
 import jp.co.kts.dao.common.SequenceDAO;
 import jp.co.kts.dao.item.ItemDAO;
 import jp.co.kts.dao.mst.ChannelDAO;
+import jp.co.kts.dao.sale.CorporateSaleDAO;
 import jp.co.kts.dao.sale.SaleDAO;
 import jp.co.kts.service.item.ItemService;
 import jp.co.kts.ui.web.struts.WebConst;
@@ -356,7 +359,7 @@ public class SaleCsvService extends SaleService {
 		salesSlipDTO.setSlipMemo(csvImportDTO.getSlipMemo());
 
 		salesSlipDTO.setDisposalRoute(csvImportDTO.getDisposalRoute());
-
+		
 		return salesSlipDTO;
 	}
 
@@ -448,6 +451,70 @@ public class SaleCsvService extends SaleService {
 			salesSlipDTO.setTax(getTax(sumPieceRate, salesSlipDTO.getTaxClass(), salesSlipDTO.getTaxRate()));
 
 			errorDTO.setTrueCount(errorDTO.getTrueCount() + saleDAO.updateSalesSlip(salesSlipDTO));
+		}
+		return errorDTO;
+	}
+
+	//伝票上書き
+	/**
+	 * @param csvImportList
+	 * @return
+	 * @throws DaoException
+	 * @throws ParseException
+	 */
+	public ErrorDTO saveSlipNoOnly(List<CsvImportDTO> csvImportList) throws DaoException, ParseException {
+
+		ErrorDTO errorDTO = new ErrorDTO();
+		//保留
+		//一回目の取り込みとロジック似ているので切り出して使いたい。
+
+		System.out.println("SaleCsvService::saveSlipNoOnly() is called : (imported count) " + csvImportList.size());
+
+		//csvファイルのままだと一つの受注番号で複数行あるのでそれを正規化するイメージ
+		for (int i = 0; i < csvImportList.size(); i++) {
+
+			CsvImportDTO csvImportDTO = csvImportList.get(i);
+
+			// DBに格納する値 : for ExtendSalesSlipDTO
+			ExtendSalesSlipDTO salesSlipDTO = getExtendSalesSlip(csvImportDTO.getOrderNo());
+			if (salesSlipDTO != null) {
+				// UPDATE : ExtendSalesSlipDTO ==== save jis, transport system.
+				salesSlipDTO.setTransportCorporationSystem(csvImportDTO.getTransportCorporationSystem());
+				salesSlipDTO.setSlipNo(csvImportDTO.getSlipNo());
+	
+				long sysSalesSlipId = getSysSalesSlipId(salesSlipDTO.getOrderNo());
+				salesSlipDTO.setSysSalesSlipId(sysSalesSlipId);
+
+				System.out.println("Found SaleSlip DTO: (id, orderno, slipno)" + 
+							sysSalesSlipId + ":" + salesSlipDTO.getOrderNo() + ":" + salesSlipDTO.getSlipNo());
+				
+				SaleDAO saleDAO = new SaleDAO();
+				errorDTO.setTrueCount(errorDTO.getTrueCount() + saleDAO.updateSalesSlip(salesSlipDTO));
+			}
+			
+			// For CorporateSalesSlipDto
+//			List<ExtendCorporateSalesSlipDTO> list = getCorporateSaleSlipByOrderNo(csvImportDTO.getOrderNo());
+//			if (list != null) {
+//				
+//				for (int j=0; j< list.size(); j++) {
+//					ExtendCorporateSalesSlipDTO corpSalesSlipDTO = list.get(j);
+//					
+//					// update : ExtendCorporateSalesSlipDTO ==== save jis, transport system
+//					corpSalesSlipDTO.setTransportCorporationSystem(csvImportDTO.getTransportCorporationSystem());
+//					corpSalesSlipDTO.setSlipNo(csvImportDTO.getSlipNo());
+//					
+//					long sysCorpSalesSlipId = corpSalesSlipDTO.getSysCorporateSalesSlipId();
+//					corpSalesSlipDTO.setSysCorporateSalesSlipId(sysCorpSalesSlipId);
+//					
+//					System.out.println("Found CorpSaleSlip DTO: (id, orderno, slipno)" + 
+//							sysCorpSalesSlipId + ":" + corpSalesSlipDTO.getOrderNo() + ":" + corpSalesSlipDTO.getSlipNo());
+//
+//					CorporateSaleDAO corpSaleDAO = new CorporateSaleDAO();
+//					errorDTO.setTrueCount(errorDTO.getTrueCount() + corpSaleDAO.updateCorporateSalesSlip(corpSalesSlipDTO));					
+//				}
+//				
+//			}
+
 		}
 		return errorDTO;
 	}
@@ -707,6 +774,47 @@ public class SaleCsvService extends SaleService {
 		}
 
 		return dto.getSysSalesSlipId();
+	}
+	
+	private ExtendSalesSlipDTO getExtendSalesSlip(String orderNo) throws DaoException {
+		ExtendSalesSlipDTO dto = new ExtendSalesSlipDTO();
+		dto.setOrderNo(orderNo);
+		dto = new SaleDAO().getSaleSlip(dto);
+
+		if (dto == null) {
+
+			return null;
+		}
+
+		return dto;		
+	}
+	
+//	private long getSysCorporateSaleSlipId(String orderNo) throws DaoException {
+//		ExtendCorporateSalesSlipDTO dto = new ExtendCorporateSalesSlipDTO();
+//		dto.setOrderNo(orderNo);
+//		dto = new CorporateSaleDAO().getCorporateSaleSlipByOrderNo(orderNo);
+//		
+//		if (dto == null) {
+//			
+//			return 0;
+//		}
+//		
+//		return dto.getSysCorporateSalesSlipId();
+//	}
+	
+
+	private List<ExtendCorporateSalesSlipDTO> getCorporateSaleSlipByOrderNo(String orderNo) throws DaoException {
+		ExtendCorporateSalesSlipDTO dto = new ExtendCorporateSalesSlipDTO();
+		dto.setOrderNo(orderNo);
+			
+		List<ExtendCorporateSalesSlipDTO> list = new CorporateSaleDAO().getCorporateSaleSlipByOrderNo(orderNo);
+		
+		if (list == null) {
+			
+			return null;
+		}
+		
+		return list;
 	}
 
 

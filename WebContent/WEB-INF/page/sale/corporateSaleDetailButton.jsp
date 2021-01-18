@@ -1845,7 +1845,7 @@ document.addEventListener("readystatechange", function(){
 			<fieldset class="delivery_area">
 			<legend>配送情報</legend>
 				<table>
-					<nested:hidden property="slipNo" />
+					<!-- <nested:hidden property="slipNo" /> -->
 					<nested:hidden property="shipmentDate"/>
 					<tr>
 						<td>運送会社</td>
@@ -1913,6 +1913,13 @@ document.addEventListener("readystatechange", function(){
 				<legend>送り状記載事項</legend>
 					<div class="senderMemo">
 						<nested:textarea rows="3" cols="60" styleClass="w290 ime_on" property="senderRemarks"/>
+					</div>
+			</fieldset>
+			
+			<fieldset class="memo_area">
+				<legend>送り状番号</legend>
+					<div class="senderMemo">
+						<nested:textarea rows="3" cols="60" styleClass="w290 ime_on" property="slipNo"/>
 					</div>
 			</fieldset>
 		</div>

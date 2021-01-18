@@ -410,7 +410,7 @@ public class SaleAction extends AppBaseAction{
 		try{
 			ExportPickListService exportPickListService = new ExportPickListService();
 
-			exportPickListService.pickList(response,form.getSalesSlipList());
+			exportPickListService.pickList(request, response,form.getSalesSlipList());
 
 		}catch (Exception e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

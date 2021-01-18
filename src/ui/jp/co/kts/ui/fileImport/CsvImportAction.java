@@ -17,6 +17,7 @@ import jp.co.kts.app.common.entity.CsvImportDTO;
 import jp.co.kts.app.input.entity.CsvInputDTO;
 import jp.co.kts.app.output.entity.ErrorDTO;
 import jp.co.kts.app.output.entity.RegistryMessageDTO;
+import jp.co.kts.service.fileImport.CsvDirectImportService;
 import jp.co.kts.service.fileImport.CsvImportService;
 import jp.co.kts.service.mst.CorporationService;
 import jp.co.kts.service.sale.SaleCsvService;
@@ -273,7 +274,14 @@ public class CsvImportAction extends AppBaseAction{
 		}
 
 		//csv_importテーブルへ格納とimportDTOへ格納
-		form.setCsvErrorDTO(new CsvImportService().importFile(form.getCorporationId(), form.getFileUp(), form.getCsvImportList()));
+		if (form.getDeliveryCompanyId() == 0) {
+			// 助ネコ CSV
+			form.setCsvErrorDTO(new CsvImportService().importFile(form.getCorporationId(), form.getFileUp(), form.getCsvImportList()));
+		}
+		else {
+			// Other delivery csv
+			form.setCsvErrorDTO(new CsvDirectImportService().importFile(form.getDeliveryCompanyId(), form.getCorporationId(), form.getFileUp(), form.getCsvImportList()));
+		}
 
 		if (!form.getCsvErrorDTO().isSuccess()) {
 			rollback();
@@ -283,7 +291,13 @@ public class CsvImportAction extends AppBaseAction{
 
 		//売上伝票の上書
 		SaleCsvService saleCsvService = new SaleCsvService();
-		form.setCsvErrorDTO(saleCsvService.saveSlipNo(form.getCsvImportList()));
+		if (form.getDeliveryCompanyId() == 0) {
+			form.setCsvErrorDTO(saleCsvService.saveSlipNo(form.getCsvImportList()));
+		}
+		else {
+			// other delivery company
+			form.setCsvErrorDTO(saleCsvService.saveSlipNoOnly(form.getCsvImportList()));
+		}
 		form.setTrueCount(form.getCsvErrorDTO().getTrueCount());
 
 		//仕様変更

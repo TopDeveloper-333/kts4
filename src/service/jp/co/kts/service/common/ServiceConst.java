@@ -37,6 +37,8 @@ public class ServiceConst {
 	 */
 	public static final String ITEM_LIST_TEMPLATE_PATH = "/excelTemplate/itemListTemplate.xls";
 
+	// added by wahaha
+	public static final String ITEM_KEEPLIST_TEMPLATE_PATH = "/excelTemplate/itemKeepListTemplate.xls";
 	/**
 	 * 在庫一覧：商品情報のダウンロードテンプレートパス
 	 */

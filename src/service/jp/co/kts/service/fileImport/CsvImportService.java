@@ -1272,12 +1272,12 @@ public class CsvImportService {
 			}
 
 			//廃盤または受注生産の時キープを追加しないようにするため、仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする。
-			if (csvItemList.get(i).getSpecMemo().indexOf("廃盤") != -1) {
+			if ((csvItemList.get(i).getSpecMemo() != null) && (csvItemList.get(i).getSpecMemo().indexOf("廃盤") != -1)) {
 				String itemCode = csvItemList.get(i).getItemCode();
 				errorMessageGreenMap.put(itemCode, "品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
 				continue;
 			}
-			if (csvItemList.get(i).getSpecMemo().indexOf("受注生産") != -1) {
+			if ((csvItemList.get(i).getSpecMemo() != null) && (csvItemList.get(i).getSpecMemo().indexOf("受注生産") != -1)) {
 				String itemCode = csvItemList.get(i).getItemCode();
 				errorMessageYellowMap.put(itemCode, "品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
 				continue;
@@ -1367,12 +1367,12 @@ public class CsvImportService {
 				for (int j = 0; j < secondItemList.size(); j++) {
 
 					//廃盤または受注生産の時キープを追加しないようにするため仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
-					if (secondItemList.get(j).getSpecMemo().indexOf("廃盤") != -1) {
+					if ((secondItemList.get(j).getSpecMemo() != null) && (secondItemList.get(j).getSpecMemo().indexOf("廃盤") != -1)) {
 						String itemCode = itemDAO.getItemCode(secondItemList.get(j).getFormSysItemId());
 						errorMessageGreenMap.put(itemCode, "品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
 						continue;
 					}
-					if (secondItemList.get(j).getSpecMemo().indexOf("受注生産") != -1) {
+					if ((secondItemList.get(j).getSpecMemo() != null) && (secondItemList.get(j).getSpecMemo().indexOf("受注生産") != -1)) {
 						String itemCode = itemDAO.getItemCode(secondItemList.get(j).getFormSysItemId());
 						errorMessageYellowMap.put(itemCode, "品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
 						continue;
@@ -1423,12 +1423,12 @@ public class CsvImportService {
 						for (int k = 0; k < thirdItemList.size(); k++) {
 
 							//廃盤または受注生産の時キープを追加しないようにするため仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
-							if (thirdItemList.get(k).getSpecMemo().indexOf("廃盤") != -1) {
+							if ((thirdItemList.get(k).getSpecMemo() != null) && (thirdItemList.get(k).getSpecMemo().indexOf("廃盤") != -1)) {
 								String itemCode = itemDAO.getItemCode(thirdItemList.get(k).getFormSysItemId());
 								errorMessageGreenMap.put(itemCode, "品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
 								continue;
 							}
-							if (thirdItemList.get(k).getSpecMemo().indexOf("受注生産") != -1) {
+							if ((thirdItemList.get(k).getSpecMemo() != null) && (thirdItemList.get(k).getSpecMemo().indexOf("受注生産") != -1)) {
 								String itemCode = itemDAO.getItemCode(thirdItemList.get(k).getFormSysItemId());
 								errorMessageYellowMap.put(itemCode, "品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
 								continue;
@@ -1478,12 +1478,12 @@ public class CsvImportService {
 								for (int l = 0; l < fourthItemList.size(); l++) {
 
 									//廃盤または受注生産の時キープを追加しないようにするため仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
-									if (fourthItemList.get(l).getSpecMemo().indexOf("廃盤") != -1) {
+									if ((fourthItemList.get(l).getSpecMemo() != null) && (fourthItemList.get(l).getSpecMemo().indexOf("廃盤") != -1)) {
 										String itemCode = itemDAO.getItemCode(fourthItemList.get(l).getFormSysItemId());
 										errorMessageGreenMap.put(itemCode, "品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
 										continue;
 									}
-									if (fourthItemList.get(l).getSpecMemo().indexOf("受注生産") != -1) {
+									if ((fourthItemList.get(l).getSpecMemo() != null) && (fourthItemList.get(l).getSpecMemo().indexOf("受注生産") != -1)) {
 										String itemCode = itemDAO.getItemCode(fourthItemList.get(l).getFormSysItemId());
 										errorMessageYellowMap.put(itemCode, "品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
 										continue;
@@ -1534,12 +1534,12 @@ public class CsvImportService {
 											long fifthItemFormSysItemId = fifthItemList.get(m).getFormSysItemId();
 
 											//廃盤または受注生産の時キープを追加しないようにするため、仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
-											if (fifthItemList.get(m).getSpecMemo().indexOf("廃盤") != -1) {
+											if ((fifthItemList.get(m).getSpecMemo() != null) && (fifthItemList.get(m).getSpecMemo().indexOf("廃盤") != -1)) {
 												String itemCode = itemDAO.getItemCode(fifthItemFormSysItemId);
 												errorMessageGreenMap.put(itemCode, "品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
 												continue;
 											}
-											if (fifthItemList.get(m).getSpecMemo().indexOf("受注生産") != -1) {
+											if ((fifthItemList.get(m).getSpecMemo() != null) && (fifthItemList.get(m).getSpecMemo().indexOf("受注生産") != -1)) {
 												String itemCode = itemDAO.getItemCode(fifthItemFormSysItemId);
 												errorMessageYellowMap.put(itemCode, "品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
 												continue;

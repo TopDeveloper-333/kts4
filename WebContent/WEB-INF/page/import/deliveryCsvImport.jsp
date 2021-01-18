@@ -49,7 +49,8 @@ $(function () {
 
 	$(".importButton").click(function () {
 
-		if ($("#filupload_01").val() == "" || $("#select_box").val() == "0") {
+		if ($("#filupload_01").val() == "" || 
+				($("#select_box").val() == "0" && $("#deliveryCompanyId").val() == "0" )) {
 
 			alert("法人とファイルを選択してください。");
 			return;
@@ -199,6 +200,16 @@ $(function () {
 			<html:option value="0">　　　　　法人を選択してください　　　　　</html:option>
 							<nested:optionsCollection property="corporationList" label="corporationNm" value="sysCorporationId" />
 							</nested:select></p>
+
+			<!-- Added by Wahaha -->
+			<p class="import_message">※助ネコをご利用でない場合は、配送会社名をご選択ください</p> 
+			<p class="import_elements">
+				<nested:select property="deliveryCompanyId" styleId="deliveryCompanyId">
+					<html:option value="0">配送会社名</html:option>
+					<nested:optionsCollection property="deliveryCompanyList" label="companyName" value="companyId" />
+				</nested:select>
+			</p>	
+
 			<p class="import_elements">
 			<nested:file property="fileUp" styleId="filupload_01" styleClass="dn" onchange="txtfilename_01.value = this.value;"/>
 				<input type="text" id="txtfilename_01" class="input_fileupload"  size="25" disabled="disabled"/>

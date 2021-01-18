@@ -848,7 +848,9 @@ public class ItemAction extends AppBaseAction{
 				filePath = this.getServlet().getServletContext().getRealPath(ServiceConst.ITEM_ALL_LIST_TEMPLATE_PATH_NOT_AUTH);
 			}
 			break;
-
+		case WebConst.DOWNLOAD_TYPE_CODE6:
+			filePath = this.getServlet().getServletContext().getRealPath(ServiceConst.ITEM_KEEPLIST_TEMPLATE_PATH);
+			break;
 		}
 
 		// ファイルを読み込みます。
@@ -907,6 +909,10 @@ public class ItemAction extends AppBaseAction{
 			workBook = exportItemListService.getExportPriceInfoList(form.getSysItemIdList(), workBook, authInfo, sheetNo);
 
 			fname = "新在庫情報_" + date + ".xls";
+			break;
+		case WebConst.DOWNLOAD_TYPE_CODE6:
+			workBook = exportItemListService.getKeepOrderList(form.getSearchItemDTO(), workBook);
+			fname = "受注_" + date + ".xls";
 			break;
 		}
 

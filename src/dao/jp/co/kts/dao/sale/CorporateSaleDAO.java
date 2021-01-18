@@ -62,6 +62,16 @@ public class CorporateSaleDAO extends BaseDAO {
 				ResultSetHandlerFactory.getNameMatchBeanRowHandler(ExtendCorporateSalesSlipDTO.class));
 	}
 
+	public List<ExtendCorporateSalesSlipDTO> getCorporateSaleSlipByOrderNo(String orderNo) throws DaoException {
+
+		SQLParameters parameters = new SQLParameters();
+		parameters.addParameter("orderNo", orderNo);
+
+		return selectList("SEL_CORP_SALES_SLIP_BY_ORDERNO", parameters,
+				ResultSetHandlerFactory
+						.getNameMatchBeanRowHandler(ExtendCorporateSalesSlipDTO.class));
+	}
+
 	public int updateCorporateSalesSlip(ExtendCorporateSalesSlipDTO dto) throws DaoException, ParseException {
 
 		SQLParameters parameters = new SQLParameters();

@@ -715,6 +715,9 @@ public class ForeignOrderService {
 			for (ExtendForeignOrderItemDTO dto : itemList) {
 
 				ExtendArrivalScheduleDTO arrivalScheduleDTO = dao.getForeignOrderArrivalScheduleList(searchDTO, sysForeignSlipId, dto);
+				
+				if (arrivalScheduleDTO == null) 
+					continue;
 
 				if (arrivalScheduleDTO.getArrivalNum() < dto.getOrderNum() || arrivalScheduleDTO.getArrivalFlag().equals("0")) {
 					dto.setArrivalStatus(PROCESSING_VAL1);

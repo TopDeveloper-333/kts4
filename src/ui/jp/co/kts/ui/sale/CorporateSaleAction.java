@@ -49,6 +49,7 @@ import jp.co.kts.service.fileExport.ExportCorporateBillService;
 import jp.co.kts.service.fileExport.ExportCorporateEstimateService;
 import jp.co.kts.service.fileExport.ExportCorporateOrderAcceptanceService;
 import jp.co.kts.service.fileExport.ExportCorporatePickListService;
+import jp.co.kts.service.fileExport.ExportCorporatePickListServiceNew;
 import jp.co.kts.service.fileExport.ExportCorporateSaleListService;
 import jp.co.kts.service.fileExport.ExportCorporateSaleSummalyService;
 import jp.co.kts.service.fileExport.ExportCsvService;
@@ -1006,15 +1007,20 @@ public class CorporateSaleAction extends AppBaseAction {
 	protected ActionForward exportCorporatePickList(AppActionMapping appMapping, CorporateSaleForm form,
             HttpServletRequest request, HttpServletResponse response) throws Exception {
 
+		// Modified by Wahaha
+		System.out.println("exportCorporatePickList: START -----------");
+		
 		// 作成対象がない場合エラー返却
 		if (form.getCorporateSalesSlipList() == null || form.getCorporateSalesSlipList().size() <= 0) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			return null;
 		}
 
+		System.out.println("exportCorporatePickList: getCorporateSalesSlipList() DONE-----------");
 		try{
-			ExportCorporatePickListService exportPickListService = new ExportCorporatePickListService();
-			exportPickListService.pickList(response,form.getCorporateSalesSlipList(), form.getCorporateSaleSearchDTO(), form.getPdfPattern());
+			// Modified by Wahaha
+			ExportCorporatePickListServiceNew exportPickListService = new ExportCorporatePickListServiceNew();
+			exportPickListService.pickList(request, response,form.getCorporateSalesSlipList(), form.getCorporateSaleSearchDTO(), form.getPdfPattern());
 
 		}catch (Exception e) {
 
@@ -1022,10 +1028,14 @@ public class CorporateSaleAction extends AppBaseAction {
 			return null;
 		}
 
+		System.out.println("exportCorporatePickList: ExportCorporatePickListService.pickList() DONE -----------");
+		
 		if (form.getPdfPattern().equals("0")) {
 			CorporateSaleDisplayService corporateSaleDisplayService = new CorporateSaleDisplayService();
 			corporateSaleDisplayService.updatePickFlg(form.getCorporateSalesSlipList(), form.getCorporateSaleSearchDTO());
 		}
+
+		System.out.println("exportCorporatePickList: CorporateSaleDisplayService.updatePickFlg() DONE -----------");		
 		return null;
 	}
 

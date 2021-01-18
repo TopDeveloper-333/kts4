@@ -21,6 +21,7 @@ import jp.co.kts.app.extendCommon.entity.ExtendArrivalScheduleDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendDomesticManageDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendForeignOrderDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendForeignOrderItemDTO;
+import jp.co.kts.app.extendCommon.entity.ExtendKeepDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendWarehouseStockDTO;
 import jp.co.kts.app.extendCommon.entity.ItemCostPriceDTO;
 import jp.co.kts.app.output.entity.ResultItemSearchDTO;
@@ -428,6 +429,54 @@ public class ExportItemListService extends FileExportExcelService implements Aut
 		return workBook;
 	}
 
+	// added by wahaha
+	/**
+	 * 在庫一覧：受注情報のエクセル出力します
+	 *
+	 * @param SysItemIdDTO
+	 * @param workBook
+	 * @return
+	 * @throws DaoException
+	 */
+	public HSSFWorkbook getKeepOrderList(SearchItemDTO searchItemDTO, HSSFWorkbook workBook) throws DaoException {
+
+		HSSFSheet sheet = workBook.getSheetAt(0);
+		workBook.setSheetName(0, "受注情報");
+		
+		ItemDAO itemDAO = new ItemDAO();		
+		List<ResultItemSearchDTO> mstItemList = itemDAO.getExportItemSearchList(searchItemDTO);
+		
+		rowIdx = 1;
+		for(ResultItemSearchDTO dto : mstItemList) {		
+			List<ExtendKeepDTO> getKeepList = new ArrayList<>();
+			getKeepList.addAll(itemDAO.getKeepList(dto.getSysItemId()));
+			
+			if (!getKeepList.isEmpty()) {				
+				for (int n = 0; n < getKeepList.size(); n++) {
+
+					colIdx = 0;
+
+					//行の設定
+					row = sheet.getRow(rowIdx);
+					if (row == null) {
+						row = sheet.createRow(rowIdx);
+					}
+					row.setHeightInPoints(16.5F);
+
+					callCreateCell(row, colIdx++).setCellValue(castRichTextString(dto.getItemCode()));
+					callCreateCell(row, colIdx++).setCellValue(getKeepList.get(n).getOrderNo());
+					callCreateCell(row, colIdx++).setCellValue(getKeepList.get(n).getKeepNum());
+					callCreateCell(row, colIdx++).setCellValue(getKeepList.get(n).getRemarks());
+
+					row = null;
+					rowIdx++;
+				}				
+			}
+		}
+
+		return workBook;
+	}
+	
 	public ItemCostPriceDTO setItemCostPriceInfo(List<ItemCostPriceDTO> itemCost, List<ItemCostPriceDTO> itemPrice) {
 		ItemCostPriceDTO dto = new ItemCostPriceDTO();
 
