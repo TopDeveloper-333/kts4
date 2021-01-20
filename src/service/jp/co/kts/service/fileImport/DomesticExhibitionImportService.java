@@ -273,27 +273,36 @@ public class DomesticExhibitionImportService {
 			strItemRateOver,String strPostage, String openPriceFlg, String strPurchasingCost) throws Exception{
 		ExtendDomesticManageDTO dto = new ExtendDomesticManageDTO();
 
+		// HERE I AM
 		double listPrice = 0;
 		double itemRateOver = 0;
 		double postage = 0;
 		double purchasingCost = 0;
-		dto.setOpenPriceFlg("on");
-		if (StringUtils.isBlank(openPriceFlg)|| (!openPriceFlg.equals(OPEN_PRICE_FLG_ON_VALUE)&& !openPriceFlg.equals(OPEN_PRICE_FLG_ON_VALUE_KAN))){
-			if (!GenericValidator.isBlankOrNull(strListPrice)) {
-				listPrice = Long.valueOf(strListPrice);
-			}
+		
+		if (!GenericValidator.isBlankOrNull(strListPrice)) {
+			listPrice = Long.valueOf(strListPrice);
+		}
 //			if (!strItemRateOver.isEmpty()) {
-			if (!GenericValidator.isBlankOrNull(strItemRateOver)) {
-				itemRateOver = Long.valueOf(strItemRateOver);
-			}
+		if (!GenericValidator.isBlankOrNull(strItemRateOver)) {
+			itemRateOver = Long.valueOf(strItemRateOver);
+		}
 //			if (!strPostage.isEmpty()) {
-			if (!GenericValidator.isBlankOrNull(strPostage)) {
-				postage = Long.valueOf(strPostage);
-			}
+		if (!GenericValidator.isBlankOrNull(strPostage)) {
+			postage = Long.valueOf(strPostage);
+		}
 
+		if (StringUtils.isBlank(openPriceFlg)|| (!openPriceFlg.equals(OPEN_PRICE_FLG_ON_VALUE)&& !openPriceFlg.equals(OPEN_PRICE_FLG_ON_VALUE_KAN))){
 			dto.setOpenPriceFlg("off");
 			//仕入原価計算
 			purchasingCost = listPrice * (itemRateOver * RATE_OVER_PERCENT) + postage;
+		}
+		else {
+			dto.setOpenPriceFlg("on");
+			
+			if (!GenericValidator.isBlankOrNull(strPurchasingCost)) {
+				purchasingCost = Long.valueOf(strPurchasingCost);
+			}
+			
 		}
 
 		//返却用DTOにセット
