@@ -614,8 +614,8 @@ public class ExportPickListService {
 		pdfContentByte.setTextMatrix(100, 630);
 
 		// 表示する文字列の設定
-		if (slipDto.getOrderRemarks() != null)
-			pdfContentByte.showText(slipDto.getOrderRemarks());
+		if (slipDto.getSlipMemo() != null)
+			pdfContentByte.showText(replaceNewline(slipDto.getSlipMemo()));
 		else
 			pdfContentByte.showText("");
 		
