@@ -593,7 +593,8 @@ public class ExportCorporatePickListServiceNew {
 					if (targetItemDto.getItemCode() == null)
 						continue;
 
-					if (targetItemDto.getItemCode().equals(selectedItemDto.getItemCode())) {
+					if (targetItemDto.getItemCode().equals(selectedItemDto.getItemCode()) &&
+							targetItemDto.getItemNm().equals(selectedItemDto.getItemNm())) {
 						targetItemDto.setOrderNum(targetItemDto.getOrderNum() + selectedItemDto.getOrderNum());
 						bFound = true;
 						break;
