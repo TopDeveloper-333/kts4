@@ -606,11 +606,11 @@ public class ExportCorporatePickListServiceNew {
 				{
 					ExtendCorporateSalesItemDTO newItemDto = new ExtendCorporateSalesItemDTO();
 					newItemDto.setItemCode(selectedItemDto.getItemCode());
+					newItemDto.setItemNm(selectedItemDto.getItemNm());
 					newItemDto.setOrderNo(selectedItemDto.getOrderNo());
-					newItemDto.setItemCode(selectedItemDto.getItemCode());
+					newItemDto.setOrderNum(selectedItemDto.getOrderNum());
 					newItemDto.setWarehouseNm(selectedItemDto.getWarehouseNm());
 					newItemDto.setLocationNo(selectedItemDto.getLocationNo());
-					newItemDto.setItemNm(selectedItemDto.getItemNm());
 					
 					sortedPickItemList.add(newItemDto);
 				}

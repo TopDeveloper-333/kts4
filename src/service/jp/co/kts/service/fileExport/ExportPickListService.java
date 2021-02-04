@@ -694,7 +694,8 @@ public class ExportPickListService {
 					if (targetItemDto.getItemCode() == null)
 						continue;
 					
-					if (targetItemDto.getItemCode().equals(selectedItemDto.getItemCode())) {
+					if (targetItemDto.getItemCode().equals(selectedItemDto.getItemCode()) &&
+							targetItemDto.getItemNm().equals(selectedItemDto.getItemNm())) {
 						targetItemDto.setOrderNum(targetItemDto.getOrderNum() + selectedItemDto.getOrderNum());
 						bFound = true;
 						break;
@@ -705,11 +706,11 @@ public class ExportPickListService {
 				{
 					ExtendSalesItemDTO newItemDto = new ExtendSalesItemDTO();
 					newItemDto.setItemCode(selectedItemDto.getItemCode());
+					newItemDto.setItemNm(selectedItemDto.getItemNm());
 					newItemDto.setOrderNo(selectedItemDto.getOrderNo());
-					newItemDto.setItemCode(selectedItemDto.getItemCode());
+					newItemDto.setOrderNum(selectedItemDto.getOrderNum());
 					newItemDto.setWarehouseNm(selectedItemDto.getWarehouseNm());
 					newItemDto.setLocationNo(selectedItemDto.getLocationNo());
-					newItemDto.setItemNm(selectedItemDto.getItemNm());
 					
 					sortedPickItemList.add(newItemDto);
 				}
