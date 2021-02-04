@@ -703,7 +703,15 @@ public class ExportPickListService {
 				
 				if (bFound == false) 
 				{
-					sortedPickItemList.add(selectedItemDto);
+					ExtendSalesItemDTO newItemDto = new ExtendSalesItemDTO();
+					newItemDto.setItemCode(selectedItemDto.getItemCode());
+					newItemDto.setOrderNo(selectedItemDto.getOrderNo());
+					newItemDto.setItemCode(selectedItemDto.getItemCode());
+					newItemDto.setWarehouseNm(selectedItemDto.getWarehouseNm());
+					newItemDto.setLocationNo(selectedItemDto.getLocationNo());
+					newItemDto.setItemNm(selectedItemDto.getItemNm());
+					
+					sortedPickItemList.add(newItemDto);
 				}
 			}
 		}

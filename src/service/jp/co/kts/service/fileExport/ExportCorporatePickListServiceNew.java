@@ -43,6 +43,7 @@ import jp.co.keyaki.cleave.common.util.StringUtil;
 import jp.co.kts.app.extendCommon.entity.ExtendCorporateSalesItemDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendCorporateSalesSlipDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendMstClientDTO;
+import jp.co.kts.app.extendCommon.entity.ExtendSalesItemDTO;
 import jp.co.kts.app.output.entity.StoreDTO;
 import jp.co.kts.app.search.entity.CorporateSaleSearchDTO;
 import jp.co.kts.service.mst.ClientService;
@@ -603,7 +604,15 @@ public class ExportCorporatePickListServiceNew {
 				
 				if (bFound == false) 
 				{
-					sortedPickItemList.add(selectedItemDto);
+					ExtendCorporateSalesItemDTO newItemDto = new ExtendCorporateSalesItemDTO();
+					newItemDto.setItemCode(selectedItemDto.getItemCode());
+					newItemDto.setOrderNo(selectedItemDto.getOrderNo());
+					newItemDto.setItemCode(selectedItemDto.getItemCode());
+					newItemDto.setWarehouseNm(selectedItemDto.getWarehouseNm());
+					newItemDto.setLocationNo(selectedItemDto.getLocationNo());
+					newItemDto.setItemNm(selectedItemDto.getItemNm());
+					
+					sortedPickItemList.add(newItemDto);
 				}
 			}
 		}
