@@ -183,7 +183,11 @@ public class ExportCsvService {
 
 			//品名５
 			out.print(",");
-			out.print(itemNm[4]);
+			// out.print(itemNm[4]);			// HERE order NO
+			if (dto.getOrderNo() == null)
+				out.print("");
+			else
+				out.print(dto.getOrderNo());
 
 			//出荷個数
 			out.print(",");
@@ -550,7 +554,11 @@ public class ExportCsvService {
 
 			//記事 全角/半角 16文字/32文字
 			out.print(",");
-			out.print("");
+			
+			if (dto.getOrderNo() == null)
+				out.print("");					// HERE ORDERNO for yamato
+			else
+				out.print(dto.getOrderNo());		// 
 
 			//代引きの物は代引き金額を設定
 			if (StringUtils.equals(WebConst.INVOICE_CLASSIFICATION_MAP_B2.get(dto.getInvoiceClassification()),"2")) {

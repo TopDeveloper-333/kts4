@@ -509,6 +509,20 @@
 			<forward name="success" path="/WEB-INF/page/import/csvKeepImport.jsp" />
 		</action>
 
+		<action path="/initRemoveKeepCsvImport" type="jp.co.kts.ui.fileImport.CsvImportAction"
+			name="csvImportForm" scope="session" validate="false">
+			<set-property property="nonSecureAction" value="true" />
+			<set-property property="tokenType" value="nocheck" />
+			<forward name="success" path="/WEB-INF/page/import/csvKeepRemoveImport.jsp" />
+		</action>
+
+		<action path="/keepRemoveCsvImport" type="jp.co.kts.ui.fileImport.CsvImportAction"
+			name="csvImportForm" scope="session" validate="false">
+			<set-property property="nonSecureAction" value="false" />
+			<set-property property="tokenType" value="nocheck" />
+			<forward name="failure" path="/WEB-INF/page/import/csvKeepRemoveImport.jsp" />
+			<forward name="success" path="/WEB-INF/page/import/csvKeepRemoveImport.jsp" />
+		</action>
 
 		<!-- ============== マスタ系 =============== -->
 

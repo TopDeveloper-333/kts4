@@ -6157,6 +6157,8 @@
         DELETE_FLAG = '0'
     AND
         ARRIVAL_FLAG = '0'
+   	order by 
+   		arrival_schedule_date;
     </sql-template>
 
 	<!-- 在庫一覧ダウンロード -->

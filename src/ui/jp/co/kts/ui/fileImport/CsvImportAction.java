@@ -74,13 +74,18 @@ public class CsvImportAction extends AppBaseAction{
 		} else if ("/initKeepCsvImport".equals(appMapping.getPath())) {
 			return initKeepCsvImport(appMapping, form, request);
 		//助ネコインポート：助ネコインポート：在庫数キープ取込（単一ファイル）
+		}else if ("/initRemoveKeepCsvImport".equals(appMapping.getPath())) {
+			return initRemoveKeepCsvImport(appMapping, form, request);		
 		} else if ("/keepCsvImport".equals(appMapping.getPath())) {
 			return keepCsvImport(appMapping, form, request);
+		//助ネコインポート：助ネコインポート：在庫数キープ取込（複数ファイル）
+		} else if ("/keepRemoveCsvImport".equals(appMapping.getPath())) {
+			return keepRemoveCsvImport(appMapping, form, request);
 		//助ネコインポート：助ネコインポート：在庫数キープ取込（複数ファイル）
 		}else if ("/keepCsvListImport".equals(appMapping.getPath())) {
 			return KeepCsvListImport(appMapping, form, request);
 		}
-
+		
 		return appMapping.findForward(StrutsBaseConst.GLOBAL_FORWARD_ERROR);
 	}
 
@@ -717,6 +722,58 @@ public class CsvImportAction extends AppBaseAction{
 		return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_SUCCESS);
 
 	}
+
+	private ActionForward initRemoveKeepCsvImport(AppActionMapping appMapping,
+			CsvImportForm form, HttpServletRequest request) throws Exception {
+
+		CsvImportService csvImportService = new CsvImportService();
+		form.setAlertType("0");
+		form.setCsvInputList(csvImportService.initCsvInputList());
+
+		return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_SUCCESS);
+
+	}
+	
+	protected ActionForward keepRemoveCsvImport(AppActionMapping appMapping, CsvImportForm form,
+            HttpServletRequest request) throws Exception {
+		
+		RegistryMessageDTO messageDTO = new RegistryMessageDTO();
+
+		//エラーメッセージ初期化
+		form.setCsvErrorDTO(new ErrorDTO());
+		form.setCsvErrorList(new ArrayList<ErrorDTO>());
+
+		CsvImportService service = new CsvImportService();
+
+		begin();
+
+		form.setCsvErrorDTO(new ErrorDTO());
+
+		//CSVの情報をリストに格納
+		form.setCsvErrorDTO(service.getCSVImportRecords(form.getFileUp(), form.getCsvImportList()));
+
+		// CSVファイルから在庫数のキープを更新
+		if (form.getCsvErrorDTO().isSuccess()) {
+			form.setCsvErrorDTO(service.csvToRemoveKeeps(form.getCsvImportList()));
+			form.setTrueCount(form.getCsvErrorDTO().getTrueCount());
+		}
+
+		if (!form.getCsvErrorDTO().isSuccess()) {
+			messageDTO.setMessageFlg("1");
+			messageDTO.setMessage("インポートに失敗しました。");
+			form.setRegistryDto(messageDTO);
+			rollback();
+			return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_FAILURE);
+		}
+
+		messageDTO.setMessageFlg("0");
+		messageDTO.setMessage("インポートが完了しました。");
+		form.setRegistryDto(messageDTO);
+		commit();
+		
+		form.setAlertType(WebConst.ALERT_TYPE_REGIST);
+		return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_SUCCESS);
+	}	
 
 	/**
 	 * 助ネコインポート：助ネコインポート：在庫数キープ取込（単一ファイル）

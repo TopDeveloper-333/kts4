@@ -1,5 +1,6 @@
 package jp.co.kts.service.fileImport;
 
+import java.io.Console;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -258,7 +259,7 @@ public class CsvImportService {
 		BeanUtils.setProperty(csvImportDTO,"shipmentPlanDate", array[i++]);
 		BeanUtils.setProperty(csvImportDTO,"transportCorporationSystem", array[i++]);
 		BeanUtils.setProperty(csvImportDTO,"slipMemo", array[i++]);
-		BeanUtils.setProperty(csvImportDTO,"lastStatus", array[i++]);
+		BeanUtils.setProperty(csvImportDTO,"lastStatus", array[i++]);			//BP
 		BeanUtils.setProperty(csvImportDTO,"reservationStatus", array[i++]);
 		BeanUtils.setProperty(csvImportDTO,"combineSource", array[i++]);
 		BeanUtils.setProperty(csvImportDTO,"combinePoint", array[i++]);
@@ -274,7 +275,7 @@ public class CsvImportService {
 		BeanUtils.setProperty(csvImportDTO,"unpaidPrice", array[i++]);
 		BeanUtils.setProperty(csvImportDTO,"invoiceArticle", array[i++]);
 		BeanUtils.setProperty(csvImportDTO,"slipManagementNo", array[i++]);
-		BeanUtils.setProperty(csvImportDTO,"disposalRoute", array[i++]);
+		BeanUtils.setProperty(csvImportDTO,"disposalRoute", array[i++]);		// cf
 		BeanUtils.setProperty(csvImportDTO,"disposalDate", array[i++]);
 		BeanUtils.setProperty(csvImportDTO,"ownCompanyCd", array[i++]);
 		BeanUtils.setProperty(csvImportDTO,"buyCount", array[i++]);
@@ -910,6 +911,51 @@ public class CsvImportService {
 	}
 
 	/**
+	 * @param fileUp
+	 * @param csvImportList
+	 * @return
+	 * @throws Exception
+	 */
+	public ErrorDTO getCSVImportRecords (FormFile fileUp, List<CsvImportDTO> csvImportList) throws Exception {
+
+		InputStream inputStream = fileUp.getInputStream();
+		ErrorDTO csvErrorDTO = new ErrorDTO();
+
+		if (StringUtils.isNotEmpty(exsistKeepFileNm(fileUp.getFileName()))) {
+			
+			csvErrorDTO.setSuccess(false);
+			csvErrorDTO.setFileName("「" + fileUp.getFileName() + "」はすでにインポート済みファイルです。");
+			return csvErrorDTO;
+		}
+
+		CsvConfig config = new CsvConfig();
+		CsvReader reader = new CsvReader(config, true);
+		CsvContext context = reader.parse(inputStream);
+
+		for (CsvRecord csvRecord : context) {
+
+			String[] csvLineArray = csvRecord.toArray();
+
+			CsvImportDTO csvImportDTO = new CsvImportDTO();
+			csvImportDTO = setCsvImportList(csvLineArray);
+
+			csvImportDTO.setOrderRemarksMemo(csvImportDTO.getOrderMemo() + "\r\n" + csvImportDTO.getOrderRemarks());
+
+			csvImportDTO.setFileNm(fileUp.getFileName());
+
+			csvImportDTO.setSysImportId((new SequenceDAO().getMaxSysKeepImportId() + 1));
+
+			//ファイル名から法人IDを取得
+			csvImportDTO.setSysCorporationId(getCorporationId(fileUp.getFileName()));
+
+			//伝票用Listに格納
+			csvImportList.add(csvImportDTO);
+		}
+		return csvErrorDTO;
+	}
+
+
+	/**
 	 * インポートファイルが既に存在するか確認(在庫数キープ用)
 	 * @param fileNm
 	 * @return
@@ -931,7 +977,748 @@ public class CsvImportService {
 
 		return dto.getFileNm();
 	}
+	
+	private boolean isSkipSetItem(ExtendKeepCsvImportDTO dto, Map<String, String> errorMessageGreenMap, Map<String, String> errorMessageYellowMap ) throws Exception {
+		ItemDAO itemDAO = new ItemDAO();
+		
+		if ((dto.getSpecMemo() != null) && (dto.getSpecMemo().indexOf("廃盤") != -1)) {
+			String itemCode = dto.getItemCode();
+			String orderNo1 = dto.getOrderNo();
+			
+			List<ExtendSetItemDTO> parentList = itemDAO.getParentSetItemList(dto.getSysItemId());
+			if (parentList != null) {
+				System.out.println("Parent Item's id, code " + parentList.get(0).getSysItemId() + ":" + parentList.get(0).getItemCode());
+				errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」: セット品番「" + parentList.get(0).getItemCode() +
+						"」 品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+			}
+			else {
+				errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」: 品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+			}
+			return true;
+		}
+		if ((dto.getSpecMemo() != null) && (dto.getSpecMemo().indexOf("受注生産") != -1)) {
+			String itemCode = dto.getItemCode();
+			String orderNo1 = dto.getOrderNo();
+			errorMessageYellowMap.put(itemCode, "注文番号「" + orderNo1 + "」: 品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
+			return true;
+		}		
+		
+		return false;
+	}
 
+	private boolean isSkipSetItem(ExtendSetItemDTO dto, ExtendKeepCsvImportDTO csvImportDto, Map<String, String> errorMessageGreenMap, Map<String, String> errorMessageYellowMap ) throws Exception {
+		ItemDAO itemDAO = new ItemDAO();
+		
+		if ((dto.getSpecMemo() != null) && (dto.getSpecMemo().indexOf("廃盤") != -1)) {
+			String itemCode = itemDAO.getItemCode(dto.getFormSysItemId());
+			String orderNo1 = csvImportDto.getOrderNo();
+			
+			List<ExtendSetItemDTO> parentList = itemDAO.getParentSetItemList(dto.getSysItemId());
+			if (parentList != null) {
+				System.out.println("Parent Item's id, code " + parentList.get(0).getSysItemId() + ":" + parentList.get(0).getItemCode());
+				errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」: セット品番「" + parentList.get(0).getItemCode() +
+						"」 品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+			}
+			else {
+				errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」: 品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+			}
+			return true;
+		}
+		if ((dto.getSpecMemo() != null) && (dto.getSpecMemo().indexOf("受注生産") != -1)) {
+			String itemCode = itemDAO.getItemCode(dto.getFormSysItemId());
+			String orderNo1 = csvImportDto.getOrderNo();
+			errorMessageYellowMap.put(itemCode, "注文番号「" + orderNo1 + "」: 品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
+			return true;
+		}
+		
+		return false;
+	}
+
+	// added by wahaha
+	public ErrorDTO csvToRemoveKeeps(List<CsvImportDTO> csvImportList) throws Exception {
+
+		ErrorDTO csvErrorDTO = new ErrorDTO();
+		ItemDAO itemDAO = new ItemDAO();
+		
+		//警告文表示のためのリスト、マップ
+		Map<String, String> errorMessageGreenMap = new LinkedHashMap<>();
+		Map<String, String> errorMessageYellowMap = new LinkedHashMap<>();
+		List<ErrorMessageDTO> errorMessageBlueList = new ArrayList<>();
+		List<ErrorMessageDTO> errorMessageRedList = new ArrayList<>();
+		List<ErrorMessageDTO> errorMessageBlackList = new ArrayList<>();
+
+		List<ErrorMessageDTO> errorMessagePurpleList = new ArrayList<>();
+
+
+		//警告文を表示した品番と個数を格納していくmapリスト<map>。入荷数によって入荷予定日を切り替える処理のために必要
+		List<Map<String, Integer>> alertDispItemMapList = new ArrayList<>();
+
+		//CSVファイル内からキープの追加に必要な情報を抜き取った商品リストを作成する処理
+		//処理の中で商品コードが11桁未満の場合は追加処理を飛ばす。これは11桁に切り取る関数でのExceptionを避けるためと下記の理由のため。
+		//CSVファイルの中には在庫一覧に存在するが、数字11桁+アルファベットの商品が存在するため11ケタに切らなければ正しい検索結果が取れない。
+
+		/*
+		 * TODO 楽天倉庫対象の商品かどうかを判別する。リストをkts倉庫用と楽天倉庫用で分ける。
+		 * チェック内容は次の通り。
+		 * １．楽天倉庫用のキープか　NO：kts倉庫へ
+		 * ２．楽天倉庫用のキープならば同一受注伝票内にKTS倉庫対象の商品が存在する。　YES:KTS倉庫へ（警告メッセージを出力する。）
+		 * ２．楽天倉庫用のキープならば楽天倉庫の在庫は存在するか　NO：KTS倉庫へ（警告メッセージを出力する。）
+		 */
+		List<ExtendKeepCsvImportDTO> csvItemList = new ArrayList<>();
+		for (int i = 0; i < csvImportList.size(); i++) {
+
+			ExtendKeepCsvImportDTO keepCsvImportDTO = new ExtendKeepCsvImportDTO();
+
+			/*
+			 *  商品種別が「内訳商品」でかつ名称に「RSL出荷分」が含まれていたら一つ前の
+			 *  「セット商品」を楽天倉庫キープ対象とする。
+			 */
+			if (StringUtils.equals(csvImportList.get(i).getItemClassification(), "内訳商品")) {
+				/*
+				 *  商品種別が「セット商品」ならば楽天倉庫キープ対象とする。
+				 *  ただし、次の条件の場合、楽天倉庫ではなくKTS倉庫のキープとなる。
+				 *  ここでは、一度「セット商品」は楽天倉庫キープ対象として処理して、
+				 *  条件チェックは別途行う。
+				 *  ■条件
+				 *  １．同一受注伝票内にKTS倉庫対象の商品がある。
+				 *  ２．楽天倉庫の在庫が不足している。
+				 */
+
+				if (!csvImportList.get(i).getItemNm().contains("RSL出荷分")) {
+					//内訳商品の商品名にRSL出荷分と含まれていなければキープしないのでキープ対象商品のリストから削除する。
+					if (StringUtils.equals(csvItemList.get(csvItemList.size() - 1).getItemClassification(), "セット商品")) {
+						csvItemList.remove(csvItemList.size() - 1);
+					}
+					continue;
+				}
+
+
+				// XXX 商品種別が「内訳商品」の次が「セット商品」になるので判断しなくてよいが念のため判断する。
+				if (StringUtils.equals(csvItemList.get(csvItemList.size() - 1).getItemClassification(), "セット商品")) {
+					csvItemList.get(csvItemList.size() - 1).setExternalKeepFlag("1");
+					csvItemList.get(csvItemList.size() - 1).setExternalWarehouseCode("RSL");
+				}
+			}
+
+
+			//商品種別が「商品」以外の時追加しない。
+			if(!(csvImportList.get(i).getItemClassification().equals("商品")
+					|| csvImportList.get(i).getItemClassification().equals("セット商品"))) {
+				continue;
+			}
+			// 11桁以下の場合は自社商品ではないため追加しない。
+			if (StringUtils.length(csvImportList.get(i).getShopItemCd()) < 11) {
+				continue;
+			}
+			//商品コード
+			keepCsvImportDTO.setShopItemCd(csvImportList.get(i).getShopItemCd().substring(0, 11));
+			//受注番号
+			keepCsvImportDTO.setOrderNo(csvImportList.get(i).getOrderNo());
+			//個数を追加
+			keepCsvImportDTO.setItemNum(csvImportList.get(i).getItemNum());
+			//受注ルート
+			keepCsvImportDTO.setOrderRoute(csvImportList.get(i).getOrderRoute());
+			//システム法人ID
+			keepCsvImportDTO.setSysCorporationId(csvImportList.get(i).getSysCorporationId());
+			//取り込み日
+			keepCsvImportDTO.setImportDate(csvImportList.get(i).getImportDate());
+
+			//商品種別
+			keepCsvImportDTO.setItemClassification(csvImportList.get(i).getItemClassification());
+			
+			keepCsvImportDTO.setLastStatus(csvImportList.get(i).getLastStatus());
+
+			csvItemList.add(keepCsvImportDTO);
+		}
+
+		//上の処理だけだとCSVファイル上の情報しかないため、ここで商品一つ一つを商品マスタから検索し詳細情報を付け加える。
+		for(int i = 0; i < csvItemList.size(); i++) {
+
+			ExtendKeepCsvImportDTO afterKeepCsvImport = csvItemList.get(i);
+			MstItemDTO dto =  new MstItemDTO();
+			dto = itemDAO.getMstItemForKeep(csvItemList.get(i).getShopItemCd());
+
+			if (dto != null) {
+				//商品コード
+				afterKeepCsvImport.setItemCode(dto.getItemCode());
+				//システム商品ID
+				afterKeepCsvImport.setSysItemId(dto.getSysItemId());
+				//出庫分類フラグをセット 通常商品の場合は出庫分類フラグがないため、代わりに”0”をセットしている
+				if (dto.getLeaveClassFlg() != null) {
+					afterKeepCsvImport.setLeaveClassFlg(dto.getLeaveClassFlg());
+				} else {
+					afterKeepCsvImport.setLeaveClassFlg("0");
+				}
+				//仕様メモ
+				afterKeepCsvImport.setSpecMemo(dto.getSpecMemo());
+				//指定の位置に上書き
+				csvItemList.set(i, afterKeepCsvImport);
+			}
+		}
+
+		//商品をひとつずつ参照し、キープを追加していく
+		//セット商品でなおかつ出庫分類が"1"の時、子要素を見に行く。これは子要素に"1"を持つ限り続く。
+		//同じ受注番号のキープが存在するとき二重登録をふせぐため、updFlgというフラグを使用。
+		for (int i = 0; i < csvItemList.size(); i++) {
+
+			//国内の商品は出庫分類がないため、処理を飛ばす
+			if(csvItemList.get(i).getLeaveClassFlg() == null) {
+				continue;
+			}
+
+			//廃盤または受注生産の時キープを追加しないようにするため、仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする。
+			if (isSkipSetItem(csvItemList.get(i), errorMessageGreenMap, errorMessageYellowMap))
+				continue;
+		
+			// Found 
+			if ((
+					((csvItemList.get(i).getLastStatus().indexOf("処理済み") != -1) ||
+					(csvItemList.get(i).getLastStatus().indexOf("キャンセル") != -1)) 
+					&&
+					((csvImportList.get(i).getDisposalRoute().indexOf("基本ルート") != -1) ||
+					(csvImportList.get(i).getDisposalRoute().indexOf("BO") != -1) ||
+					(csvImportList.get(i).getDisposalRoute().indexOf("店舗受け取り") != -1))					
+				) == false)
+			{
+				continue;
+			}
+			
+			if (csvItemList.get(i).getLeaveClassFlg().equals("0")) 
+			{
+				// KTS倉庫キープ分
+				//商品単位のキープリスト取得
+				
+				List<ExtendKeepDTO> getKeepList = new ArrayList<>();
+				
+				MstItemDTO dto = itemDAO.getMstItemForKeep(csvItemList.get(i).getShopItemCd());
+				int orgkeepIncreaseStep = 0;
+				int changedKeepCount = 0;
+				int totalStockNum = itemDAO.getMstItemDTO(dto.getSysItemId()).getTotalStockNum();
+
+				System.out.println("STEP 1 : Normal Product");
+				System.out.println("Found : OrderNo = " + csvItemList.get(i).getOrderNo() + 
+						" ItemId = " + csvItemList.get(i).getShopItemCd() + 
+						" TotalStockNum = " + totalStockNum + 
+						" ItemNum = " + csvItemList.get(i).getItemNum());
+
+				if (csvItemList.get(i).getExternalKeepFlag() == null || StringUtils.equals(csvItemList.get(i).getExternalKeepFlag(), "0")) 				
+				{
+					getKeepList.addAll(itemDAO.getKeepList(csvItemList.get(i).getSysItemId()));
+
+					//キープに何も登録されていない時登録
+					System.out.println("STEP 2: Keep's = " + getKeepList.size() + " i = " + i + " sys_item_id = " + csvItemList.get(i).getSysItemId());
+
+					if (!getKeepList.isEmpty()) 
+					{
+						for (int n = 0; n < getKeepList.size(); n++) 
+						{
+							//キープ内を一つずつ参照し、更新
+							int curKeepNum = getKeepList.get(n).getKeepNum();
+							orgkeepIncreaseStep += getKeepList.get(n).getKeepNum();
+
+							if(StringUtils.equals(getKeepList.get(n).getOrderNo(), csvItemList.get(i).getOrderNo())) 
+							{								
+								// ----------------------------------------------------
+								// remove item : remove order-matched keep item
+								changedKeepCount += csvItemList.get(i).getItemNum(); // getKeepList.get(n).getKeepNum();
+								int newNum = -1 * csvItemList.get(i).getItemNum() + getKeepList.get(n).getKeepNum();
+								keepMinusUpd(csvItemList.get(i), getKeepList.get(n));
+
+								//追加件数を加算
+								csvErrorDTO.setTrueCount(csvErrorDTO.getTrueCount() + 1);
+								
+								if (newNum <= 0)
+									continue;
+							}
+							
+							{
+								// --------------------------------------------------
+								// remained item : detect arrival condition changed about remain keep item
+								// 
+								// check changed event
+								int originalTempStockNum = totalStockNum - orgkeepIncreaseStep;
+								int newTempStockNum = totalStockNum - orgkeepIncreaseStep + changedKeepCount;
+								
+								if ((originalTempStockNum < 0) && (newTempStockNum >=0)) {
+									// new order is activated 
+									ErrorMessageDTO messageDTO = new ErrorMessageDTO();
+									messageDTO.setErrorMessage("品番「" + dto.getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+											+"」 商品->出荷可能。");
+									errorMessageBlackList.add(messageDTO);
+									
+									continue;
+								}
+								else if ((originalTempStockNum < 0) && (newTempStockNum < 0)) {
+									List<ArrivalScheduleDTO> arrivalScheduleList = itemDAO.getArrivalScheduleDate(dto.getSysItemId());
+									String orgArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, dto.getItemCode(), -1 * originalTempStockNum);
+									String newArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, dto.getItemCode(), -1 * newTempStockNum);
+									
+									if (orgArrivalScheduleDate.equals(newArrivalScheduleDate) == false) {
+										ErrorMessageDTO errorMessageDTO = new ErrorMessageDTO();
+										errorMessageDTO.setErrorMessage( "品番「" + dto.getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+												+ "」 商品->" + newArrivalScheduleDate + "に繰り上げ。");
+										errorMessageBlueList.add(errorMessageDTO);					
+									}
+								}																						
+							}
+						}
+					}
+				} 
+				else 
+				{
+					// 楽天倉庫キープ分
+					getKeepList.addAll(itemDAO.getExternalKeepList(csvItemList.get(i).getSysItemId(), csvItemList.get(i).getExternalWarehouseCode()));
+
+					for (int tempIndex = 0; tempIndex < getKeepList.size(); tempIndex++) {
+						System.out.println("STEP 3: Keep's = " + getKeepList.size() + " i = " + i +
+								" sys_item_id = " + csvItemList.get(i).getSysItemId() + 
+								" sys_external_keep_id = " + getKeepList.get(tempIndex).getSysExternalKeepId() + 
+								" order_no = " + getKeepList.get(tempIndex).getOrderNo());
+					}
+
+					//キープに何も登録されていない時登録
+					if (!getKeepList.isEmpty()) 
+					{
+						for (int n = 0; n < getKeepList.size(); n++) 
+						{
+							//キープ内を一つずつ参照し、更新
+							int curKeepNum = getKeepList.get(n).getKeepNum();
+							orgkeepIncreaseStep += getKeepList.get(n).getKeepNum();
+
+							if(StringUtils.equals(getKeepList.get(n).getOrderNo(), csvItemList.get(i).getOrderNo())) 
+							{
+								// ----------------------------------------------------
+								// remove item : remove order-matched keep item
+								changedKeepCount += csvItemList.get(i).getItemNum(); // getKeepList.get(n).getKeepNum();
+								externalKeepMinusUpd(csvItemList.get(i), getKeepList.get(n));
+								
+								//追加件数を加算
+								csvErrorDTO.setTrueCount(csvErrorDTO.getTrueCount() + 1);
+							}
+							 
+							{
+								//
+								// No need: since external keep is not used for alert
+								//
+								
+								// --------------------------------------------------
+								// remained item : detect arrival condition changed about remain keep item
+								// 
+								// check changed event
+//								int originalTempStockNum = totalStockNum - orgkeepIncreaseStep;
+//								int newTempStockNum = totalStockNum - orgkeepIncreaseStep + changedKeepCount;
+//								
+//								if ((originalTempStockNum < 0) && (newTempStockNum >=0)) {
+//									// new order is activated 
+//									ErrorMessageDTO messageDTO = new ErrorMessageDTO();
+//									messageDTO.setErrorMessage("品番「" + dto.getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+//											+"」 商品1出荷可能になりました。");
+//									errorMessageBlackList.add(messageDTO);
+//									
+//									continue;
+//								}
+//								else if ((originalTempStockNum < 0) && (newTempStockNum < 0)) {
+//									List<ArrivalScheduleDTO> arrivalScheduleList = itemDAO.getArrivalScheduleDate(dto.getSysItemId());
+//									String orgArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, dto.getItemCode(), -1 * originalTempStockNum);
+//									String newArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, dto.getItemCode(), -1 * newTempStockNum);
+//									
+//									if (orgArrivalScheduleDate.equals(newArrivalScheduleDate) == false) {
+//										ErrorMessageDTO errorMessageDTO = new ErrorMessageDTO();
+//										errorMessageDTO.setErrorMessage( "品番「" + dto.getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+//												+ "」 商品は納期" + newArrivalScheduleDate + "に変更になりました。");
+//										errorMessageBlueList.add(errorMessageDTO);					
+//									}
+//								}																						
+							}
+						}
+					}
+
+				}
+
+
+			} else if (csvItemList.get(i).getLeaveClassFlg().equals("1")) {
+
+				//1層目の構成商品リストを取得
+				List<ExtendSetItemDTO> secondItemList = new ItemService()
+						.getSetItemInfoList(csvItemList.get(i).getSysItemId());
+
+				for (int j = 0; j < secondItemList.size(); j++) {
+
+					long secondItemFormSysItemId = secondItemList.get(j).getFormSysItemId();
+					
+					//廃盤または受注生産の時キープを追加しないようにするため仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
+					if (isSkipSetItem(secondItemList.get(j), csvItemList.get(i), errorMessageGreenMap, errorMessageYellowMap))
+						continue;
+					
+					// additional valuables 
+					MstItemDTO secondDto = itemDAO.getMstItemDTO(secondItemFormSysItemId); 
+					int secondOrgkeepIncreaseStep = 0;
+					int secondChangedKeepCount = 0;
+					int secondTotalStockNum = itemDAO.getMstItemDTO(secondItemFormSysItemId).getTotalStockNum();
+
+					if (secondItemList.get(j).getLeaveClassFlg().equals("0")) {
+
+						//商品単位のキープリスト取得
+						List<ExtendKeepDTO> getKeepList = new ArrayList<>();
+						getKeepList.addAll(itemDAO.getKeepList(secondItemList.get(j).getFormSysItemId()));
+
+						//キープに何も登録されていない時登録
+						if (!getKeepList.isEmpty()) 
+						{
+							for (int n = 0; n < getKeepList.size(); n++) 
+							{
+								//キープ内を一つずつ参照、更新
+								int curKeepNum = getKeepList.get(n).getKeepNum();
+								secondOrgkeepIncreaseStep += getKeepList.get(n).getKeepNum();
+
+								//キープ内を一つずつ参照、更新
+								if(StringUtils.equals(getKeepList.get(n).getOrderNo(), csvItemList.get(i).getOrderNo())) 
+								{
+									// ----------------------------------------------------
+									// remove item : remove order-matched keep item
+									secondChangedKeepCount += secondItemList.get(j).getItemNum(); // getKeepList.get(n).getKeepNum();
+									int newNum = -1 * csvItemList.get(i).getItemNum() * secondItemList.get(j).getItemNum() + getKeepList.get(n).getKeepNum();
+									keepMinusUpd(secondItemList.get(j), getKeepList.get(n), csvItemList.get(i));
+
+									//追加件数を加算
+									csvErrorDTO.setTrueCount(csvErrorDTO.getTrueCount() + 1);
+									
+									if (newNum <= 0)
+										continue;
+								}
+								 
+								{
+									// --------------------------------------------------
+									// remained item : detect arrival condition changed about remain keep item
+									// 
+									// check changed event
+									int originalTempStockNum = secondTotalStockNum - secondOrgkeepIncreaseStep;
+									int newTempStockNum = secondTotalStockNum - secondOrgkeepIncreaseStep + secondChangedKeepCount;
+									
+									if ((originalTempStockNum < 0) && (newTempStockNum >=0)) {
+										// new order is activated 
+										ErrorMessageDTO messageDTO = new ErrorMessageDTO();
+										messageDTO.setErrorMessage("品番「" + secondItemList.get(j).getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+												+"」 商品->出荷可能。");
+										errorMessageBlackList.add(messageDTO);
+										
+										continue;
+									}
+									else if ((originalTempStockNum < 0) && (newTempStockNum < 0)) {
+										List<ArrivalScheduleDTO> arrivalScheduleList = itemDAO.getArrivalScheduleDate(secondDto.getSysItemId());
+										String orgArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, secondDto.getItemCode(), -1 * originalTempStockNum);
+										String newArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, secondDto.getItemCode(), -1 * newTempStockNum);
+										
+										if (orgArrivalScheduleDate.equals(newArrivalScheduleDate) == false) {
+											ErrorMessageDTO errorMessageDTO = new ErrorMessageDTO();
+											errorMessageDTO.setErrorMessage( "品番「" + secondDto.getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+													+ "」 商品->" + newArrivalScheduleDate + "に繰り上げ。");
+											errorMessageBlueList.add(errorMessageDTO);					
+										}
+									}																						
+								}
+							}
+						}
+
+					} else if(secondItemList.get(j).getLeaveClassFlg().equals("1")) {
+
+						//2層目の構成商品リストを取得
+						List<ExtendSetItemDTO> thirdItemList = new ItemService()
+								.getSetItemInfoList(secondItemList.get(j).getFormSysItemId());
+
+						for (int k = 0; k < thirdItemList.size(); k++) {
+							
+							long thirdItemFormSysItemId = thirdItemList.get(k).getFormSysItemId();
+							
+							//廃盤または受注生産の時キープを追加しないようにするため仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
+							if (isSkipSetItem(thirdItemList.get(k), csvItemList.get(i), errorMessageGreenMap, errorMessageYellowMap))
+								continue;
+
+							// additional valuables 
+							MstItemDTO thirdDto = itemDAO.getMstItemDTO(thirdItemFormSysItemId); 
+							int thirdOrgkeepIncreaseStep = 0;
+							int thirdChangedKeepCount = 0;
+							int thirdTotalStockNum = itemDAO.getMstItemDTO(thirdItemFormSysItemId).getTotalStockNum();
+
+							if (thirdItemList.get(k).getLeaveClassFlg().equals("0")) {
+
+								//商品単位のキープリストを取得します
+								List<ExtendKeepDTO> getKeepList = new ArrayList<>();
+								getKeepList.addAll(itemDAO.getKeepList(thirdItemList.get(k).getFormSysItemId()));
+
+								//キープに何もないとき登録
+								if (!getKeepList.isEmpty()) {
+									//キープ重複登録を避けるための受注番号単位で更新したかを保存する更新フラグ
+									String updFlg = "0";
+
+									for (int n = 0; n < getKeepList.size(); n++) 
+									{
+										//キープ内を一つずつ参照、更新
+										int curKeepNum = getKeepList.get(n).getKeepNum();
+										thirdOrgkeepIncreaseStep += getKeepList.get(n).getKeepNum();
+
+										if(StringUtils.equals(getKeepList.get(n).getOrderNo(), csvItemList.get(i).getOrderNo())) 
+										{
+											// ----------------------------------------------------
+											// remove item : remove order-matched keep item
+											thirdChangedKeepCount += thirdItemList.get(k).getItemNum(); // getKeepList.get(n).getKeepNum();
+											int newNum = -1 * csvItemList.get(i).getItemNum() * thirdItemList.get(k).getItemNum() + getKeepList.get(n).getKeepNum();
+											keepMinusUpd(thirdItemList.get(k), getKeepList.get(n), csvItemList.get(i));
+											//追加件数を加算
+											csvErrorDTO.setTrueCount(csvErrorDTO.getTrueCount() + 1);
+											
+											if (newNum <= 0)
+												continue;
+										}
+										 
+										{
+											// --------------------------------------------------
+											// remained item : detect arrival condition changed about remain keep item
+											// 
+											// check changed event
+											int originalTempStockNum = thirdTotalStockNum - thirdOrgkeepIncreaseStep;
+											int newTempStockNum = thirdTotalStockNum - thirdOrgkeepIncreaseStep + thirdChangedKeepCount;
+											
+											if ((originalTempStockNum < 0) && (newTempStockNum >=0)) {
+												// new order is activated 
+												ErrorMessageDTO messageDTO = new ErrorMessageDTO();
+												messageDTO.setErrorMessage("品番「" + thirdItemList.get(k).getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+														+"」 商品->出荷可能。");
+												errorMessageBlackList.add(messageDTO);
+												
+												continue;
+											}
+											else if ((originalTempStockNum < 0) && (newTempStockNum < 0)) {
+												List<ArrivalScheduleDTO> arrivalScheduleList = itemDAO.getArrivalScheduleDate(thirdDto.getSysItemId());
+												String orgArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, thirdDto.getItemCode(), -1 * originalTempStockNum);
+												String newArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, thirdDto.getItemCode(), -1 * newTempStockNum);
+												
+												if (orgArrivalScheduleDate.equals(newArrivalScheduleDate) == false) {
+													ErrorMessageDTO errorMessageDTO = new ErrorMessageDTO();
+													errorMessageDTO.setErrorMessage( "品番「" + thirdDto.getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+															+ "」 商品->" + newArrivalScheduleDate + "に繰り上げ。");
+													errorMessageBlueList.add(errorMessageDTO);					
+												}
+											}																						
+										}
+									}
+								}
+
+							} else if(thirdItemList.get(k).getLeaveClassFlg().equals("1")) {
+
+								//3層目の構成商品リストを取得
+								List<ExtendSetItemDTO> fourthItemList = new ItemService()
+										.getSetItemInfoList(thirdItemList.get(k).getFormSysItemId());
+
+								for (int l = 0; l < fourthItemList.size(); l++) {
+
+									long fourthItemFormSysItemId = fourthItemList.get(l).getFormSysItemId();
+
+									//廃盤または受注生産の時キープを追加しないようにするため仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
+									if (isSkipSetItem(fourthItemList.get(l), csvItemList.get(i), errorMessageGreenMap, errorMessageYellowMap))
+										continue;
+
+									// additional valuables 
+									MstItemDTO fourthDto = itemDAO.getMstItemDTO(fourthItemFormSysItemId); 
+									int fourthOrgkeepIncreaseStep = 0;
+									int fourthChangedKeepCount = 0;
+									int fourthTotalStockNum = itemDAO.getMstItemDTO(fourthItemFormSysItemId).getTotalStockNum();
+
+									if (fourthItemList.get(l).getLeaveClassFlg().equals("0")) {
+
+										//商品単位のキープリスト取得
+										List<ExtendKeepDTO> getKeepList = new ArrayList<>();
+										getKeepList.addAll(itemDAO.getKeepList(fourthItemList.get(l).getFormSysItemId()));
+
+										//キープに何もないとき登録
+										if (!getKeepList.isEmpty()) 
+										{
+											//キープ重複登録を避けるための受注番号単位で更新したかを保存する更新フラグ
+											String updFlg = "0";
+
+											for (int n = 0; n < getKeepList.size(); n++) 
+											{
+												//キープ内を一つずつ参照、更新
+												int curKeepNum = getKeepList.get(n).getKeepNum();
+												fourthOrgkeepIncreaseStep += getKeepList.get(n).getKeepNum();
+
+												//キープ内を一つずつ参照し、更新
+												if(StringUtils.equals(getKeepList.get(n).getOrderNo(), csvItemList.get(i).getOrderNo())) 
+												{
+													// ----------------------------------------------------
+													// remove item : remove order-matched keep item
+													fourthChangedKeepCount += fourthItemList.get(l).getItemNum(); //getKeepList.get(n).getKeepNum();
+													int newNum = -1 * csvItemList.get(i).getItemNum() * fourthItemList.get(l).getItemNum() + getKeepList.get(n).getKeepNum();
+													keepMinusUpd(fourthItemList.get(l), getKeepList.get(n), csvItemList.get(i));
+													
+													//追加件数を加算
+													csvErrorDTO.setTrueCount(csvErrorDTO.getTrueCount() + 1);
+													if (newNum <= 0)
+														continue;
+												}
+												 
+												{
+													// --------------------------------------------------
+													// remained item : detect arrival condition changed about remain keep item
+													// 
+													// check changed event
+													int originalTempStockNum = fourthTotalStockNum - fourthOrgkeepIncreaseStep;
+													int newTempStockNum = fourthTotalStockNum - fourthOrgkeepIncreaseStep + fourthChangedKeepCount;
+													
+													if ((originalTempStockNum < 0) && (newTempStockNum >=0)) {
+														// new order is activated 
+														ErrorMessageDTO messageDTO = new ErrorMessageDTO();
+														messageDTO.setErrorMessage("品番「" + fourthItemList.get(l).getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+																+"」 商品->出荷可能。");
+														errorMessageBlackList.add(messageDTO);
+														
+														continue;
+													}
+													else if ((originalTempStockNum < 0) && (newTempStockNum < 0)) {
+														List<ArrivalScheduleDTO> arrivalScheduleList = itemDAO.getArrivalScheduleDate(fourthDto.getSysItemId());
+														String orgArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, fourthDto.getItemCode(), -1 * originalTempStockNum);
+														String newArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, fourthDto.getItemCode(), -1 * newTempStockNum);
+														
+														if (orgArrivalScheduleDate.equals(newArrivalScheduleDate) == false) {
+															ErrorMessageDTO errorMessageDTO = new ErrorMessageDTO();
+															errorMessageDTO.setErrorMessage( "品番「" + fourthDto.getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+																	+ "」 商品->" + newArrivalScheduleDate + "に繰り上げ。");
+															errorMessageBlueList.add(errorMessageDTO);					
+														}
+													}																						
+													
+												}
+											}
+										}
+
+									} else if(fourthItemList.get(l).getLeaveClassFlg().equals("1")) {
+										//4層目の構成商品リスト取得
+										List<ExtendSetItemDTO> fifthItemList = new ItemService()
+												.getSetItemInfoList(fourthItemList.get(l).getFormSysItemId());
+										
+										// about each sub mstItem
+										for (int m = 0; m < fifthItemList.size(); m++) {
+
+											long fifthItemFormSysItemId = fifthItemList.get(m).getFormSysItemId();
+
+											//廃盤または受注生産の時キープを追加しないようにするため、仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
+											if (isSkipSetItem(fifthItemList.get(m), csvItemList.get(i), errorMessageGreenMap, errorMessageYellowMap))
+												continue;
+											
+											// additional valuables 
+											MstItemDTO fifthDto = itemDAO.getMstItemDTO(fifthItemFormSysItemId); 
+											int fifthOrgkeepIncreaseStep = 0;
+											int fifthChangedKeepCount = 0;
+											int fifthTotalStockNum = fifthDto.getTotalStockNum();
+
+											// remove matched keep from fifth Item & calculate changed keep count
+											if (fifthItemList.get(m).getLeaveClassFlg().equals("0")) 
+											{
+
+												//商品単位のキープリスト取得
+												List<ExtendKeepDTO> getKeepList = new ArrayList<>();
+												getKeepList.addAll(itemDAO.getKeepList(fifthItemFormSysItemId));
+
+												//キープに何もないとき登録
+												if (!getKeepList.isEmpty()) 
+												{
+													for (int n = 0; n < getKeepList.size(); n++) 
+													{
+														//キープ内を一つずつ参照、更新
+														int curKeepNum = getKeepList.get(n).getKeepNum();
+														fifthOrgkeepIncreaseStep += getKeepList.get(n).getKeepNum();
+
+														if(StringUtils.equals(getKeepList.get(n).getOrderNo(), csvItemList.get(i).getOrderNo())) 
+														{
+															// ----------------------------------------------------
+															// remove item : remove order-matched keep item
+															fifthChangedKeepCount += fifthItemList.get(m).getItemNum(); //getKeepList.get(n).getKeepNum();
+															int newNum = -1 * csvItemList.get(i).getItemNum() * fifthItemList.get(m).getItemNum() + getKeepList.get(n).getKeepNum();
+															keepMinusUpd(fifthItemList.get(m), getKeepList.get(n), csvItemList.get(i));
+
+															//追加件数を加算
+															csvErrorDTO.setTrueCount(csvErrorDTO.getTrueCount() + 1);
+															
+															if (newNum <= 0)
+																continue;
+														}
+														 
+														{
+															// --------------------------------------------------
+															// remained item : detect arrival condition changed about remain keep item
+															// check changed event
+															int originalTempStockNum = fifthTotalStockNum - fifthOrgkeepIncreaseStep;
+															int newTempStockNum = fifthTotalStockNum - fifthOrgkeepIncreaseStep + fifthChangedKeepCount;
+															
+															if ((originalTempStockNum < 0) && (newTempStockNum >=0)) {
+																// new order is activated 
+																ErrorMessageDTO messageDTO = new ErrorMessageDTO();
+																messageDTO.setErrorMessage("品番「" + fifthItemList.get(m).getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+																		+"」 商品->出荷可能。");
+																errorMessageBlackList.add(messageDTO);
+																
+																continue;
+															}
+															else if ((originalTempStockNum < 0) && (newTempStockNum < 0)) {
+																List<ArrivalScheduleDTO> arrivalScheduleList = itemDAO.getArrivalScheduleDate(fifthDto.getSysItemId());
+																String orgArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, fifthDto.getItemCode(), -1 * originalTempStockNum);
+																String newArrivalScheduleDate = chooseArrivalScheduleDate(alertDispItemMapList, arrivalScheduleList, fifthDto.getItemCode(), -1 * newTempStockNum);
+																
+																if (orgArrivalScheduleDate.equals(newArrivalScheduleDate) == false) {
+																	ErrorMessageDTO errorMessageDTO = new ErrorMessageDTO();
+																	errorMessageDTO.setErrorMessage( "品番「" + fifthDto.getItemCode() + "」 受注番号「"+ getKeepList.get(n).getOrderNo() 
+																			+ "」 商品->" + newArrivalScheduleDate + "に繰り上げ。");
+																	errorMessageBlueList.add(errorMessageDTO);					
+																}
+															}						
+														}
+													}
+												}
+											}
+
+
+										}
+									}
+									
+								}
+							}
+							
+						}
+					}
+					
+				}
+			}
+		}
+
+		//警告文赤：品番でまとめるため、文字列でソート
+		Collections.sort(errorMessageRedList, new Comparator<ErrorMessageDTO>() {
+
+			@Override
+			public int compare(ErrorMessageDTO emDTO1, ErrorMessageDTO emDTO2) {
+
+				return (emDTO1.getErrorMessage().compareTo(emDTO2.getErrorMessage()));
+			}
+		});
+		//警告文青：品番でまとめるため、文字列でソート
+		Collections.sort(errorMessageBlueList, new Comparator<ErrorMessageDTO>() {
+
+			@Override
+			public int compare(ErrorMessageDTO emDTO1, ErrorMessageDTO emDTO2) {
+
+				return (emDTO1.getErrorMessage().compareTo(emDTO2.getErrorMessage()));
+			}
+		});
+
+		csvErrorDTO.setErrorMessageList(errorMessageBlackList);
+		csvErrorDTO.setErrorMessageListPurple(errorMessageRedList);
+		csvErrorDTO.setErrorMessageListBlue(errorMessageBlueList);
+		csvErrorDTO.setErrorMessageGreenMap(errorMessageGreenMap);
+		csvErrorDTO.setErrorMessageYellowMap(errorMessageYellowMap);
+		csvErrorDTO.setErrorMessageListPurple(errorMessagePurpleList);
+
+		return csvErrorDTO;
+	}
+	
 	/**
 	 * CSVファイル内の商品のキープを更新します
 	 * 《処理の流れ》
@@ -1274,12 +2061,23 @@ public class CsvImportService {
 			//廃盤または受注生産の時キープを追加しないようにするため、仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする。
 			if ((csvItemList.get(i).getSpecMemo() != null) && (csvItemList.get(i).getSpecMemo().indexOf("廃盤") != -1)) {
 				String itemCode = csvItemList.get(i).getItemCode();
-				errorMessageGreenMap.put(itemCode, "品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+				String orderNo1 = csvItemList.get(i).getOrderNo();
+				
+				List<ExtendSetItemDTO> parentList = itemDAO.getParentSetItemList(csvItemList.get(i).getSysItemId());
+				if (parentList != null) {
+					System.out.println("Parent Item's id, code " + parentList.get(0).getSysItemId() + ":" + parentList.get(0).getItemCode());
+					errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」: セット品番「" + parentList.get(0).getItemCode() +
+							"」 品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+				}
+				else {
+					errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」: 品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+				}
 				continue;
 			}
 			if ((csvItemList.get(i).getSpecMemo() != null) && (csvItemList.get(i).getSpecMemo().indexOf("受注生産") != -1)) {
 				String itemCode = csvItemList.get(i).getItemCode();
-				errorMessageYellowMap.put(itemCode, "品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
+				String orderNo1 = csvItemList.get(i).getOrderNo();
+				errorMessageYellowMap.put(itemCode, "注文番号「" + orderNo1 + "」: 品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
 				continue;
 			}
 
@@ -1288,25 +2086,31 @@ public class CsvImportService {
 
 				// KTS倉庫キープ分
 				//商品単位のキープリスト取得
-				List<ExtendKeepDTO> getKeepList = new ArrayList<>();
+				System.out.println("STEP 1");
+				List<ExtendKeepDTO> getKeepList = new ArrayList<>();			
 				if (csvItemList.get(i).getExternalKeepFlag() == null || StringUtils.equals(csvItemList.get(i).getExternalKeepFlag(), "0")) {
 					getKeepList.addAll(itemDAO.getKeepList(csvItemList.get(i).getSysItemId()));
 
 					//キープに何も登録されていない時登録
+					System.out.println("STEP 2: keepList size = " + getKeepList.size() + " i = " + i 
+							+ " sys_item_id = " + csvItemList.get(i).getSysItemId());
+
 					if (getKeepList.isEmpty()) {
+						System.out.println("STEP 3: KeepReg is called");
 						keepReg(csvItemList.get(i));
 						//追加件数を加算
 						csvErrorDTO.setTrueCount(csvErrorDTO.getTrueCount() + 1);
-
 					} else {
 
 						//キープ重複登録を避けるための受注番号単位で更新したかを保存する更新フラグ
 						String updFlg = "0";
-
+						
 						for (int n = 0; n < getKeepList.size(); n++) {
 
 							//キープ内を一つずつ参照し、更新
-							if(StringUtils.equals(getKeepList.get(n).getOrderNo(), csvItemList.get(i).getOrderNo())) {
+							if(StringUtils.equals(getKeepList.get(n).getOrderNo(), csvItemList.get(i).getOrderNo())) {								
+								System.out.println("STEP 4: KeepUpd is called : sys_item_id = " + getKeepList.get(n).getSysItemId() 
+										+ " csv's = " + csvItemList.get(i).getSysItemId());
 								keepUpd(csvItemList.get(i), getKeepList.get(n));
 								//追加件数を加算
 								csvErrorDTO.setTrueCount(csvErrorDTO.getTrueCount() + 1);
@@ -1369,12 +2173,23 @@ public class CsvImportService {
 					//廃盤または受注生産の時キープを追加しないようにするため仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
 					if ((secondItemList.get(j).getSpecMemo() != null) && (secondItemList.get(j).getSpecMemo().indexOf("廃盤") != -1)) {
 						String itemCode = itemDAO.getItemCode(secondItemList.get(j).getFormSysItemId());
-						errorMessageGreenMap.put(itemCode, "品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+						String orderNo1 = csvItemList.get(i).getOrderNo();
+						
+						List<ExtendSetItemDTO> parentList = itemDAO.getParentSetItemList(secondItemList.get(j).getSysItemId());
+						if (parentList != null) {
+							System.out.println("Parent Item's id, code " + parentList.get(0).getSysItemId() + ":" + parentList.get(0).getItemCode());
+							errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」: セット品番「" + parentList.get(0).getItemCode() +
+									"」 品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+						}
+						else {
+							errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」: 品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+						}
 						continue;
 					}
 					if ((secondItemList.get(j).getSpecMemo() != null) && (secondItemList.get(j).getSpecMemo().indexOf("受注生産") != -1)) {
 						String itemCode = itemDAO.getItemCode(secondItemList.get(j).getFormSysItemId());
-						errorMessageYellowMap.put(itemCode, "品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
+						String orderNo1 = csvItemList.get(i).getOrderNo();
+						errorMessageYellowMap.put(itemCode, "注文番号「" + orderNo1 + "」: 品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
 						continue;
 					}
 
@@ -1425,12 +2240,23 @@ public class CsvImportService {
 							//廃盤または受注生産の時キープを追加しないようにするため仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
 							if ((thirdItemList.get(k).getSpecMemo() != null) && (thirdItemList.get(k).getSpecMemo().indexOf("廃盤") != -1)) {
 								String itemCode = itemDAO.getItemCode(thirdItemList.get(k).getFormSysItemId());
-								errorMessageGreenMap.put(itemCode, "品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+								String orderNo1 = csvItemList.get(i).getOrderNo();
+								
+								List<ExtendSetItemDTO> parentList = itemDAO.getParentSetItemList(thirdItemList.get(k).getSysItemId());
+								if (parentList != null) {
+									System.out.println("Parent Item's id, code " + parentList.get(0).getSysItemId() + ":" + parentList.get(0).getItemCode());
+									errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」: セット品番「" + parentList.get(0).getItemCode() +
+											"」 品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+								}
+								else {
+									errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」:品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+								}
 								continue;
 							}
 							if ((thirdItemList.get(k).getSpecMemo() != null) && (thirdItemList.get(k).getSpecMemo().indexOf("受注生産") != -1)) {
 								String itemCode = itemDAO.getItemCode(thirdItemList.get(k).getFormSysItemId());
-								errorMessageYellowMap.put(itemCode, "品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
+								String orderNo1 = csvItemList.get(i).getOrderNo();
+								errorMessageYellowMap.put(itemCode, "注文番号「" + orderNo1 + "」:品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
 								continue;
 							}
 
@@ -1480,12 +2306,23 @@ public class CsvImportService {
 									//廃盤または受注生産の時キープを追加しないようにするため仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
 									if ((fourthItemList.get(l).getSpecMemo() != null) && (fourthItemList.get(l).getSpecMemo().indexOf("廃盤") != -1)) {
 										String itemCode = itemDAO.getItemCode(fourthItemList.get(l).getFormSysItemId());
-										errorMessageGreenMap.put(itemCode, "品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+										String orderNo1 = csvItemList.get(i).getOrderNo();
+
+										List<ExtendSetItemDTO> parentList = itemDAO.getParentSetItemList(fourthItemList.get(l).getSysItemId());
+										if (parentList != null) {
+											System.out.println("Parent Item's id, code " + parentList.get(0).getSysItemId() + ":" + parentList.get(0).getItemCode());
+											errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」: セット品番「" + parentList.get(0).getItemCode() +
+													"」 品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+										}
+										else {
+											errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」:品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+										}
 										continue;
 									}
 									if ((fourthItemList.get(l).getSpecMemo() != null) && (fourthItemList.get(l).getSpecMemo().indexOf("受注生産") != -1)) {
 										String itemCode = itemDAO.getItemCode(fourthItemList.get(l).getFormSysItemId());
-										errorMessageYellowMap.put(itemCode, "品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
+										String orderNo1 = csvItemList.get(i).getOrderNo();
+										errorMessageYellowMap.put(itemCode, "注文番号「" + orderNo1 + "」:品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
 										continue;
 									}
 
@@ -1536,12 +2373,23 @@ public class CsvImportService {
 											//廃盤または受注生産の時キープを追加しないようにするため、仕様メモに「廃盤」または「受注生産」の文字が含まれているかチェックする
 											if ((fifthItemList.get(m).getSpecMemo() != null) && (fifthItemList.get(m).getSpecMemo().indexOf("廃盤") != -1)) {
 												String itemCode = itemDAO.getItemCode(fifthItemFormSysItemId);
-												errorMessageGreenMap.put(itemCode, "品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+												String orderNo1 = csvItemList.get(i).getOrderNo();
+
+												List<ExtendSetItemDTO> parentList = itemDAO.getParentSetItemList(fifthItemList.get(m).getSysItemId());
+												if (parentList != null) {
+													System.out.println("Parent Item's id, code " + parentList.get(0).getSysItemId() + ":" + parentList.get(0).getItemCode());
+													errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」: セット品番「" + parentList.get(0).getItemCode() +
+															"」 品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+												}
+												else {
+													errorMessageGreenMap.put(itemCode, "注文番号「" + orderNo1 + "」:品番「" + itemCode + "」の商品は廃盤商品の為キープされませんでした。");
+												}
 												continue;
 											}
 											if ((fifthItemList.get(m).getSpecMemo() != null) && (fifthItemList.get(m).getSpecMemo().indexOf("受注生産") != -1)) {
 												String itemCode = itemDAO.getItemCode(fifthItemFormSysItemId);
-												errorMessageYellowMap.put(itemCode, "品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
+												String orderNo1 = csvItemList.get(i).getOrderNo();
+												errorMessageYellowMap.put(itemCode, "注文番号「" + orderNo1 + "」:品番「" + itemCode + "」の商品は受注生産品の為キープされませんでした。");
 												continue;
 											}
 
@@ -1932,6 +2780,7 @@ public class CsvImportService {
 		CorporationDAO corporationDAO = new CorporationDAO();
 		ItemService service = new ItemService();
 
+		
 		//キープの各項目に追加
 		ExtendKeepDTO extendKeepDTO = new ExtendKeepDTO();
 		SequenceDAO sequenceDAO = new SequenceDAO();
@@ -1942,7 +2791,9 @@ public class CsvImportService {
 		extendKeepDTO.setRemarks(keepCsvImportDTO.getImportDate() + " "
 														+ corporationDAO.getCorporationName(keepCsvImportDTO.getSysCorporationId()) + " "
 														+ keepCsvImportDTO.getOrderRoute());
+		
 			//登録処理
+		System.out.println("KeepReg: syskeepid, keepnum" + extendKeepDTO.getSysKeepId() + ":" + keepCsvImportDTO.getItemNum());
 			itemDAO.registryKeep(extendKeepDTO);
 			//総在庫数、仮在庫数更新
 			service.updateTotalStockNum(keepCsvImportDTO.getSysItemId());
@@ -1997,16 +2848,53 @@ public class CsvImportService {
 		ExtendKeepDTO extendKeepDTO = new ExtendKeepDTO();
 		extendKeepDTO.setSysKeepId(keepDTO.getSysKeepId());
 		extendKeepDTO.setOrderNo(KeepCsvImportDTO.getOrderNo());
-		extendKeepDTO.setKeepNum(KeepCsvImportDTO.getItemNum());
+		extendKeepDTO.setKeepNum(KeepCsvImportDTO.getItemNum() + keepDTO.getKeepNum());
 		extendKeepDTO.setRemarks( KeepCsvImportDTO.getImportDate() + " "
 														+ corporationDAO.getCorporationName(KeepCsvImportDTO.getSysCorporationId())  + " "
 														+ KeepCsvImportDTO.getOrderRoute());
+		
 		//更新処理
+		System.out.println("KeepUPD: syskeepid, keepnum" + extendKeepDTO.getSysKeepId() + ":" + (KeepCsvImportDTO.getItemNum() + keepDTO.getKeepNum()));
+		keepDTO.setKeepNum(KeepCsvImportDTO.getItemNum() + keepDTO.getKeepNum());		
+
 		itemDAO.updateKeep(extendKeepDTO);
 		//総在庫数、仮在庫数更新
 		service.updateTotalStockNum(KeepCsvImportDTO.getSysItemId());
 	}
 
+	/**
+	 * キープの更新処理(通常商品用)
+	 * @param itemDTO
+	 * @param keepDTO
+	 * @param csvImportDTO
+	 * @throws DaoException
+	 */
+	private void keepMinusUpd(ExtendKeepCsvImportDTO KeepCsvImportDTO, ExtendKeepDTO keepDTO) throws DaoException {
+		int newNum = -1 * KeepCsvImportDTO.getItemNum() + keepDTO.getKeepNum();
+		ItemDAO itemDAO = new ItemDAO();
+		CorporationDAO corporationDAO =  new CorporationDAO();
+		ItemService service = new ItemService();
+
+		//キープの各項目に追加
+		ExtendKeepDTO extendKeepDTO = new ExtendKeepDTO();
+		extendKeepDTO.setSysKeepId(keepDTO.getSysKeepId());
+		extendKeepDTO.setOrderNo(KeepCsvImportDTO.getOrderNo());
+		extendKeepDTO.setKeepNum(newNum);
+		extendKeepDTO.setRemarks( KeepCsvImportDTO.getImportDate() + " "
+														+ corporationDAO.getCorporationName(KeepCsvImportDTO.getSysCorporationId())  + " "
+														+ KeepCsvImportDTO.getOrderRoute());
+		
+		//更新処理
+		keepDTO.setKeepNum(newNum);		
+
+		itemDAO.updateKeep(extendKeepDTO);
+		//総在庫数、仮在庫数更新
+		service.updateTotalStockNum(KeepCsvImportDTO.getSysItemId());
+		
+		// remove it
+		if (newNum <= 0)
+			service.deleteKeep(keepDTO.getSysKeepId());
+	}
 
 	/**
 	 * 外部倉庫キープの更新処理(通常商品用)
@@ -2022,21 +2910,55 @@ public class CsvImportService {
 
 		//キープの各項目に追加
 		ExtendKeepDTO extendKeepDTO = new ExtendKeepDTO();
-		extendKeepDTO.setSysKeepId(keepDTO.getSysExternalKeepId());
+		extendKeepDTO.setSysExternalKeepId(keepDTO.getSysExternalKeepId());
 		extendKeepDTO.setOrderNo(KeepCsvImportDTO.getOrderNo());
-		extendKeepDTO.setKeepNum(KeepCsvImportDTO.getItemNum());
+		extendKeepDTO.setKeepNum(KeepCsvImportDTO.getItemNum() + keepDTO.getKeepNum());
 		extendKeepDTO.setRemarks( KeepCsvImportDTO.getImportDate() + " "
 														+ corporationDAO.getCorporationName(KeepCsvImportDTO.getSysCorporationId())  + " "
 														+ KeepCsvImportDTO.getOrderRoute());
 		extendKeepDTO.setSysExternalWarehouseCode(KeepCsvImportDTO.getExternalWarehouseCode());
 
 		//更新処理
+		System.out.println("ExternalKeepUPD: syskeepid, keepnum" + extendKeepDTO.getSysKeepId() + ":" + (KeepCsvImportDTO.getItemNum() + keepDTO.getKeepNum()));
+		keepDTO.setKeepNum(KeepCsvImportDTO.getItemNum() + keepDTO.getKeepNum());		
+
 		itemDAO.updateExternalKeep(extendKeepDTO);
 		// XXX 外部倉庫の在庫数、キープ数は商品の総在庫数、仮在庫数に連動しない。
 		// 総在庫数＝KTS倉庫の在庫数 ※楽天倉庫の在庫数は含まれない。
 		// 仮在庫数＝総在庫数－(KTS倉庫のキープ数） ※楽天倉庫のキープ数は含まれない。
 	}
 
+	/**
+	 * 外部倉庫キープの更新処理(通常商品用)
+	 * @param itemDTO
+	 * @param keepDTO
+	 * @param csvImportDTO
+	 * @throws DaoException
+	 */
+	private void externalKeepMinusUpd(ExtendKeepCsvImportDTO KeepCsvImportDTO, ExtendKeepDTO keepDTO) throws DaoException {
+
+		ItemDAO itemDAO = new ItemDAO();
+		CorporationDAO corporationDAO =  new CorporationDAO();
+
+		//キープの各項目に追加
+		ExtendKeepDTO extendKeepDTO = new ExtendKeepDTO();
+		extendKeepDTO.setSysExternalKeepId(keepDTO.getSysExternalKeepId());
+		extendKeepDTO.setOrderNo(KeepCsvImportDTO.getOrderNo());
+		extendKeepDTO.setKeepNum(-1 * KeepCsvImportDTO.getItemNum() + keepDTO.getKeepNum());
+		extendKeepDTO.setRemarks( KeepCsvImportDTO.getImportDate() + " "
+														+ corporationDAO.getCorporationName(KeepCsvImportDTO.getSysCorporationId())  + " "
+														+ KeepCsvImportDTO.getOrderRoute());
+		extendKeepDTO.setSysExternalWarehouseCode(KeepCsvImportDTO.getExternalWarehouseCode());
+
+		//更新処理
+		keepDTO.setKeepNum(-1 * KeepCsvImportDTO.getItemNum() + keepDTO.getKeepNum());		
+
+		itemDAO.updateExternalKeep(extendKeepDTO);
+		// XXX 外部倉庫の在庫数、キープ数は商品の総在庫数、仮在庫数に連動しない。
+		// 総在庫数＝KTS倉庫の在庫数 ※楽天倉庫の在庫数は含まれない。
+		// 仮在庫数＝総在庫数－(KTS倉庫のキープ数） ※楽天倉庫のキープ数は含まれない。
+
+	}
 	/**
 	 * キープの登録処理(セット商品用)
 	 * @param itemDTO
@@ -2085,16 +3007,49 @@ public class CsvImportService {
 		extendKeepDTO.setSysKeepId(keepDTO.getSysKeepId());
 		extendKeepDTO.setOrderNo(keepCsvImportDTO.getOrderNo());
 		//セット商品を構成する商品には必要個数が設定されているため、構成商品の必要数にキープCSVの個数をかける。
-		extendKeepDTO.setKeepNum(keepCsvImportDTO.getItemNum() * setItemDTO.getItemNum());
+		extendKeepDTO.setKeepNum(keepCsvImportDTO.getItemNum() * setItemDTO.getItemNum() + keepDTO.getKeepNum());
 		extendKeepDTO.setRemarks(keepCsvImportDTO.getImportDate() +" "
 														+ corporationDAO.getCorporationName(keepCsvImportDTO.getSysCorporationId()) + " "
 														+ keepCsvImportDTO.getOrderRoute());
 		//更新処理
+		keepDTO.setKeepNum(keepCsvImportDTO.getItemNum() * setItemDTO.getItemNum() + keepDTO.getKeepNum());
 		itemDAO.updateKeep(extendKeepDTO);
 		//総在庫数、仮在庫数更新
 		service.updateTotalStockNum(setItemDTO.getFormSysItemId());
 	}
 
+	/**
+	 * キープの更新処理(セット商品用)
+	 * @param setItemDTO
+	 * @param keepDTO
+	 * @param csvImportDTO
+	 * @throws DaoException
+	 */
+	private void keepMinusUpd(ExtendSetItemDTO setItemDTO, ExtendKeepDTO keepDTO, ExtendKeepCsvImportDTO keepCsvImportDTO) throws DaoException {
+		int newNum = -1 * keepCsvImportDTO.getItemNum() * setItemDTO.getItemNum() + keepDTO.getKeepNum();
+		
+		ItemDAO itemDAO = new ItemDAO();
+		CorporationDAO corporationDAO = new CorporationDAO();
+		ItemService service = new ItemService();
+
+		ExtendKeepDTO extendKeepDTO = new ExtendKeepDTO();
+		extendKeepDTO.setSysKeepId(keepDTO.getSysKeepId());
+		extendKeepDTO.setOrderNo(keepCsvImportDTO.getOrderNo());
+		//セット商品を構成する商品には必要個数が設定されているため、構成商品の必要数にキープCSVの個数をかける。
+		extendKeepDTO.setKeepNum(newNum);
+		extendKeepDTO.setRemarks(keepCsvImportDTO.getImportDate() +" "
+														+ corporationDAO.getCorporationName(keepCsvImportDTO.getSysCorporationId()) + " "
+														+ keepCsvImportDTO.getOrderRoute());
+		//更新処理
+		keepDTO.setKeepNum(newNum);
+		itemDAO.updateKeep(extendKeepDTO);
+		//総在庫数、仮在庫数更新
+		service.updateTotalStockNum(setItemDTO.getFormSysItemId());
+
+		// remove it
+		if (newNum <= 0)
+			service.deleteKeep(keepDTO.getSysKeepId());
+	}
 	/**
 	 * 警告文が表示された回数によって、表示する入荷予定日を切り替える処理
 	 * @param itemCodeList
