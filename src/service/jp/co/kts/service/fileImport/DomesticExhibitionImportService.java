@@ -291,10 +291,18 @@ public class DomesticExhibitionImportService {
 			postage = Long.valueOf(strPostage);
 		}
 
-		if (StringUtils.isBlank(openPriceFlg)|| (!openPriceFlg.equals(OPEN_PRICE_FLG_ON_VALUE)&& !openPriceFlg.equals(OPEN_PRICE_FLG_ON_VALUE_KAN))){
+		if (StringUtils.isBlank(openPriceFlg)|| (!openPriceFlg.equals(OPEN_PRICE_FLG_ON))){
 			dto.setOpenPriceFlg("off");
 			//仕入原価計算
-			purchasingCost = listPrice * (itemRateOver * RATE_OVER_PERCENT) + postage;
+			if (itemRateOver == 0) {
+				if (!GenericValidator.isBlankOrNull(strPurchasingCost)) {
+					purchasingCost = Long.valueOf(strPurchasingCost);
+				}
+				
+				itemRateOver = (purchasingCost - postage) / listPrice;
+			}else {
+				purchasingCost = listPrice * (itemRateOver * RATE_OVER_PERCENT) + postage;
+			}
 		}
 		else {
 			dto.setOpenPriceFlg("on");
