@@ -92,8 +92,8 @@ body {
 }
 
 #buttonTable {
-	float: left;
-	margin: 0px 10px 10px 10px;
+	float: right;
+	margin: 0px 160px 10px 10px;
 }
 
 .flgCheck {
@@ -451,6 +451,10 @@ span.explain {
 	font-size: 13px;
 }
 
+#list_area input[type=checkbox]{
+	transform: scale(2);
+    margin: 10px;
+}
 .slipNoLabel {
 	background-color: #FAFAFA;
 	border: solid 1px #CECECE;
@@ -463,6 +467,11 @@ span.explain {
 	border: solid 1px #CECECE;
 	background-color: #FAFAFA;
 	border-width: 1px 0px 1px 0px;
+}
+.slipNoCheckBoxLeftTd {
+	border: solid 1px #CECECE;
+	background-color: #FAFAFA;
+	border-width: 1px 0px 1px 1px;
 }
 
 .slipNoNoneCheckBoxTd {

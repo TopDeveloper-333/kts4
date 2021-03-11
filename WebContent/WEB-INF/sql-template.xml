@@ -9988,7 +9988,7 @@
 
 	<!-- 売上原価一覧のシステム売上商品ID -->
 	<sql-template id="SEL_SEARCH_SYS_SALE_ITEM">
-		SELECT
+		SELECT  
 		SITEM_COST.SYS_SALES_ITEM_ID
 		,CASE
 		WHEN SITEM_COST.ITEM_CODE IS NOT NULL AND SITEM_COST.ITEM_CODE != '' THEN
@@ -10096,8 +10096,9 @@
 		<!-- マスタ以外の商品数カウンター -->
 		,COALESCE(S_ITEM.NOT_MST_ITEM_COUNT, 0)AS NOT_ITEM_COUNT
 		,SLIP.SHIPMENT_DATE
+		<!-- domestic information-->
 		FROM
-		(SELECT
+		(SELECT 
 		SYS_SALES_SLIP_ID
 		,SLIP.SYS_CORPORATION_ID
 		,SYS_STORE_ID
@@ -10173,6 +10174,7 @@
 		,CORPORATION.CORPORATION_NM
 		<!-- 20140521 Takakuwa 出荷日を追加 -->
 		,SLIP.SHIPMENT_DATE
+		<!-- domestic information-->
 		FROM
 		SALES_SLIP AS SLIP
 		INNER JOIN
@@ -10217,11 +10219,6 @@
 					SLIP.SYS_CORPORATION_ID = ${sysCorporationId}
 				</if-not-equals>
 			</if-not-null>
-
-			<if-not-equals value="0" varName="sysChannelId">
-				AND
-				SLIP.SYS_CHANNEL_ID = ${sysChannelId}
-			</if-not-equals>
 
 			<if-not-empty varName="orderDateFrom">
 				AND
@@ -10271,13 +10268,21 @@
 				(SLIP_NO IS NULL OR SLIP_NO
 				= '')
 			</if-equals>
-			<if-not-empty varName="orderNm">
-				AND
-				((SLIP.ORDER_FAMILY_NM ||
-				SLIP.ORDER_FIRST_NM) ILIKE ${orderNm}
-				OR (SLIP.ORDER_FAMILY_NM_KANA
-				|| SLIP.ORDER_FIRST_NM_KANA) ILIKE
-				${orderNm})
+
+			<if-not-empty varName="orderContent">
+				<if-equals value="1" varName="orderType">
+					AND
+					((SLIP.ORDER_FAMILY_NM ||
+					SLIP.ORDER_FIRST_NM) ILIKE ${orderContent}
+					OR (SLIP.ORDER_FAMILY_NM_KANA
+					|| SLIP.ORDER_FIRST_NM_KANA) ILIKE
+					${orderContent})
+				</if-equals>			
+
+				<if-equals value="2" varName="orderType">
+					AND
+					ORDER_TEL ILIKE ${orderContent}
+				</if-equals>			
 			</if-not-empty>
 
 			<if-not-empty varName="invoiceClassification">
@@ -10286,10 +10291,6 @@
 				${invoiceClassification}
 			</if-not-empty>
 
-			<if-not-empty varName="orderTel">
-				AND
-				ORDER_TEL ILIKE ${orderTel}
-			</if-not-empty>
 			<if-not-empty varName="destinationNm">
 				AND
 				((SLIP.DESTINATION_FAMILY_NM ||
@@ -10373,7 +10374,44 @@
 					RETURN_FLG = ${returnFlg}
 				</if-not-empty>
 			</if-not-equals>
+			
+			<if-not-empty varName="sysChannelIdOne">
+				<if-not-empty varName="sysChannelIdTwo">
+					<if-not-equals value="1" varName="sysChannelIdOther">
+						AND	(SLIP.SYS_CHANNEL_ID = 10 OR SLIP.SYS_CHANNEL_ID = 13)
+					</if-not-equals>
+				</if-not-empty>
 
+				<if-not-equals value="1" varName="sysChannelIdTwo">
+					<if-not-empty varName="sysChannelIdOther">
+						AND	(SLIP.SYS_CHANNEL_ID > 0 AND SLIP.SYS_CHANNEL_ID != 13)
+					</if-not-empty>
+					<if-not-equals value="1" varName="sysChannelIdOther">
+						AND	(SLIP.SYS_CHANNEL_ID = 10)
+					</if-not-equals>
+				</if-not-equals>
+			</if-not-empty>
+
+			<if-not-empty varName="sysChannelIdTwo">
+				<if-not-equals value="1" varName="sysChannelIdOne">
+					<if-not-empty varName="sysChannelIdOther">
+						AND	(SLIP.SYS_CHANNEL_ID > 0 AND SLIP.SYS_CHANNEL_ID != 10)
+					</if-not-empty>
+					
+					<if-not-equals value="1" varName="sysChannelIdOther">
+						AND	(SLIP.SYS_CHANNEL_ID = 13)
+					</if-not-equals>
+				</if-not-equals>
+			</if-not-empty>
+
+			<if-not-empty varName="sysChannelIdOther">
+
+				<if-not-equals value="1" varName="sysChannelIdOne">
+					<if-not-equals value="1" varName="sysChannelIdTwo">
+						AND	(SLIP.SYS_CHANNEL_ID != 13 AND SLIP.SYS_CHANNEL_ID != 10)
+					</if-not-equals>
+				</if-not-equals>
+			</if-not-empty>
 		</if-equals>
 		)AS SLIP
 		INNER JOIN
@@ -10436,8 +10474,7 @@
 		</if-not-empty>
 		<if-not-empty varName="salesItemNm">
 			AND
-			S_ITEM.ITEM_NM ILIKE
-			${salesItemNm}
+			S_ITEM.ITEM_NM ILIKE ${salesItemNm}
 		</if-not-empty>
 		GROUP BY
 		S_ITEM.SYS_SALES_SLIP_ID
@@ -10451,6 +10488,9 @@
 		) AS S_SLIP
 		ON
 		SITEM_COST.SYS_SALES_SLIP_ID = S_SLIP.SYS_SALES_SLIP_ID
+		INNER JOIN
+		(SELECT *FROM exhibit_manage where delete_flag='0') as exm
+		ON(SITEM_COST.item_code=exm.management_code)
 		WHERE
 		1 = 1
 		AND
@@ -10475,6 +10515,12 @@
 		AND
 		<!-- 品番 01011293005 -->
 		SITEM_COST.SYS_ITEM_ID != 18757
+
+		<if-not-empty varName="wholseSalerName">
+			AND
+			exm.wholsesaler_nm LIKE ${wholseSalerName}
+		</if-not-empty>
+		
 		<!-- 原価条件条件 -->
 		<if-equals value="1" varName="costMakerItemFlg">
 			AND
@@ -10548,52 +10594,65 @@
 
 	<sql-template id="SEL_SEARCH_SALES_COST">
 		SELECT
-		SITEM.SYS_SALES_ITEM_ID
-		,SITEM.SYS_SALES_SLIP_ID
-		,SITEM.SYS_ITEM_ID
-		,CASE
-		WHEN SITEM.ITEM_CODE IS NOT NULL AND SITEM.ITEM_CODE != '' THEN
-		SITEM.ITEM_CODE
-		WHEN SITEM.ITEM_CODE IS NULL OR SITEM.ITEM_CODE = '' THEN
-		M_ITEM.ITEM_CODE
-		END AS ITEM_CODE
-		,SITEM.ITEM_NM
-		,SITEM.PIECE_RATE
-		,SITEM.COST_CHECK_FLAG
-		,SITEM.ORDER_NUM
-		,COALESCE(SITEM.COST,0) AS COST
-		,COALESCE(SITEM.KIND_COST,0) AS KIND_COST
-		,COALESCE(SITEM.LIST_PRICE,0) AS LIST_PRICE
-		,COALESCE(SITEM.ITEM_RATE_OVER,0) AS ITEM_RATE_OVER
-		,S_SLIP.ORDER_NO AS SALE_SLIP_NO
-		,S_SLIP.SHIPMENT_PLAN_DATE
-		,S_SLIP.CORPORATION_NM
-		,COALESCE(S_SLIP.CORPORATION_RATE_OVER,0) AS CORPORATION_RATE_OVER
-		,COALESCE(I_COST.COST,0) AS ITEM_KIND_COST
+			SITEM.SYS_SALES_ITEM_ID
+			,SITEM.SYS_SALES_SLIP_ID
+			,SITEM.SYS_ITEM_ID
+			,CASE
+				WHEN SITEM.ITEM_CODE IS NOT NULL AND SITEM.ITEM_CODE != '' THEN
+					SITEM.ITEM_CODE
+				WHEN SITEM.ITEM_CODE IS NULL OR SITEM.ITEM_CODE = '' THEN
+					M_ITEM.ITEM_CODE
+			END AS ITEM_CODE
+			,SITEM.ITEM_NM
+			,SITEM.PIECE_RATE
+			,SITEM.COST_CHECK_FLAG
+			,SITEM.ORDER_NUM
+			,COALESCE(SITEM.COST,0) AS COST
+			,COALESCE(SITEM.KIND_COST,0) AS KIND_COST
+			,COALESCE(SITEM.LIST_PRICE,0) AS LIST_PRICE
+			,COALESCE(SITEM.ITEM_RATE_OVER,0) AS ITEM_RATE_OVER
+			,S_SLIP.ORDER_NO AS SALE_SLIP_NO
+			,S_SLIP.SHIPMENT_PLAN_DATE
+			,S_SLIP.CORPORATION_NM
+			,COALESCE(S_SLIP.CORPORATION_RATE_OVER,0) AS CORPORATION_RATE_OVER
+			,COALESCE(I_COST.COST,0) AS ITEM_KIND_COST
+			, wholsesaler_id
+			, wholsesaler_nm
+			, purchasing_cost
+			, exm.postage as dome_postage 
+			,CASE
+				WHEN SITEM.rsl_leave_flag != '1' OR SITEM.rsl_leave_flag IS NULL THEN 1
+				WHEN SITEM.rsl_leave_flag = '1' THEN 2
+			END as store_flag
+			,CASE
+				WHEN SITEM.rsl_leave_flag != '1' OR SITEM.rsl_leave_flag IS NULL THEN (SITEM.PIECE_RATE/1.1) - (SITEM.PIECE_RATE*0.1) - COALESCE(SITEM.COST,0) - exm.postage
+				WHEN SITEM.rsl_leave_flag = '1' THEN SITEM.PIECE_RATE-(SITEM.PIECE_RATE*0.1) - COALESCE(SITEM.COST,0) - exm.postage
+			END as profit
+										
 		FROM
 		SALES_ITEM AS SITEM
 		INNER JOIN
 		(SELECT
-		SLIP.SYS_SALES_SLIP_ID
-		,SLIP.SYS_CORPORATION_ID
-		,SLIP.ORDER_NO
-		,SLIP.SHIPMENT_PLAN_DATE
-		,CORPORATION.CORPORATION_NM
-		,CORPORATION.CORPORATION_RATE_OVER
+			SLIP.SYS_SALES_SLIP_ID
+			,SLIP.SYS_CORPORATION_ID
+			,SLIP.ORDER_NO
+			,SLIP.SHIPMENT_PLAN_DATE
+			,CORPORATION.CORPORATION_NM
+			,CORPORATION.CORPORATION_RATE_OVER
 		FROM
-		SALES_SLIP AS SLIP
+			SALES_SLIP AS SLIP
 		INNER JOIN
 		(SELECT
-		SYS_CORPORATION_ID
-		,CORPORATION_NM
-		,CORPORATION_RATE_OVER
+			SYS_CORPORATION_ID
+			,CORPORATION_NM
+			,CORPORATION_RATE_OVER
 		FROM
-		MST_CORPORATION
-		WHERE
-		1 = 1
+			MST_CORPORATION
+			WHERE
+			1 = 1
 		) AS CORPORATION
 		ON
-		CORPORATION.SYS_CORPORATION_ID = SLIP.SYS_CORPORATION_ID
+			CORPORATION.SYS_CORPORATION_ID = SLIP.SYS_CORPORATION_ID
 		) AS S_SLIP
 		ON
 		SITEM.SYS_SALES_SLIP_ID = S_SLIP.SYS_SALES_SLIP_ID
@@ -10617,8 +10676,12 @@
 		) AS I_COST
 		ON
 		SITEM.SYS_ITEM_ID = I_COST.SYS_ITEM_ID
+		INNER JOIN
+		(SELECT *FROM exhibit_manage where delete_flag='0') as exm
+		ON(SITEM.item_code=exm.management_code)
+		
 		WHERE
-		DELETE_FLAG = '0'
+		SITEM.DELETE_FLAG = '0'
 		AND SYS_SALES_ITEM_ID = ${sysSaleItemId}
 	</sql-template>
 

@@ -88,6 +88,8 @@ public class DomesticOrderListSearchDTO {
 	/** ページ最大件数 ：初期表示時「100件」*/
 	private String listPageMax = "3";
 
+	private String otherListPageMax = "2";
+
 	/** セットするためのもの */
 	private String checkDate;
 
@@ -519,6 +521,21 @@ public class DomesticOrderListSearchDTO {
 	 */
 	public void setListPageMax(String listPageMax) {
 	    this.listPageMax = listPageMax;
+	}
+	/**
+	 * ページ最大件数を取得します。
+	 * @return ページ最大件数
+	 */
+	public String getOtherListPageMax() {
+	    return otherListPageMax;
+	}
+
+	/**
+	 * ページ最大件数を設定します。
+	 * @param listPageMax ページ最大件数
+	 */
+	public void setOtherListPageMax(String otherListPageMax) {
+	    this.otherListPageMax = otherListPageMax;
 	}
 
 	/**

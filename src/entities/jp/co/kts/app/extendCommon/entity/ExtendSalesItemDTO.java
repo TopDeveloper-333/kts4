@@ -57,6 +57,18 @@ public class ExtendSalesItemDTO extends SalesItemDTO {
 
 	/** 税率 */
 	private int taxRate;
+	
+	private int wholsesalerId;
+	
+	private String wholsesalerNm;
+	
+	private String purchasingCost;
+	
+	private int domePostage;
+	
+	private int profit;
+	
+	private int storeFlag;
 
 	/*  2015/12/15 ooyama ADD END 法人間請求書機能対応  */
 
@@ -237,6 +249,54 @@ public class ExtendSalesItemDTO extends SalesItemDTO {
 
 	public void setTaxRate(int taxRate) {
 		this.taxRate = taxRate;
+	}
+
+	public int getWholsesalerId() {
+		return wholsesalerId;
+	}
+
+	public void setWholsesalerId(int wholsesalerId) {
+		this.wholsesalerId = wholsesalerId;
+	}
+
+	public String getWholsesalerNm() {
+		return wholsesalerNm;
+	}
+
+	public void setWholsesalerNm(String wholsesalerNm) {
+		this.wholsesalerNm = wholsesalerNm;
+	}
+
+	public String getPurchasingCost() {
+		return purchasingCost;
+	}
+
+	public void setPurchasingCost(String purchasingCost) {
+		this.purchasingCost = purchasingCost;
+	}
+
+	public int getDomePostage() {
+		return domePostage;
+	}
+
+	public void setDomePostage(int domePostage) {
+		this.domePostage = domePostage;
+	}
+
+	public int getProfit() {
+		return profit;
+	}
+
+	public void setProfit(int profit) {
+		this.profit = profit;
+	}
+
+	public int getStoreFlag() {
+		return storeFlag;
+	}
+
+	public void setStoreFlag(int storeFlag) {
+		this.storeFlag = storeFlag;
 	}
 
 }

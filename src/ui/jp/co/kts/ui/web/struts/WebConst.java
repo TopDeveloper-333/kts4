@@ -194,8 +194,8 @@ public class WebConst {
 	static {
 		Map<String, String> saleSearchSortOrder = new LinkedHashMap<String, String>();
 	//	groupMap.put(0, StringUtils.EMPTY);
-		saleSearchSortOrder.put(SALE_SEARCH_CODE_SORT_ASEND, SALE_SEARCH_NAME_SORT_ASEND);
 		saleSearchSortOrder.put(SALE_SEARCH_CODE_SORT_DESEND, SALE_SEARCH_NAME_SORT_DESEND);
+		saleSearchSortOrder.put(SALE_SEARCH_CODE_SORT_ASEND, SALE_SEARCH_NAME_SORT_ASEND);
 		SALE_SEARCH_SORT_ORDER = Collections.unmodifiableMap(saleSearchSortOrder);
 	}
 
@@ -1078,9 +1078,13 @@ public class WebConst {
 
 	public static final int LIST_PAGE_MAX_20 = 20;
 
+	public static final int LIST_PAGE_MAX_500 = 500;
+
 	public static final String LIST_PAGE_MAX_CODE_2 = "2";
 
 	public static final int LIST_PAGE_MAX_50 = 50;
+
+	public static final int LIST_PAGE_MAX_1000 = 1000;
 
 	public static final String LIST_PAGE_MAX_CODE_3 = "3";
 
@@ -1092,9 +1096,9 @@ public class WebConst {
 	public static final Map<String, Integer> LIST_PAGE_MAX_MAP;
 	static {
 		Map<String, Integer> listPageMaxMap = new LinkedHashMap<String, Integer>();
-		listPageMaxMap.put(LIST_PAGE_MAX_CODE_1, LIST_PAGE_MAX_20);
-		listPageMaxMap.put(LIST_PAGE_MAX_CODE_2, LIST_PAGE_MAX_50);
-		listPageMaxMap.put(LIST_PAGE_MAX_CODE_3, LIST_PAGE_MAX_100);
+		listPageMaxMap.put(LIST_PAGE_MAX_CODE_1, LIST_PAGE_MAX_500);
+		listPageMaxMap.put(LIST_PAGE_MAX_CODE_2, LIST_PAGE_MAX_1000);
+//		listPageMaxMap.put(LIST_PAGE_MAX_CODE_3, LIST_PAGE_MAX_100);
 		LIST_PAGE_MAX_MAP = Collections.unmodifiableMap(listPageMaxMap);
 	}
 
@@ -1649,9 +1653,9 @@ public class WebConst {
 	public static final Map<String, String> SALE_COST_LIST_SORT_MAP;
 	static {
 		Map <String, String> saleCostListSortMap = new LinkedHashMap<String, String>();
+		saleCostListSortMap.put(COST_SEARCH_CODE_SHIPMENT_PLAN_DATE, COST_SEARCH_NAME_SHIPMENT_PLAN_DATE);
 		saleCostListSortMap.put(COST_SEARCH_CODE_SLIP_NO, COST_SEARCH_NAME_SLIP_NO);
 		saleCostListSortMap.put(COST_SEARCH_CODE_SYS_CORPORATION_ID, COST_SEARCH_NAME_SYS_CORPORATION_ID);
-		saleCostListSortMap.put(COST_SEARCH_CODE_SHIPMENT_PLAN_DATE, COST_SEARCH_NAME_SHIPMENT_PLAN_DATE);
 		saleCostListSortMap.put(COST_SEARCH_CODE_ITEM_CODE, COST_SEARCH_NAME_ITEM_CODE);
 		saleCostListSortMap.put(COST_SEARCH_CODE_ITEM_NM, COST_SEARCH_NAME_ITEM_NM);
 		SALE_COST_LIST_SORT_MAP = saleCostListSortMap;

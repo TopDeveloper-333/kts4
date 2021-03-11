@@ -31,6 +31,12 @@ public class SaleCostSearchDTO extends SaleSearchDTO {
 	/** 原価チェック：チェック済フラグ */
 	private String costCheckedFlg;
 
+	private String sysChannelIdOne;
+	
+	private String sysChannelIdTwo;
+	
+	private String sysChannelIdOther;
+	
 
 	public String getCostNoCheckFlg() {
 		return costNoCheckFlg;
@@ -80,4 +86,27 @@ public class SaleCostSearchDTO extends SaleSearchDTO {
 		this.sysSaleItemId = sysSaleItemId;
 	}
 
+	public String getSysChannelIdOne() {
+		return this.sysChannelIdOne;
+	}
+	
+	public void setSysChannelIdOne(String sysChannelIdOne) {
+		this.sysChannelIdOne = sysChannelIdOne;
+	}
+
+	public String getSysChannelIdTwo() {
+		return this.sysChannelIdTwo;
+	}
+	
+	public void setSysChannelIdTwo(String sysChannelIdTwo) {
+		this.sysChannelIdTwo = sysChannelIdTwo;
+	}
+
+	public String getSysChannelIdOther() {
+		return this.sysChannelIdOther;
+	}
+	
+	public void setSysChannelIdOther(String sysChannelIdOther) {
+		this.sysChannelIdOther = sysChannelIdOther;
+	}
 }
