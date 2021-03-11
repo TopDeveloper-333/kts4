@@ -46,7 +46,7 @@ public class BtobBillSaleCostService {
 		dto.setGrossProfitCalc(WebConst.GROSS_PROFIT_CALC_TOTAL_CODE);
 
 		/* 1ページあたりの最大表示件数 */
-		dto.setListPageMax(WebConst.LIST_PAGE_MAX_CODE_3);
+		dto.setListPageMax(WebConst.LIST_PAGE_MAX_CODE_2);
 
 		dto.setSortFirstSub("2");
 
@@ -114,6 +114,17 @@ public class BtobBillSaleCostService {
 			dto.setCostCheckedFlg(StringUtil.switchCheckBox(dto.getCostCheckedFlg()));
 		}
 
+		if (StringUtils.isNotEmpty(dto.getSysChannelIdOne())) {
+			dto.setSysChannelIdOne(StringUtil.switchCheckBox(dto.getSysChannelIdOne()));
+		}
+
+		if (StringUtils.isNotEmpty(dto.getSysChannelIdTwo())) {
+			dto.setSysChannelIdTwo(StringUtil.switchCheckBox(dto.getSysChannelIdTwo()));
+		}
+
+		if (StringUtils.isNotEmpty(dto.getSysChannelIdOther())) {
+			dto.setSysChannelIdOther(StringUtil.switchCheckBox(dto.getSysChannelIdOther()));
+		}
 	}
 
 

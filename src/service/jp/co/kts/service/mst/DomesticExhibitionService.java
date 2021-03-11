@@ -358,6 +358,7 @@ public class DomesticExhibitionService {
 	 */
 	public void setFlagsSwutch(DomesticExhibitionSearchDTO dto) {
 		//セット商品フラグ読み替え
+		String dd = dto.getSetItemFlg();
 		if (StringUtils.isNotEmpty(dto.getSetItemFlg())) {
 			dto.setSetItemFlg(StringUtil.switchCheckBox(dto.getSetItemFlg()));
 		}

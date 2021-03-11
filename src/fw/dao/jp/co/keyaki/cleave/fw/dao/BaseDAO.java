@@ -185,6 +185,11 @@ public class BaseDAO {
 		try {
 			stmt = createStatement(sqlInfo.getSQL());
 			bindParameters(stmt, sqlInfo.getParameters());
+			String temp = stmt.toString();
+			temp = temp.replace("%''", "%'");
+			temp = temp.replace("''%", "'%");
+			stmt = createStatement(temp);
+			
 			resultSet = stmt.executeQuery();
 			return handler.handle(resultSet);
 		} catch (SQLException sqle) {

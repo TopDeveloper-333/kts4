@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="./css/jquery-ui-1.10.4.custom.min.css" type="text/css" />
 	<link rel="stylesheet" href="./css/jquery-ui-1.10.4.custom.css" type="text/css" />
 <!-- 	<script type="text/javascript" src="./js/prototype.js"></script> -->
+	<script src="./js/fw.js" type="text/javascript" type="text/javascript"></script>
 	<script src="./js/jquery-1.10.2.min.js" language="javascript"></script>
 	<script src="./js/jquery-ui-1.10.4.custom.min.js" language="javascript"></script>
 
@@ -43,6 +44,22 @@
 
 	$(document).ready(function(){
 		$(".overlay").css("display", "none");
+		$("#sortFirstSub").val(1);
+		
+		$('.profitId').each(function(profit){
+			var val = removeComma($(this).text());
+			val = parseInt(val);
+	        console.log(val);      
+	        
+			var color = '';
+			if(val < 0 ){
+				color = "red";
+			}else if(val > 800){
+				color = "white";
+			}
+			$(this).attr('style', 'background-color:'+color+';');
+	    });		
+
 	 });
 
 
@@ -201,7 +218,18 @@
 
 			var id = $(this).find(".sysSalesSlipId_Link").val();
 			$("#sysSalesSlipId").val(id);
-			goTransaction("detailSale.do");
+			goTransactionNew("detailSale.do");
+			FwGlobal.submitForm(document.forms[0],"/detailSale","detailSale" + $("#sysSalesSlipId").val(),"top=0,left=0,width="+ screen.width + "px,height=" + screen.height +"px;");
+
+		});
+
+		$(".itemCodeLink").click(function () {
+
+			var value = $(this).find(".itemCode").val();
+			
+			$("#managementCode").val(value);
+
+			goTransactionNew("searchDomesticExhibition.do");
 		});
 
 
@@ -416,6 +444,62 @@
 
 		});
 
+        $(window).keydown(function(event){
+            if(event.keyCode == 13) {
+	            event.preventDefault();
+				if ($("#orderDateFrom").val() && $("#orderDateTo").val()){
+					fromAry = $("#orderDateFrom").val().split("/");
+					toAry = $("#orderDateTo").val().split("/");
+					fromDt = new Date(fromAry[0], fromAry[1], fromAry[2]);
+					toDt = new Date(toAry[0], toAry[1], toAry[2]);
+					if (fromDt > toDt) {
+						alert("注文日 の検索開始日付が、検索終了日付より後の日付になっています。");
+						return false;
+					}
+				}
+	
+				if ($("#sumClaimPriceFrom").val() && $("#sumClaimPriceTo").val()) {
+					if ($("#sumClaimPriceFrom").val() > $("#sumClaimPriceTo").val()) {
+						alert("請求額 の検索開始金額が、検索終了金額より大きい額になっています。");
+						return false;
+					}
+				}
+	
+				if ($("#destinationAppointDateFrom").val() && $("#destinationAppointDateTo").val()){
+					fromAry = $("#destinationAppointDateFrom").val().split("/");
+					toAry = $("#destinationAppointDateTo").val().split("/");
+					fromDt = new Date(fromAry[0], fromAry[1], fromAry[2]);
+					toDt = new Date(toAry[0], toAry[1], toAry[2]);
+					if (fromDt > toDt) {
+						alert("配送指定日 の検索開始日付が、検索終了日付より後の日付になっています。");
+						return false;
+					}
+				}
+	
+				if ($("#shipmentPlanDateFrom").val() && $("#shipmentPlanDateTo").val()){
+					fromAry = $("#shipmentPlanDateFrom").val().split("/");
+					toAry = $("#shipmentPlanDateTo").val().split("/");
+					fromDt = new Date(fromAry[0], fromAry[1], fromAry[2]);
+					toDt = new Date(toAry[0], toAry[1], toAry[2]);
+					if (fromDt > toDt) {
+						alert("出荷予定日 の検索開始日付が、検索終了日付より後の日付になっています。");
+						return false;
+					}
+				}
+	
+				if ($("#itemCodeFrom").val() && $("#itemCodeTo").val()) {
+					if ($("#itemCodeFrom").val() > $("#itemCodeTo").val()) {
+						alert("品番 の出力開始番号が、出力終了番号より大きい値になっています。");
+						return false;
+					}
+				}
+	
+				$(".overlay").css("display", "block");
+				$(".message").text("検索中");
+				removeCommaList($(".priceTextMinus"));
+				removeCommaGoTransaction('saleCostList.do');
+            }
+        });
 
 	});
 
@@ -452,30 +536,29 @@
 				<td class="slipNoCheckBoxTd"><label><nested:checkbox property="slipNoExist" styleClass="slipNoCheckBox slipNoExist" />有</label></td>
 				<td class="slipNoCheckBoxTd"><label><nested:checkbox property="slipNoHyphen" styleClass="slipNoCheckBox slipNoHyphen" />ハイフン</label></td>
 				<td class="slipNoNoneCheckBoxTd"><label><nested:checkbox property="slipNoNone" styleClass="slipNoCheckBox slipNoNone" />無</label></td>
+				<td></td>
 			</tr>
 		</table>
 
-		<table id="rootTable">
+		<table id="rootTable" style="border-collapse: collapse;">
 			<tr>
 				<td>法人</td>
-				<td><nested:select property="sysCorporationId">
+				<td colspan="3"><nested:select property="sysCorporationId">
 						<html:option value="0">　</html:option>
 						<html:optionsCollection property="corporationList" label="corporationNm" value="sysCorporationId" />
 					</nested:select>
 				</td>
 				<td class="td_center">処理ルート</td>
-				<td colspan="3"><nested:select property="disposalRoute">
+				<td ><nested:select property="disposalRoute">
 						<html:optionsCollection property="disposalRouteMap" label="value" value="key"/>
 					</nested:select>
 				</td>
 			</tr>
 			<tr>
 				<td>販売チャネル</td>
-				<td><nested:select property="sysChannelId" >
-						<html:option value="0">　</html:option>
-						<html:optionsCollection property="channelList" label="channelNm" value="sysChannelId" />
-					</nested:select>
-				</td>
+				<td class="slipNoCheckBoxLeftTd"><label><nested:checkbox property="sysChannelIdOne" styleClass="slipNoCheckBox slipNoExist" />直営店</label></td>
+				<td class="slipNoCheckBoxTd"><label><nested:checkbox property="sysChannelIdTwo" styleClass="slipNoCheckBox slipNoHyphen" />直営店2</label></td>
+				<td class="slipNoNoneCheckBoxTd"><label><nested:checkbox property="sysChannelIdOther" styleClass="slipNoCheckBox slipNoNone" />その他</label></td>
 			</tr>
 		</table>
 
@@ -503,26 +586,14 @@
 				<td><nested:text property="orderNo" styleClass="text_w250" maxlength="30" /></td>
 			</tr>
 			<tr>
-				<td>注文者名</td>
-				<td><nested:text property="orderNm" styleClass="text_w150" maxlength="30" /></td>
-			</tr>
-			<tr>
-				<td>注文者TEL</td>
-				<td><nested:text property="orderTel" styleClass="text_w150" maxlength="13" /></td>
-			</tr>
-			<tr>
-				<td>注文者MAIL</td>
-				<td><nested:text property="orderMailAddress" styleClass="text_w250" maxlength="256" /></td>
-			</tr>
-			<tr>
-				<td>決済方法</td>
-				<td><nested:select property="accountMethod">
-					<html:optionsCollection property="accountMethodMap" label="value" value="key" />
-				</nested:select></td>
-			</tr>
-			<tr>
-				<td>請求額</td>
-				<td><nested:text property="sumClaimPriceFrom" styleId="sumClaimPriceFrom" styleClass="text_w100 priceTextMinusSearch" maxlength="9" />&nbsp;円&nbsp;～&nbsp;<nested:text property="sumClaimPriceTo" styleId="sumClaimPriceTo" styleClass="text_w100 priceTextMinusSearch" maxlength="9" />&nbsp;円</td>
+				<td >
+					<nested:select property="orderType">
+						<html:option value="1">注文者名</html:option>
+						<html:option value="2">注文者TEL</html:option>
+					</nested:select>
+				</td>
+			
+				<td><nested:text property="orderContent" styleClass="text_w250" maxlength="30" /></td>
 			</tr>
 			<tr>
 				<td>一言メモ</td>
@@ -533,28 +604,6 @@
 		<div id="centerArea">
 
 		<table id="deliveryTable">
-			<tr>
-				<td>運送会社</td>
-				<td><nested:select property="transportCorporationSystem">
-							<html:optionsCollection property="transportCorporationSystemMap" label="value" value="key"/>
-					</nested:select>
-				</td>
-			</tr>
-			<tr>
-				<td>送り状番号</td>
-				<td><nested:text property="slipNo" styleClass="text_w200" maxlength="30" /></td>
-			</tr>
-			<tr>
-				<td>送り状種別</td>
-				<td>
-				<nested:select property="invoiceClassification">
-				<html:optionsCollection property="invoiceClassificationMap" label="key" value="key"/>
-				</nested:select></td>
-			</tr>
-			<tr>
-				<td>配送指定日</td>
-				<td><nested:text property="destinationAppointDateFrom" styleId="destinationAppointDateFrom" styleClass="calender" /> ～ <nested:text property="destinationAppointDateTo" styleId="destinationAppointDateTo" styleClass="calender" maxlength="10" />
-			</tr>
 			<tr>
 				<td>出荷予定日</td>
 				<td><nested:text property="shipmentPlanDateFrom" styleId="shipmentPlanDateFrom" styleClass="calender" maxlength="10" /> ～ <nested:text property="shipmentPlanDateTo" styleId="shipmentPlanDateTo" styleClass="calender" maxlength="10" /></td>
@@ -580,11 +629,7 @@
 				<td><nested:text property="itemCode" styleClass="text_w120 numText" maxlength="11" /></td>
 			</tr>
 			<tr>
-				<td>品番</td>
-				<td><nested:text property="itemCodeFrom" styleId="itemCodeFrom" styleClass="text_w120 numText" maxlength="11" /> ～ <nested:text property="itemCodeTo" styleId="itemCodeTo" styleClass="text_w120 numText" maxlength="11" /></td>
-			</tr>
-			<tr>
-				<td>他社品番（前方一致）</td>
+				<td>他社品番（部分一致）</td>
 				<td><nested:text property="salesItemCode" styleClass="text_w120" maxlength="30" /></td>
 			</tr>
 			<tr>
@@ -595,16 +640,20 @@
 				<td>他社商品名</td>
 				<td><nested:text property="salesItemNm" styleClass="text_w200" /></td>
 			</tr>
+			<tr>
+				<td>問屋名</td>
+				<td><nested:text property="wholseSalerName" styleClass="text_w200" /></td>
+			</tr>
 		</table>
 
 		<table id="buttonTable">
 			<tr>
 				<td>並び順</td>
 				<td>
-					<nested:select property="sortFirst">
+					<nested:select property="sortFirst" styleId="sortFirst">
 						<html:optionsCollection property="saleSearchMap" value="key" label="value" />
 					</nested:select>
-					<nested:select property="sortFirstSub">
+					<nested:select property="sortFirstSub" styleId="sortFirstSub">
 						<html:optionsCollection property="saleSearchSortOrder" value="key" label="value" />
 					</nested:select>
 				</td>
@@ -684,8 +733,10 @@
 				<th class="corporationRateOverHd">法人掛け率</th>
 				<th class="cost">原価(メーカー)</th>
 				<th class="kindCost">Kind原価</th>
+				<th class="domePostage">送料</th>
 				<th class="listPrice">定価</th>
 				<th class="itemRateOver">商品掛け率</th>
+				<th class="profit">利益判定</th>
 				<th class="check">確認</th>
 			</tr>
 
@@ -711,15 +762,24 @@
 				</td>
 				<td><nested:write property="corporationNm" /></td>
 				<td><nested:write property="shipmentPlanDate" /></td>
-				<td><nested:write property="itemCode" /></td>
+				<td>
+					<a href="Javascript:(void);" class="itemCodeLink" >
+						<nested:write property="itemCode" />
+						<input type="hidden" name="managementCode" id="managementCode">
+						<nested:hidden property="itemCode" styleClass="itemCode"></nested:hidden>
+					</a>
+				
+				</td>
 				<td><nested:write property="itemNm" /></td>
 				<td><nested:write property="orderNum" /></td>
 				<td><nested:write property="pieceRate" format="###,###,###" />&nbsp;円</td>
 				<td><nested:write property="corporationRateOver" />&nbsp;％</td>
 				<td><nested:write property="cost" format="###,###,###" />&nbsp;円</td>
 				<td><nested:write property="kindCost" format="###,###,###" />&nbsp;円</td>
+				<td><nested:write property="domePostage" format="###,###,###" />&nbsp;円</td>
 				<td><nested:write property="listPrice" format="###,###,###" />&nbsp;円</td>
 				<td><nested:write property="itemRateOver" />&nbsp;％</td>
+				<td class="profitId"><nested:write property="profit" />&nbsp;円</td>
 				<td><nested:checkbox property="costCheckFlag" disabled="true" /></td>
 			</tr>
 			</tbody>
