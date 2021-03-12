@@ -91,21 +91,4 @@
 		<filter-name>RequestDebugFilter</filter-name>
 		<url-pattern>*.do</url-pattern>
 	</filter-mapping>
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>kts</web-resource-name>
-			<url-pattern>/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<role-name>kts</role-name>
-		</auth-constraint>
-	</security-constraint>
-
-	<login-config>
-		<auth-method>BASIC</auth-method>
-		<realm-name>kts</realm-name>
-	</login-config>
-	<security-role>
-		<role-name>kts</role-name>
-	</security-role>
 </web-app>

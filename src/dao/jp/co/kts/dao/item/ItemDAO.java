@@ -1572,7 +1572,11 @@ public class ItemDAO extends BaseDAO {
 		SQLParameters parameters = new SQLParameters();
 		parameters.addParameter("sysItemId", sysItemId);
 
-		return selectList("PARENT_SET_ITEM_LIST", parameters, ResultSetHandlerFactory.getNameMatchBeanRowHandler(ExtendSetItemDTO.class));
+		List<ExtendSetItemDTO> list = selectList("PARENT_SET_ITEM_LIST", parameters, ResultSetHandlerFactory.getNameMatchBeanRowHandler(ExtendSetItemDTO.class));
+		if ((list == null) || (list.size() == 0))
+			return null;
+		
+		return list;
 	}
 
 	/**

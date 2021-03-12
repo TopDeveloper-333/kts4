@@ -35,6 +35,14 @@
 	<script>
 	$(document).ready(function(){
 		$(".overlay").css("display", "none");
+		var errStr = "";
+		$("#errorArea").children("p").each(function() {
+			errStr = errStr + $(this).html() + "\n";
+		});
+		if (errStr != '') {
+			alert(errStr);
+			$('#errorArea').hide();
+		}
 	 });
 $(function () {
 

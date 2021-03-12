@@ -147,6 +147,15 @@ public class DomesticExhibitionAction extends AppBaseAction {
 		 * BONCRE-5378 国内注文＆出品DB　管理品番を出品DB一覧から登録しようとするとメモリエラーが発生する。
 		 * の対応。
 		 */
+		
+		String itemCode = request.getParameter("managementCode");
+		if(itemCode != "") {
+			form.getDomesticExhibitionSearchDTO().setManagementCode(itemCode);
+			if (StringUtils.isEmpty(form.getDomesticExhibitionSearchDTO().getListPageMax())) {
+				form.getDomesticExhibitionSearchDTO().setListPageMax("1");
+			}
+			
+		}
 		if (StringUtils.isEmpty(form.getDomesticExhibitionSearchDTO().getItemNm()) &&
 				StringUtils.isEmpty(form.getDomesticExhibitionSearchDTO().getItemRateOver()) &&
 				StringUtils.isEmpty(form.getDomesticExhibitionSearchDTO().getListPriceFrom()) &&

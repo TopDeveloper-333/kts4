@@ -46,7 +46,7 @@ public class BtobBillSaleCostService {
 		dto.setGrossProfitCalc(WebConst.GROSS_PROFIT_CALC_TOTAL_CODE);
 
 		/* 1ページあたりの最大表示件数 */
-		dto.setListPageMax(WebConst.LIST_PAGE_MAX_CODE_3);
+		dto.setListPageMax(WebConst.LIST_PAGE_MAX_CODE_2);
 
 		dto.setSortFirstSub("2");
 
@@ -114,6 +114,17 @@ public class BtobBillSaleCostService {
 			dto.setCostCheckedFlg(StringUtil.switchCheckBox(dto.getCostCheckedFlg()));
 		}
 
+		if (StringUtils.isNotEmpty(dto.getSysChannelIdOne())) {
+			dto.setSysChannelIdOne(StringUtil.switchCheckBox(dto.getSysChannelIdOne()));
+		}
+
+		if (StringUtils.isNotEmpty(dto.getSysChannelIdTwo())) {
+			dto.setSysChannelIdTwo(StringUtil.switchCheckBox(dto.getSysChannelIdTwo()));
+		}
+
+		if (StringUtils.isNotEmpty(dto.getSysChannelIdOther())) {
+			dto.setSysChannelIdOther(StringUtil.switchCheckBox(dto.getSysChannelIdOther()));
+		}
 	}
 
 
@@ -209,6 +220,14 @@ public class BtobBillSaleCostService {
 
 	}
 
+	public void updateSaleCostId(ExtendSalesItemDTO salesCost) throws DaoException{
+
+		SaleDAO saleDAO = new SaleDAO();
+
+//		setCheckFlags(salesCost);
+		saleDAO.updateSalesCost(salesCost);
+
+	}
 
 	/**
 	 * 選択した売上原価情報の直近の原価を取得し、原価を書き換えて、一覧に設定し直す。

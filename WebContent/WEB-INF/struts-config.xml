@@ -509,6 +509,20 @@
 			<forward name="success" path="/WEB-INF/page/import/csvKeepImport.jsp" />
 		</action>
 
+		<action path="/initRemoveKeepCsvImport" type="jp.co.kts.ui.fileImport.CsvImportAction"
+			name="csvImportForm" scope="session" validate="false">
+			<set-property property="nonSecureAction" value="true" />
+			<set-property property="tokenType" value="nocheck" />
+			<forward name="success" path="/WEB-INF/page/import/csvKeepRemoveImport.jsp" />
+		</action>
+
+		<action path="/keepRemoveCsvImport" type="jp.co.kts.ui.fileImport.CsvImportAction"
+			name="csvImportForm" scope="session" validate="false">
+			<set-property property="nonSecureAction" value="false" />
+			<set-property property="tokenType" value="nocheck" />
+			<forward name="failure" path="/WEB-INF/page/import/csvKeepRemoveImport.jsp" />
+			<forward name="success" path="/WEB-INF/page/import/csvKeepRemoveImport.jsp" />
+		</action>
 
 		<!-- ============== マスタ系 =============== -->
 
@@ -2100,6 +2114,19 @@
 
     		<action type="jp.co.kts.ui.btobBill.BtobBillAction"
     			name="btobBillForm"
+    			path="/reflectLatestSaleCostlist"
+                scope="session"
+                validate="false">
+                <set-property value ="false" property ="nonSecureAction"/>
+                <set-property value ="nocheck" property ="tokenType"/>
+
+
+                	<forward name="success" path="/WEB-INF/page/btobBill/saleCostList.jsp"/>
+
+        	</action>
+
+    		<action type="jp.co.kts.ui.btobBill.BtobBillAction"
+    			name="btobBillForm"
     			path="/saveSaleCost"
                 scope="session"
                 validate="false">
@@ -2112,6 +2139,12 @@
                 	<forward name="failure" path="/WEB-INF/page/btobBill/editSaleCost.jsp"/>
 
         	</action>
+
+			<action path="/saveSaleCostById" type="jp.co.kts.ui.btobBill.BtobBillAction"
+				name="btobBillForm" scope="session" validate="false">
+				<set-property property="nonSecureAction" value="false" />
+				<set-property property="tokenType" value="nocheck" />
+			</action>
 
     		<action type="jp.co.kts.ui.btobBill.BtobBillAction"
     			name="btobBillForm"

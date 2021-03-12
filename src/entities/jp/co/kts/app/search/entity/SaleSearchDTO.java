@@ -127,6 +127,13 @@ public class SaleSearchDTO {
 
 	/** 合計値表示フラグ */
 	private String sumDispFlg;
+	
+	private int orderType;
+	
+	private String orderContent;
+	
+	private String wholseSalerName;
+
 
 	public long getSysSalesSlipId() {
 		return sysSalesSlipId;
@@ -596,6 +603,30 @@ public class SaleSearchDTO {
 	 */
 	public void setSumDispFlg(String sumDispFlg) {
 		this.sumDispFlg = sumDispFlg;
+	}
+
+	public int getOrderType() {
+		return this.orderType;
+	}
+	
+	public void setOrderType(int orderType) {
+		this.orderType = orderType;
+	}
+
+	public String getOrderContent() {
+		return this.orderContent;
+	}
+	
+	public void setOrderContent(String orderContent) {
+		this.orderContent = orderContent;
+	}
+
+	public String getWholseSalerName() {
+		return this.wholseSalerName;
+	}
+	
+	public void setWholseSalerName(String wholseSalerName) {
+		this.wholseSalerName = wholseSalerName;
 	}
 
 }

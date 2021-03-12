@@ -90,9 +90,6 @@ public class CsvImportForm extends AppBaseForm{
 		return corporationId;
 	}
 
-
-
-
 	/**
 	 * @param corporationId セットする corporationId
 	 */

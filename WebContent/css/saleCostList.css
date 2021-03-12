@@ -92,8 +92,8 @@ body {
 }
 
 #buttonTable {
-	float: left;
-	margin: 0px 10px 10px 10px;
+	float: right;
+	margin: 0px 160px 10px 10px;
 }
 
 .flgCheck {
@@ -395,6 +395,17 @@ table.summary td {
 	min-width: 80px;
 }
 
+
+.reflectHd {
+	max-width: 80px;
+	min-width: 80px;
+}
+
+.calcHd {
+	max-width: 100px;
+	min-width: 100px;
+}
+
 .check {
 	width: 20px;
 }
@@ -451,6 +462,10 @@ span.explain {
 	font-size: 13px;
 }
 
+#list_area input[type=checkbox]{
+	transform: scale(2);
+    margin: 10px;
+}
 .slipNoLabel {
 	background-color: #FAFAFA;
 	border: solid 1px #CECECE;
@@ -464,10 +479,32 @@ span.explain {
 	background-color: #FAFAFA;
 	border-width: 1px 0px 1px 0px;
 }
+.slipNoCheckBoxLeftTd {
+	border: solid 1px #CECECE;
+	background-color: #FAFAFA;
+	border-width: 1px 0px 1px 1px;
+}
 
 .slipNoNoneCheckBoxTd {
 	border: solid 1px #CECECE;
 	background-color: #FAFAFA;
 	border-radius: 0px 10px 10px 0px;
 	border-width: 1px 1px 1px 0px;
+}
+
+
+.button_small_main:focus{
+ border:1px solid #26759E;
+ background-color: #0763CC; background-image: -webkit-gradient(linear, left top, left bottom, from(#0763CC), to(#0639C5));
+ background-image: -webkit-linear-gradient(top, #0763CC, #0639C5);
+ background-image: -moz-linear-gradient(top, #0763CC, #0639C5);
+ background-image: -ms-linear-gradient(top, #0763CC, #0639C5);
+ background-image: -o-linear-gradient(top, #0763CC, #0639C5);
+ background-image: linear-gradient(to bottom, #0763CC, #0639C5);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#0763CC, endColorstr=#0639C5);
+}
+
+.tdButton {
+	min-width: 80px;
+	max-width: 80px;
+	text-align: center;
 }

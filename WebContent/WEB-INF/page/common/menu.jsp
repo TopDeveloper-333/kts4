@@ -32,6 +32,7 @@
 <%-- 				<li><html:link href="initScheduledLumpArrivalRegistry.do" title="一括入荷予定登録"><span>一括入荷予定登録</span></html:link></li> --%>
 				<li><html:link href="initRegistryItem.do" title="新規登録"><span>新規登録</span></html:link></li>
 				<li><html:link href="initKeepCsvImport.do" title="キープ取込"><span>キープ取込</span></html:link></li>
+				<li><html:link href="initRemoveKeepCsvImport.do" title="キープ取消キープ取込"><span>キープ取消キープ取込</span></html:link></li>
 			</ul>
 		</li>
 		<!--  2015/12/15 ooyama ADD START 法人間請求書機能対応  -->

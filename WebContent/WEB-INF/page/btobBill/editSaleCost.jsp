@@ -42,6 +42,19 @@
 <script type="text/javascript">
 	$(document).ready(function() {
 		$(".overlay").css("display", "none");
+		
+		$('.profitId').each(function(profit){
+			var val = removeComma($(this).text());
+			val = parseInt(val);
+	        
+			var color = '';
+			if(val < 0 ){
+				color = "red";
+			}else if(val > 800){
+				color = "white";
+			}
+			$(this).attr('style', 'background-color:'+color+';');
+	    });		
 	});
 
 	$(function() {
@@ -191,6 +204,7 @@
 
 							// 定価取得
 							var listPrice = $(".listPrice").eq(index).val();
+							
 							if (listPrice == 0 || listPrice == "") {
 								alert("定価が設定されていません。");
 								return;
@@ -200,6 +214,13 @@
 							var rateOver = $(".itemRateOver").eq(index).val();
 							if (rateOver == 0 || rateOver == "") {
 								alert("掛け率が設定されていません。");
+								return;
+							}
+
+							// 送料取得
+							var postage = $(".domePostage").eq(index).val();
+							if ( postage == 0 || postage == "") {
+								alert("送料が設定されていません。");
 								return;
 							}
 
@@ -213,15 +234,21 @@
 							// カンマを除去
 							listPrice = removeComma(listPrice);
 							rateOver = removeComma(rateOver);
+							postage = removeComma(postage);
 							cRateOver = removeComma(cRateOver);
 
 							// カインドコストの計算処理
 							// 定価と掛率に0.01を掛けた数値でカインドコストを算出する。
 							var kindCostArray = calcCost(listPrice, rateOver); /// return [intValue1, intValue2, power]
-							var kindCost = parseInt((kindCostArray[0] * kindCostArray[1]) / kindCostArray[2]);
+							var tempKindCost = (kindCostArray[0] * kindCostArray[1]) / kindCostArray[2];
+							
+							var kindDot = tempKindCost % 10;
+							if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
+							
+							var kindCost = parseInt(tempKindCost) + parseInt(postage);
 
-							$(".kindCost").eq(index).val(kindCost);
-							addComma($(".kindCost").eq(index).val());
+							$(".kindCostEdit").eq(index).children('input').val(kindCost);
+							addComma($(".kindCostEdit").eq(index).children('input').val());
 
 							// 原価の計算処理
 							// 掛率と法人掛率で定価用の掛率を算出する。
@@ -229,11 +256,42 @@
 
 							// 定価と定価用の掛け率から原価（メーカー）を算出
 							var costArray = calcCost(listPrice, rate);
-							var cost = parseInt((costArray[0] * costArray[1]) / costArray[2]);
+							
+							var tempCost = (costArray[0] * costArray[1]) / costArray[2];
+							
+							var dot = tempCost % 10;
+							if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
+							
+							var cost = parseInt(tempCost) + parseInt(postage);
 
 							$(".cost").eq(index).val(cost);
 							addComma($(".cost").eq(index).val());
+							
+							
+							// 単価取得
+							var pieceRate = $(".pieceRateHidden").eq(index).val();
+							if (pieceRate == "") {
+								pieceRate = 0;
+							}
+							var storeFlag = $(".storeFlag").eq(index).val();
+							
+							if(storeFlag == '1'){
+								var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
+							}else{
+								var profit = pieceRate-parseInt(pieceRate*0.1)-(parseInt(cost)+parseInt(postage));
+							}
 
+							var color = '';
+							if(profit < 0 ){
+								color = "red";
+							}else if(profit > 800){
+								color = "white";
+							}
+							profit = new String(profit).replace(/,/g, "");
+							while (profit != (profit = profit.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+							
+							$('.profitId').eq(index).html(profit + "&nbsp;円");
+							$('.profitId').eq(index).attr('style', 'background-color:'+color+';');
 							return;
 
 						});
@@ -462,12 +520,14 @@
 				<th class="corporationRateOverHd">法人掛け率</th>
 				<th class="costHd">原価(メーカー)</th>
 				<th class="kindCostHd">Kind原価</th>
+				<th class="domePostageHd">送料</th>
 				<th class="listPriceHd">定価</th>
 				<th class="itemRateOverHd">商品掛け率</th>
 				<th class="calcHd">入力した定価で<br />金額算出
 				</th>
 				<th class="reflectHd">直近の原価を<br />反映
 				</th>
+				<th class="profitHd">利益判定</th>
 				<th class="check">確認</th>
 			</tr>
 
@@ -485,6 +545,10 @@
 					class="salesSlipRow change_color_only">
 					<nested:hidden property="sysSalesItemId"
 						styleClass="sysSalesItemId" />
+					<nested:hidden property="storeFlag"
+						styleClass="storeFlag" />
+					<nested:hidden property="pieceRate"
+						styleClass="pieceRateHidden" />
 					<tr>
 						<td><nested:write property="saleSlipNo" /></td>
 						<td><nested:write property="corporationNm" /></td>
@@ -501,6 +565,9 @@
 						<td><nested:text property="kindCost"
 								styleClass="priceText kindCost"
 								style="width: 80px; text-align: right;" maxlength="9" />&nbsp;円</td>
+						<td><nested:text property="domePostage"
+								styleClass="priceText domePostage"
+								style="width: 80px; text-align: right;" maxlength="9" />&nbsp;円</td>
 						<td><nested:text property="listPrice"
 								styleClass="priceText listPrice"
 								style="width: 80px; text-align: right;" maxlength="9" />&nbsp;円</td>
@@ -511,6 +578,7 @@
 							class="button_small_main calcSaleCost">算出</a></td>
 						<td class="tdButton"><a href="Javascript:void(0);"
 							class="button_small_main reflectLatestSaleCostCost" tabindex="-1">反映</a></td>
+						<td class="profitId"><nested:write property="profit" format="###,###,###" />&nbsp;円</td>
 						<td><nested:checkbox property="costCheckFlag"
 								styleClass="costCheckFlag" /></td>
 						<nested:hidden property="costCheckFlag" value="off" />

@@ -42,7 +42,6 @@
 // 		document.getElementById("filupload_01").click();
 // 	}
 $(function () {
-
 	numActAlert($("#alertType").val(), $("#trueCount"));
 	$("#alertType").val(0);
 	$("#trueCount").val(0);

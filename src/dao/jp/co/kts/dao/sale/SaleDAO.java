@@ -670,7 +670,7 @@ public class SaleDAO extends BaseDAO {
 		// 前方一致
 		if (StringUtils.isNotEmpty(dto.getOrderNo())) {
 			parameters.addParameter("orderNo",
-					createLikeWord(dto.getOrderNo(), true, false));
+					createLikeWord(dto.getOrderNo(), true, true));
 		}
 
 		// 前方一致
@@ -693,12 +693,26 @@ public class SaleDAO extends BaseDAO {
 		// 他社商品情報
 		if (StringUtils.isNotBlank(dto.getSalesItemCode())) {
 			parameters.addParameter("salesItemCode",
-					createLikeWord(dto.getSalesItemCode(), true, false));
+					createLikeWord(dto.getSalesItemCode(), true, true));
 		}
 
 		if (StringUtils.isNotBlank(dto.getSalesItemNm())) {
-			parameters.addParameter("salesItemNm",
-					createLikeWord(dto.getSalesItemNm(), true, true));
+			String temp = dto.getSalesItemNm();
+			String[] tempArray = temp.split(",");
+			
+			String sql="";
+			int tempFlag = 0;
+			for(String item : tempArray) {
+				if(tempFlag != 0) {
+					sql = sql + "' OR ";
+					sql = sql + "S_ITEM.ITEM_NM ILIKE '" + createLikeWord(item, true, true) ;
+				}else {
+					sql = createLikeWord(item, true, true);
+				}
+
+				tempFlag++;
+			}
+			parameters.addParameter("salesItemNm", sql);
 		}
 
 		// マスタから検索される場合フラグセット
@@ -768,7 +782,18 @@ public class SaleDAO extends BaseDAO {
 		if (StringUtils.isNotEmpty(dto.getSortFirstSub())) {
 			parameters.addParameter("sortOrder", dto.getSortFirstSub());
 		}
+		
+		parameters.addParameter("orderType", dto.getOrderType());
 
+		if (StringUtils.isNotEmpty(dto.getOrderContent())) {
+			parameters.addParameter("orderContent", createLikeWord(dto.getOrderContent(), true, true));
+		}
+
+		if (StringUtils.isNotEmpty(dto.getWholseSalerName())) {
+			parameters.addParameter("wholseSalerName", createLikeWord(dto.getWholseSalerName(), true, true));
+		}
+
+		
 		parameters.addParameter("getListFlg", "1");
 
 		return selectList("SEL_SEARCH_SYS_SALE_ITEM", parameters,

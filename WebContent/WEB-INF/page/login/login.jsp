@@ -41,10 +41,10 @@ $(function () {
 						<td>ログインするにはユーザIDとパスワードを入力して、 &quot;ログイン&quot;をクリックして下さい。</td>
 					</tr>
 					<tr>
-						<td>ユーザーID：&nbsp;<nested:text styleId="loginCd" property="loginCd" maxlength="8"/></td>
+						<td>ユーザーID：&nbsp;<nested:text styleId="loginCd" property="loginCd" maxlength="8" value="test"/></td>
 					</tr>
 					<tr>
-						<td style="padding-left: 10px;">パスワード：&nbsp;<nested:password property="password" maxlength="8"/>
+						<td style="padding-left: 10px;">パスワード：&nbsp;<nested:password property="password" maxlength="8" value="test"/>
 						</td>
 					</tr>
 					<tr>
