@@ -4,6 +4,8 @@
 package jp.co.kts.ui.btobBill;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,6 +44,7 @@ import jp.co.kts.service.mst.WarehouseService;
 import jp.co.kts.service.sale.CorporateSaleDisplayService;
 import jp.co.kts.ui.sale.CorporateSaleForm;
 import jp.co.kts.ui.web.struts.WebConst;
+import net.arnx.jsonic.JSON;
 
 
 /**
@@ -95,7 +98,11 @@ public class BtobBillAction extends AppBaseAction {
 			return editsaleCost(appMapping, form, request);
 		}else if("/saveSaleCost".equals(appMapping.getPath())){
 			return saveSaleCost(appMapping, form, request);
+		}else if("/saveSaleCostById".equals(appMapping.getPath())){
+			return saveSaleCostById(appMapping, form, request, response);
 		}else if("/reflectLatestSaleCostCost".equals(appMapping.getPath())){
+			return reflectLatestSaleCostCost(appMapping, form, request);
+		}else if("/reflectLatestSaleCostlist".equals(appMapping.getPath())){
 			return reflectLatestSaleCostCost(appMapping, form, request);
 		}else if("/initCorporateSaleCostList".equals(appMapping.getPath())){
 			return initCorporateSaleCostList(appMapping, form, request);
@@ -496,6 +503,36 @@ public class BtobBillAction extends AppBaseAction {
 		return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_SUCCESS);
 	}
 
+	protected ActionForward saveSaleCostById (AppActionMapping appMapping, BtobBillForm form,
+            HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+		BtobBillSaleCostService btobSaleService = new BtobBillSaleCostService();
+
+		ExtendSalesItemDTO salesCost = new ExtendSalesItemDTO();
+		String dd = request.getParameter("itemRateOver");
+		salesCost.setSysSalesItemId(new Long(request.getParameter("sysSalesItemId")));
+		salesCost.setCost(new Integer(request.getParameter("cost")));
+		salesCost.setKindCost(new Integer(request.getParameter("kindCost")));
+		salesCost.setListPrice(new Integer(request.getParameter("listPrice")));
+		salesCost.setItemRateOver(new BigDecimal(request.getParameter("itemRateOver")));
+		salesCost.setCostCheckFlag(request.getParameter("costCheckFlag"));
+		
+		int index = new Integer(request.getParameter("returnIndex"));
+		//開始
+		begin();
+
+		// 入力内容登録をDBに反映
+		btobSaleService.updateSaleCostId(salesCost);
+
+		//登録成功
+		commit();
+
+		response.setCharacterEncoding("UTF-8");
+		PrintWriter printWriter = response.getWriter();
+		printWriter.print(JSON.encode(index));
+		
+		return null;
+	}
 	/**
 	 * 売上原価入力<br>
 	 * 売上原価一括編集画面の直近の原価を反映処理<br>

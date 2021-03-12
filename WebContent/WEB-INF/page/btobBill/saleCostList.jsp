@@ -49,7 +49,6 @@
 		$('.profitId').each(function(profit){
 			var val = removeComma($(this).text());
 			val = parseInt(val);
-	        console.log(val);      
 	        
 			var color = '';
 			if(val < 0 ){
@@ -63,8 +62,297 @@
 	 });
 
 
-
 	$(function() {
+
+		$(".saleCostEdit").click(function(){
+			var index = $(".saleCostEdit").index(this);
+			
+			if($(this).html() == "保存"){
+
+				if (confirm("保存しますか？")) {
+					
+					$(this).html('編集');
+
+					var sysSalesItemId = $(".sysSalesItemId").eq(index).val();
+					var cost = $(".costEdit").eq(index).children('input').val();
+					var kindCost = $(".kindCostEdit").eq(index).children('input').val();
+					var itemRateOver = $(".itemRateOverEdit").eq(index).children('input').val();
+					var listPrice = $(".listPriceEdit").eq(index).children('input').val();
+					
+					
+					if (cost == 0 || cost == "") {
+						alert("単価が設定されていません。");
+						return;
+					}
+					if (kindCost == 0 || kindCost == "") {
+						alert("Kind原価が設定されていません。");
+						return;
+					}
+					if (listPrice == 0 || listPrice == "") {
+						alert("定価が設定されていません。");
+						return;
+					}
+					if (itemRateOver == 0 || itemRateOver == "") {
+						alert("掛け率が設定されていません。");
+						return;
+					}
+
+					
+					if($(".costCheck").eq(index).children('input').is(':checked') == true)
+						var costCheckFlag = 1;
+					else
+						var costCheckFlag = 0;
+					
+					var returnIndex = index;
+
+					
+					$.ajax({
+						type : 'post',
+						url : './saveSaleCostById.do',
+						dataType : 'json',
+						data : {
+							'sysSalesItemId' : sysSalesItemId,
+							'cost' : cost,
+							'kindCost' : kindCost,
+							'itemRateOver' : itemRateOver,
+							'listPrice' : listPrice,
+							'costCheckFlag' : costCheckFlag,
+							'returnIndex' : returnIndex,
+							
+						}
+					}).done(function(data) {
+
+						var idx = data;
+
+						var cost = $(".costEdit").eq(idx).children('input').val();
+						cost = new String(cost).replace(/,/g, "");
+						while (cost != (cost = cost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+						$('.costEdit').eq(idx).html(cost + "&nbsp;円");
+						
+						var kindCost = $(".kindCostEdit").eq(idx).children('input').val();
+						kindCost = new String(kindCost).replace(/,/g, "");
+						while (kindCost != (kindCost = kindCost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+						$('.kindCostEdit').eq(idx).html(kindCost + "&nbsp;円");
+						
+						var domePostage = $(".domePostageEdit").eq(idx).children('input').val();
+						domePostage = new String(domePostage).replace(/,/g, "");
+						while (domePostage != (domePostage = domePostage.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+						$('.domePostageEdit').eq(idx).html(domePostage + "&nbsp;円");
+						
+						var listPrice = $(".listPriceEdit").eq(idx).children('input').val();
+						listPrice = new String(listPrice).replace(/,/g, "");
+						while (listPrice != (listPrice = listPrice.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+						$('.listPriceEdit').eq(idx).html(listPrice + "&nbsp;円");
+
+						var itemRateOver = $(".itemRateOverEdit").eq(idx).children('input').val();
+						itemRateOver = new String(itemRateOver).replace(/,/g, "");
+						while (itemRateOver != (itemRateOver = itemRateOver.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+						$('.itemRateOverEdit').eq(idx).html(itemRateOver + "&nbsp;%");
+						
+						$(".costCheck").eq(idx).children('input').prop('disabled', true);
+						$(".calcSaleCost").eq(idx).attr('disabled', true);
+						
+					});
+
+				}
+
+			}else{
+				$(this).html('保存');
+
+				$(".calcSaleCost").eq(index).attr('disabled', false);
+				$(".reflectLatestSaleCostCost").eq(index).attr('disabled', false);
+
+				var cost = removeComma($(".costEdit").eq(index).text());
+				cost = parseInt(cost);
+				
+				$(".costEdit").eq(index).html("<input type='text' name='cost' id='cost' class='priceText' value='" + cost + "' style='width: 80px; text-align: right;' maxlength='9'>")
+
+				var kindCost = removeComma($(".kindCostEdit").eq(index).text());
+				kindCost = parseInt(kindCost);
+
+				$(".kindCostEdit").eq(index).html("<input type='text' name='kindCost' id='kindCost' class='priceText' value='" + kindCost + "' style='width: 80px; text-align: right;' maxlength='9'>")
+
+				var domePostage = removeComma($(".domePostageEdit").eq(index).text());
+				domePostage = parseInt(domePostage);
+
+				$(".domePostageEdit").eq(index).html("<input type='text' name='domePostage' id='domePostage' class='priceText' value='" + domePostage + "' style='width: 80px; text-align: right;' maxlength='9'>")
+
+				var listPrice = removeComma($(".listPriceEdit").eq(index).text());
+				listPrice = parseInt(listPrice);
+
+				$(".listPriceEdit").eq(index).html("<input type='text' name='listPrice' id='listPrice' class='priceText' value='" + listPrice + "' style='width: 80px; text-align: right;' maxlength='9'>")
+			
+				var itemRateOver = removeComma($(".itemRateOverEdit").eq(index).text());
+				itemRateOver = parseFloat(itemRateOver);
+
+				$(".itemRateOverEdit").eq(index).html("<input type='text' name='itemRateOver' id='itemRateOver' class='priceText' value='" + itemRateOver + "' style='width: 80px; text-align: right;' maxlength='9'>")
+			
+				$(".costCheck").eq(index).children('input').prop('disabled', false);
+				$(".costCheck").eq(index).children('input').prop('checked', true);
+			}
+		})
+		
+		// 直近の原価を反映
+		$(".reflectLatestSaleCostCost").click(function() {
+
+			// 一覧のインデックスを設定
+			$("#listIdx").val($(".reflectLatestSaleCostCost").index(this));
+
+			goTransaction("reflectLatestSaleCostlist.do");
+
+			return;
+		});
+
+		// 入力した原価で金額算出
+		$(".calcSaleCost")
+				.click(
+						function() {
+
+							// 一覧のインデックスを設定
+							var index = $(".calcSaleCost").index(this);
+
+							// 定価取得
+							var listPrice = $(".listPriceEdit").eq(index).children('input').val();
+							
+							if (listPrice == 0 || listPrice == "") {
+								alert("定価が設定されていません。");
+								return;
+							}
+
+							// 掛け率取得
+							var rateOver = $(".itemRateOverEdit").eq(index).children('input').val();
+							if (rateOver == 0 || rateOver == "") {
+								alert("掛け率が設定されていません。");
+								return;
+							}
+
+							// 送料取得
+							var postage = $(".domePostageEdit").eq(index).children('input').val();
+							if ( postage == 0 || postage == "") {
+								alert("送料が設定されていません。");
+								return;
+							}
+
+							// 法人掛け率取得
+							var cRateOver = $(".corporationRateOverEdit").eq(index).val();
+							if (cRateOver == "") {
+								cRateOver = 0;
+							}
+
+							// カンマを除去
+							listPrice = removeComma(listPrice);
+							rateOver = removeComma(rateOver);
+							postage = removeComma(postage);
+							cRateOver = removeComma(cRateOver);
+
+							// カインドコストの計算処理
+							// 定価と掛率に0.01を掛けた数値でカインドコストを算出する。
+							var kindCostArray = calcCost(listPrice, rateOver); /// return [intValue1, intValue2, power]
+							var tempKindCost = (kindCostArray[0] * kindCostArray[1]) / kindCostArray[2];
+							
+							var kindDot = tempKindCost % 10;
+							if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
+							
+							var kindCost = parseInt(tempKindCost) + parseInt(postage);
+
+							$(".kindCostEdit").eq(index).children('input').val(kindCost);
+							addComma($(".kindCostEdit").eq(index).children('input').val());
+
+							// 原価の計算処理
+							// 掛率と法人掛率で定価用の掛率を算出する。
+							var rate = parseFloat(rateOver) + parseFloat(cRateOver);
+
+							// 定価と定価用の掛け率から原価（メーカー）を算出
+							var costArray = calcCost(listPrice, rate);
+							
+							var tempCost = (costArray[0] * costArray[1]) / costArray[2];
+							
+							var dot = tempCost % 10;
+							if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
+							
+							var cost = parseInt(tempCost) + parseInt(postage);
+
+							$(".costEdit").eq(index).children('input').val(cost);
+							addComma($(".costEdit").eq(index).children('input').val());
+							
+							
+							// 単価取得
+							var pieceRate = removeComma($(".pieceRateEdit").eq(index).text());
+							if (pieceRate == "") {
+								pieceRate = 0;
+							}
+							
+							pieceRate = parseInt(pieceRate);
+							
+							var storeFlag = $(".storeFlag").eq(index).val();
+							
+							if(storeFlag == '1'){
+								var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
+							}else{
+								var profit = pieceRate-parseInt(pieceRate*0.1)-(parseInt(cost)+parseInt(postage));
+							}
+
+							var color = '';
+							if(profit < 0 ){
+								color = "red";
+							}else if(profit > 800){
+								color = "white";
+							}
+							profit = new String(profit).replace(/,/g, "");
+							while (profit != (profit = profit.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+							
+							$('.profitId').eq(index).html(profit + "&nbsp;円");
+							$('.profitId').eq(index).attr('style', 'background-color:'+color+';');
+							return;
+
+						});
+
+		//Kind原価の計算メソッド (引数：定価、掛率)
+		function calcCost(value1, value2) {
+
+			var listPrice = parseFloat(value1);
+			var nrateOver = parseFloat((value2) * 0.01);
+			// それぞれの小数点の位置を取得
+			var dotPosition1 = getDotPosition(listPrice);
+			var dotPosition2 = getDotPosition(nrateOver);
+
+			// 位置の値が大きい方（小数点以下の位が多い方）の位置を取得
+			var max = Math.max(dotPosition1, dotPosition2);
+
+			// 大きい方に小数の桁を合わせて文字列化、
+			// 小数点を除いて整数の値にする
+			var intValue1 = parseFloat((listPrice.toFixed(max) + '').replace('.', ''));
+			var intValue2 = parseFloat((nrateOver.toFixed(max) + '').replace('.', ''));
+
+			// 10^N の値を計算
+			if (max == 1) {
+				max = max + 1;
+			} else {
+				max = max * 2;
+			}
+			var power = Math.pow(10, max);
+
+			// 整数値で引き算した後に10^Nで割る
+			return [ intValue1, intValue2, power ];
+
+		}
+
+		//小数点の位置を探るメソッド
+		function getDotPosition(value) {
+
+			// 数値のままだと操作できないので文字列化する
+			var strVal = String(value);
+			var dotPosition = 0;
+
+			//小数点が存在するか確認
+			// 小数点があったら位置を取得
+			if (strVal.lastIndexOf('.') !== -1) {
+				dotPosition = (strVal.length - 1) - strVal.lastIndexOf('.');
+			}
+
+			return dotPosition;
+		}
+		
 
 	     if($('.slipNoExist').prop('checked') || $('.slipNoHyphen').prop('checked')) {
 	    	 $('.slipNoNone').attr('disabled','disabled');
@@ -208,17 +496,17 @@
 		});
 
 		//売上詳細
-		$(".salesSlipRow").dblclick(function () {
+/*		$(".salesSlipRow").dblclick(function () {
 
 			$("#sysSalesSlipId").val($(this).find(".sysSalesSlipId").val());
 			goTransaction("detailSale.do");
 		});
-
+*/
 		$(".salesSlipLink").click(function () {
 
 			var id = $(this).find(".sysSalesSlipId_Link").val();
 			$("#sysSalesSlipId").val(id);
-			goTransactionNew("detailSale.do");
+			
 			FwGlobal.submitForm(document.forms[0],"/detailSale","detailSale" + $("#sysSalesSlipId").val(),"top=0,left=0,width="+ screen.width + "px,height=" + screen.height +"px;");
 
 		});
@@ -721,6 +1009,8 @@
 	<nested:hidden property="sysSaleItemIDListSize" styleId="sysSaleItemIDListSize" />
 	<nested:hidden property="saleCostPageIdx" styleId="pageIdx" />
 	<nested:hidden property="saleListPageMax" styleId="saleListPageMax" />
+	<nested:hidden property="saleCostListIdx" styleId="listIdx" />
+	
 		<table class="list_table">
 			<tr>
 				<th class="saleSlipNo">伝票番号</th>
@@ -736,8 +1026,11 @@
 				<th class="domePostage">送料</th>
 				<th class="listPrice">定価</th>
 				<th class="itemRateOver">商品掛け率</th>
+				<th class="calcHd">入力した定価で<br />金額算出
+				</th>
 				<th class="profit">利益判定</th>
 				<th class="check">確認</th>
+				<th class="check">編集</th>
 			</tr>
 
 			<nested:iterate property="salesCostList" indexId="idx">
@@ -753,6 +1046,8 @@
 			<tbody style="background:${backgroundColor};" class="salesSlipRow change_color">
 			<nested:hidden property="sysSalesSlipId" styleClass="sysSalesSlipId"></nested:hidden>
 			<nested:hidden property="sysSalesItemId" styleClass="sysSalesItemId" />
+			<nested:hidden property="storeFlag"	styleClass="storeFlag" />
+			
 			<tr>
 				<td>
 					<a href="Javascript:(void);" class="salesSlipLink" >
@@ -772,15 +1067,19 @@
 				</td>
 				<td><nested:write property="itemNm" /></td>
 				<td><nested:write property="orderNum" /></td>
-				<td><nested:write property="pieceRate" format="###,###,###" />&nbsp;円</td>
-				<td><nested:write property="corporationRateOver" />&nbsp;％</td>
-				<td><nested:write property="cost" format="###,###,###" />&nbsp;円</td>
-				<td><nested:write property="kindCost" format="###,###,###" />&nbsp;円</td>
-				<td><nested:write property="domePostage" format="###,###,###" />&nbsp;円</td>
-				<td><nested:write property="listPrice" format="###,###,###" />&nbsp;円</td>
-				<td><nested:write property="itemRateOver" />&nbsp;％</td>
+				<td class="pieceRateEdit"><nested:write property="pieceRate" format="###,###,###" />&nbsp;円</td>
+				<td class="corporationRateOverEdit"><nested:write property="corporationRateOver" />&nbsp;％</td>
+				<td class="costEdit"><nested:write property="cost" format="###,###,###" />&nbsp;円</td>
+				<td class="kindCostEdit"><nested:write property="kindCost" format="###,###,###" />&nbsp;円</td>
+				<td class="domePostageEdit"><nested:write property="domePostage" format="###,###,###" />&nbsp;円</td>
+				<td class="listPriceEdit"><nested:write property="listPrice" format="###,###,###" />&nbsp;円</td>
+				<td class="itemRateOverEdit"><nested:write property="itemRateOver" />&nbsp;％</td>
+				<td class="tdButton"><button type="button"
+					class="button_small_main calcSaleCost" disabled>算出</button></td>
 				<td class="profitId"><nested:write property="profit" />&nbsp;円</td>
-				<td><nested:checkbox property="costCheckFlag" disabled="true" /></td>
+				<td class="costCheck"><nested:checkbox property="costCheckFlag" disabled="true" /></td>
+				<td class="tdButton"><button type="button"
+					class="button_small_main saleCostEdit" >編集</button></td>
 			</tr>
 			</tbody>
 			</nested:iterate>
