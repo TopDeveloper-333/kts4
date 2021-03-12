@@ -220,6 +220,14 @@ public class BtobBillSaleCostService {
 
 	}
 
+	public void updateSaleCostId(ExtendSalesItemDTO salesCost) throws DaoException{
+
+		SaleDAO saleDAO = new SaleDAO();
+
+//		setCheckFlags(salesCost);
+		saleDAO.updateSalesCost(salesCost);
+
+	}
 
 	/**
 	 * 選択した売上原価情報の直近の原価を取得し、原価を書き換えて、一覧に設定し直す。

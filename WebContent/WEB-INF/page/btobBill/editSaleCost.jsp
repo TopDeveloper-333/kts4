@@ -46,7 +46,6 @@
 		$('.profitId').each(function(profit){
 			var val = removeComma($(this).text());
 			val = parseInt(val);
-	        console.log(val);      
 	        
 			var color = '';
 			if(val < 0 ){
@@ -241,10 +240,15 @@
 							// カインドコストの計算処理
 							// 定価と掛率に0.01を掛けた数値でカインドコストを算出する。
 							var kindCostArray = calcCost(listPrice, rateOver); /// return [intValue1, intValue2, power]
-							var kindCost = parseInt((kindCostArray[0] * kindCostArray[1]) / kindCostArray[2]);
+							var tempKindCost = (kindCostArray[0] * kindCostArray[1]) / kindCostArray[2];
+							
+							var kindDot = tempKindCost % 10;
+							if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
+							
+							var kindCost = parseInt(tempKindCost) + parseInt(postage);
 
-							$(".kindCost").eq(index).val(kindCost);
-							addComma($(".kindCost").eq(index).val());
+							$(".kindCostEdit").eq(index).children('input').val(kindCost);
+							addComma($(".kindCostEdit").eq(index).children('input').val());
 
 							// 原価の計算処理
 							// 掛率と法人掛率で定価用の掛率を算出する。
@@ -252,7 +256,13 @@
 
 							// 定価と定価用の掛け率から原価（メーカー）を算出
 							var costArray = calcCost(listPrice, rate);
-							var cost = parseInt((costArray[0] * costArray[1]) / costArray[2]);
+							
+							var tempCost = (costArray[0] * costArray[1]) / costArray[2];
+							
+							var dot = tempCost % 10;
+							if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
+							
+							var cost = parseInt(tempCost) + parseInt(postage);
 
 							$(".cost").eq(index).val(cost);
 							addComma($(".cost").eq(index).val());
@@ -264,7 +274,6 @@
 								pieceRate = 0;
 							}
 							var storeFlag = $(".storeFlag").eq(index).val();
-							console.log(storeFlag);
 							
 							if(storeFlag == '1'){
 								var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
@@ -281,7 +290,6 @@
 							profit = new String(profit).replace(/,/g, "");
 							while (profit != (profit = profit.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
 							
-							console.log(profit);
 							$('.profitId').eq(index).html(profit + "&nbsp;円");
 							$('.profitId').eq(index).attr('style', 'background-color:'+color+';');
 							return;
