@@ -45,6 +45,51 @@
 	$(document).ready(function(){
 		$(".overlay").css("display", "none");
 		$("#sortFirstSub").val(1);
+
+		function calcCost(value1, value2) {
+
+			var listPrice = parseFloat(value1);
+			var nrateOver = parseFloat((value2) * 0.01);
+			// それぞれの小数点の位置を取得
+			var dotPosition1 = getDotPosition(listPrice);
+			var dotPosition2 = getDotPosition(nrateOver);
+
+			// 位置の値が大きい方（小数点以下の位が多い方）の位置を取得
+			var max = Math.max(dotPosition1, dotPosition2);
+
+			// 大きい方に小数の桁を合わせて文字列化、
+			// 小数点を除いて整数の値にする
+			var intValue1 = parseFloat((listPrice.toFixed(max) + '').replace('.', ''));
+			var intValue2 = parseFloat((nrateOver.toFixed(max) + '').replace('.', ''));
+
+			// 10^N の値を計算
+			if (max == 1) {
+				max = max + 1;
+			} else {
+				max = max * 2;
+			}
+			var power = Math.pow(10, max);
+
+			// 整数値で引き算した後に10^Nで割る
+			return [ intValue1, intValue2, power ];
+
+		}
+
+		//小数点の位置を探るメソッド
+		function getDotPosition(value) {
+
+			// 数値のままだと操作できないので文字列化する
+			var strVal = String(value);
+			var dotPosition = 0;
+
+			//小数点が存在するか確認
+			// 小数点があったら位置を取得
+			if (strVal.lastIndexOf('.') !== -1) {
+				dotPosition = (strVal.length - 1) - strVal.lastIndexOf('.');
+			}
+
+			return dotPosition;
+		}
 		
 		$('.profitId').each(function(profit){
 			var val = removeComma($(this).text());
@@ -57,7 +102,91 @@
 				color = "white";
 			}
 			$(this).attr('style', 'background-color:'+color+';');
-	    });		
+			
+			
+			var index = $('.profitId').index(this);
+
+			var listPrice = removeComma($(".listPriceEdit").eq(index).text());
+			
+			// 掛け率取得
+			var rateOver = removeComma($(".itemRateOverEdit").eq(index).text());
+
+			// 送料取得
+			var postage = removeComma($(".domePostageEdit").eq(index).text());
+
+			// 法人掛け率取得
+			var cRateOver = $(".corporationRateOverEdit").eq(index).text();
+			if (cRateOver == "") {
+				cRateOver = 0;
+			}
+
+			// カンマを除去
+			listPrice = removeComma(listPrice);
+			rateOver = removeComma(rateOver);
+			postage = removeComma(postage);
+			cRateOver = removeComma(cRateOver);
+
+			// カインドコストの計算処理
+			// 定価と掛率に0.01を掛けた数値でカインドコストを算出する。
+			var kindCostArray = calcCost(parseInt(listPrice), parseFloat(rateOver)); /// return [intValue1, intValue2, power]
+			var tempKindCost = (kindCostArray[0] * kindCostArray[1]) / kindCostArray[2];
+
+			var kindDot = tempKindCost % 10;
+			if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
+			
+			var kindCost = parseInt(tempKindCost) + parseInt(postage);
+
+			kindCost = new String(kindCost).replace(/,/g, "");
+			while (kindCost != (kindCost = kindCost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+			$('.kindCostEdit').eq(index).html(kindCost + "&nbsp;円");
+			
+			// 原価の計算処理
+			// 掛率と法人掛率で定価用の掛率を算出する。
+			var rate = parseFloat(rateOver) + parseFloat(cRateOver);
+
+			// 定価と定価用の掛け率から原価（メーカー）を算出
+			var costArray = calcCost(listPrice, rate);
+			
+			var tempCost = (costArray[0] * costArray[1]) / costArray[2];
+			
+			var dot = tempCost % 10;
+			if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
+			
+			var cost = parseInt(tempCost) + parseInt(postage);
+
+			cost = new String(cost).replace(/,/g, "");
+			while (cost != (cost = cost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+			$('.costEdit').eq(index).html(cost + "&nbsp;円");
+
+			// 単価取得
+			var pieceRate = removeComma($(".pieceRateEdit").eq(index).text());
+			if (pieceRate == "") {
+				pieceRate = 0;
+			}
+			
+			pieceRate = parseInt(pieceRate);
+			
+			var storeFlag = $(".storeFlag").eq(index).val();
+			
+			if(storeFlag == '1'){
+				var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(removeComma(cost))-parseInt(postage);
+			}else{
+				var profit = pieceRate-parseInt(pieceRate*0.1)-(parseInt(removeComma(cost))+parseInt(postage));
+			}
+
+			var color = '';
+			if(profit < 0 ){
+				color = "red";
+			}else if(profit > 800){
+				color = "white";
+			}
+			profit = new String(profit).replace(/,/g, "");
+			while (profit != (profit = profit.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+			
+			$(this).html(profit + "&nbsp;円");
+			$(this).attr('style', 'background-color:'+color+';');
+			
+		});		
 
 	 });
 
@@ -247,7 +376,7 @@
 
 							// カインドコストの計算処理
 							// 定価と掛率に0.01を掛けた数値でカインドコストを算出する。
-							var kindCostArray = calcCost(listPrice, rateOver); /// return [intValue1, intValue2, power]
+							var kindCostArray = calcCost(parseInt(listPrice), parseFloat(rateOver)); /// return [intValue1, intValue2, power]
 							var tempKindCost = (kindCostArray[0] * kindCostArray[1]) / kindCostArray[2];
 							
 							var kindDot = tempKindCost % 10;
@@ -263,7 +392,7 @@
 							var rate = parseFloat(rateOver) + parseFloat(cRateOver);
 
 							// 定価と定価用の掛け率から原価（メーカー）を算出
-							var costArray = calcCost(listPrice, rate);
+							var costArray = calcCost(parseInt(listPrice), rate);
 							
 							var tempCost = (costArray[0] * costArray[1]) / costArray[2];
 							
@@ -284,6 +413,7 @@
 							
 							pieceRate = parseInt(pieceRate);
 							
+							console.log(pieceRate);
 							var storeFlag = $(".storeFlag").eq(index).val();
 							
 							if(storeFlag == '1'){
