@@ -234,7 +234,7 @@
 							}
 
 							// 法人掛け率取得
-							var cRateOver = $(".corporationRateOverEdit").eq(index).val();
+							var cRateOver = $(".corporationRateOverEdit").eq(index).text();
 							if (cRateOver == "") {
 								cRateOver = 0;
 							}
