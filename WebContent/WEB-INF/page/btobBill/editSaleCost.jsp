@@ -247,8 +247,8 @@
 							
 							var kindCost = parseInt(tempKindCost) + parseInt(postage);
 
-							$(".kindCostEdit").eq(index).children('input').val(kindCost);
-							addComma($(".kindCostEdit").eq(index).children('input').val());
+							$(".kindCost").eq(index).val(kindCost);
+							addComma($(".kindCost").eq(index).val());
 
 							// 原価の計算処理
 							// 掛率と法人掛率で定価用の掛率を算出する。
