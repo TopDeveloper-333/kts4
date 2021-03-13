@@ -102,6 +102,8 @@ public class BtobBillAction extends AppBaseAction {
 			return saveSaleCostById(appMapping, form, request, response);
 		}else if("/reflectLatestSaleCostCost".equals(appMapping.getPath())){
 			return reflectLatestSaleCostCost(appMapping, form, request);
+		}else if("/reflectLatestSaleCostById".equals(appMapping.getPath())){
+			return reflectLatestSaleCostById(appMapping, form, request, response);
 		}else if("/reflectLatestSaleCostlist".equals(appMapping.getPath())){
 			return reflectLatestSaleCostCost(appMapping, form, request);
 		}else if("/initCorporateSaleCostList".equals(appMapping.getPath())){
@@ -551,6 +553,31 @@ public class BtobBillAction extends AppBaseAction {
 		return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_SUCCESS);
 	}
 
+	protected ActionForward reflectLatestSaleCostById (AppActionMapping appMapping, BtobBillForm form,
+            HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+		BtobBillSaleCostService btobSaleService = new BtobBillSaleCostService();
+
+		// 売上原価一覧と選択行のインデックスから、
+		// 直近の原価を取得し、売上原価一覧に設定し直す。
+		List<ExtendSalesItemDTO> salesCostList = new ArrayList<>();
+		
+		ExtendSalesItemDTO salesCost = new ExtendSalesItemDTO();
+		
+		salesCostList = btobSaleService.reflectLatestSaleCost(form.getSalesCostList(),form.getSaleCostListIdx());
+
+		int dd = new Integer(request.getParameter("sysSalesIndex"));
+		salesCost = salesCostList.get(new Integer(request.getParameter("sysSalesIndex")));
+
+		String returnValue = request.getParameter("sysSalesIndex") + "," + String.valueOf(salesCost.getCost()) + ","
+							+ String.valueOf(salesCost.getKindCost()) + "," + String.valueOf(salesCost.getDomePostage()) + ","
+							+ String.valueOf(salesCost.getListPrice()) + "," + String.valueOf(salesCost.getItemRateOver()) ;
+		response.setCharacterEncoding("UTF-8");
+		PrintWriter printWriter = response.getWriter();
+		printWriter.print(JSON.encode(returnValue));
+		
+		return null;
+	}
 	/**
 	 * 業販原価入力<br>
 	 * 業販原価一覧画面の初期表示処理
