@@ -1045,7 +1045,7 @@
 				<td >
 					<nested:select property="orderType">
 						<html:option value="1">注文者名</html:option>
-						<html:option value="2">お届先</html:option>
+						<html:option value="2">お届先名</html:option>
 					</nested:select>
 				</td>
 			
