@@ -488,8 +488,6 @@
 						<td><nested:select property="transportCorporationSystem">
 								<html:optionsCollection property="transportCorporationSystemMap" label="value" value="key"/>
 						</nested:select></td>
-						<td>品番</td>
-						<td style="white-space: nowrap;"><nested:text property="itemCodeFrom" styleId="itemCodeFrom" styleClass="text_w120 numText" maxlength="11" /> ～ <nested:text property="itemCodeTo" styleId="itemCodeTo" styleClass="text_w120 numText" maxlength="11" /></td>
 					</tr>
 					<tr>
 						<td>
@@ -514,7 +512,7 @@
 							<html:option value="1">有</html:option>
 							<html:option value="2">無</html:option>
 						</nested:select></td>
-						<td>他社品番（前方一致）</td>
+						<td>他社品番（部分一致）</td>
 						<td><nested:text property="salesItemCode" styleClass="text_w120" maxlength="30" /></td>
 					</tr>
 					<tr>
@@ -558,6 +556,10 @@
 							<html:option value="0">　</html:option>
 							<html:optionsCollection property="paymentMethodMap" label="value" value="key" />
 						</nested:select></td>
+
+						<td>問屋名</td>
+						<td><nested:text property="wholseSalerName" styleClass="text_w200" /></td>
+						
 					</tr>
 					<tr>
 						<td colspan="2" class="td_center" style="padding-left: 20px;"><a class="button_main search" href="javascript:void(0);">検索</a></td>

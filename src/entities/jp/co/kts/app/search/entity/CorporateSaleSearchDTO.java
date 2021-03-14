@@ -158,6 +158,8 @@ public class CorporateSaleSearchDTO {
 	private long searchSysCorporationId;
 
 	private String test;
+	
+	private String wholseSalerName;
 
 	// end
 
@@ -1011,4 +1013,13 @@ public class CorporateSaleSearchDTO {
 		this.searchSysCorporationId = searchSysCorporationId;
 	}
 
+	public String getWholseSalerName() {
+		return wholseSalerName;
+	}
+
+	public void setWholseSalerName(String wholseSalerName) {
+		this.wholseSalerName = wholseSalerName;
+	}
+
+	
 }
