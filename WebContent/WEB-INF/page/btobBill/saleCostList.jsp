@@ -675,7 +675,7 @@
 			var id = $(this).find(".sysSalesSlipId_Link").val();
 			$("#sysSalesSlipId").val(id);
 			
-			FwGlobal.submitForm(document.forms[0],"/detailSale","detailSale" + $("#sysSalesSlipId").val(),"top=0,left=0,width="+ screen.width + "px,height=" + screen.height +"px;");
+			FwGlobal.submitForm(document.forms[0],"/detailSale","detailSale" + $("#sysSalesSlipId").val(),"top=130,left=500,width=780px,height=520px;");
 
 		});
 
@@ -1045,7 +1045,7 @@
 				<td >
 					<nested:select property="orderType">
 						<html:option value="1">注文者名</html:option>
-						<html:option value="2">注文者TEL</html:option>
+						<html:option value="2">お届先</html:option>
 					</nested:select>
 				</td>
 			

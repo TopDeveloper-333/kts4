@@ -1078,17 +1078,25 @@ public class WebConst {
 
 	public static final int LIST_PAGE_MAX_20 = 20;
 
-	public static final int LIST_PAGE_MAX_500 = 500;
-
 	public static final String LIST_PAGE_MAX_CODE_2 = "2";
 
 	public static final int LIST_PAGE_MAX_50 = 50;
 
-	public static final int LIST_PAGE_MAX_1000 = 1000;
-
 	public static final String LIST_PAGE_MAX_CODE_3 = "3";
 
 	public static final int LIST_PAGE_MAX_100 = 100;
+
+	public static final String LIST_PAGE_MAX_CODE_4 = "4";
+
+	public static final int LIST_PAGE_MAX_10 = 10;
+
+	public static final String LIST_PAGE_MAX_CODE_5 = "5";
+
+	public static final int LIST_PAGE_MAX_500 = 500;
+
+	public static final String LIST_PAGE_MAX_CODE_6 = "6";
+
+	public static final int LIST_PAGE_MAX_1000 = 1000;
 
 	/**
 	 * 1ページの件数
@@ -1096,14 +1104,13 @@ public class WebConst {
 	public static final Map<String, Integer> LIST_PAGE_MAX_MAP;
 	static {
 		Map<String, Integer> listPageMaxMap = new LinkedHashMap<String, Integer>();
-		listPageMaxMap.put(LIST_PAGE_MAX_CODE_1, LIST_PAGE_MAX_500);
-		listPageMaxMap.put(LIST_PAGE_MAX_CODE_2, LIST_PAGE_MAX_1000);
-//		listPageMaxMap.put(LIST_PAGE_MAX_CODE_3, LIST_PAGE_MAX_100);
+		listPageMaxMap.put(LIST_PAGE_MAX_CODE_1, LIST_PAGE_MAX_20);
+		listPageMaxMap.put(LIST_PAGE_MAX_CODE_2, LIST_PAGE_MAX_50);
+		listPageMaxMap.put(LIST_PAGE_MAX_CODE_3, LIST_PAGE_MAX_100);
+		listPageMaxMap.put(LIST_PAGE_MAX_CODE_5, LIST_PAGE_MAX_500);
+		listPageMaxMap.put(LIST_PAGE_MAX_CODE_6, LIST_PAGE_MAX_1000);
 		LIST_PAGE_MAX_MAP = Collections.unmodifiableMap(listPageMaxMap);
 	}
-
-	public static final String LIST_PAGE_MAX_CODE_4 = "4";
-	public static final int LIST_PAGE_MAX_10 = 10;
 
 	/**
 	 * 1ページの件数<br>

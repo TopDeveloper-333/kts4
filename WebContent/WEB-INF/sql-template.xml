@@ -10281,7 +10281,11 @@
 
 				<if-equals value="2" varName="orderType">
 					AND
-					ORDER_TEL ILIKE ${orderContent}
+					((SLIP.destination_family_nm ||
+					SLIP.destination_first_nm) ILIKE ${orderContent}
+					OR (SLIP.destination_family_nm_kana
+					|| SLIP.destination_first_nm_kana) ILIKE
+					${orderContent})
 				</if-equals>			
 			</if-not-empty>
 
@@ -10676,7 +10680,7 @@
 		) AS I_COST
 		ON
 		SITEM.SYS_ITEM_ID = I_COST.SYS_ITEM_ID
-		INNER JOIN
+		LEFT JOIN
 		(SELECT *FROM exhibit_manage where delete_flag='0') as exm
 		ON(SITEM.item_code=exm.management_code)
 		

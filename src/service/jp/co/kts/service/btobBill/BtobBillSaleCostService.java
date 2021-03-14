@@ -46,7 +46,7 @@ public class BtobBillSaleCostService {
 		dto.setGrossProfitCalc(WebConst.GROSS_PROFIT_CALC_TOTAL_CODE);
 
 		/* 1ページあたりの最大表示件数 */
-		dto.setListPageMax(WebConst.LIST_PAGE_MAX_CODE_2);
+		dto.setListPageMax(WebConst.LIST_PAGE_MAX_CODE_6);
 
 		dto.setSortFirstSub("2");
 

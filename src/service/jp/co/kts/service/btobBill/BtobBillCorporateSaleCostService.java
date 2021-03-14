@@ -46,7 +46,7 @@ public class BtobBillCorporateSaleCostService {
 
 		searchDto.setSearchAllFlg("ON");
 
-		searchDto.setListPageMax(WebConst.LIST_PAGE_MAX_CODE_3);
+		searchDto.setListPageMax(WebConst.LIST_PAGE_MAX_CODE_6);
 		searchDto.setSortFirstSub("2");
 
 		//通貨コード
