@@ -10493,7 +10493,7 @@
 		ON
 		SITEM_COST.SYS_SALES_SLIP_ID = S_SLIP.SYS_SALES_SLIP_ID
 		LEFT JOIN
-		(SELECT *FROM exhibit_manage where delete_flag='0') as exm
+		(SELECT management_code, wholsesaler_nm FROM exhibit_manage where delete_flag='0') as exm
 		ON(SITEM_COST.item_code=exm.management_code)
 		WHERE
 		1 = 1
@@ -10620,7 +10620,6 @@
 			,S_SLIP.CORPORATION_NM
 			,COALESCE(S_SLIP.CORPORATION_RATE_OVER,0) AS CORPORATION_RATE_OVER
 			,COALESCE(I_COST.COST,0) AS ITEM_KIND_COST
-			, wholsesaler_id
 			, wholsesaler_nm
 			, purchasing_cost
 			, exm.postage as dome_postage 
@@ -10681,7 +10680,7 @@
 		ON
 		SITEM.SYS_ITEM_ID = I_COST.SYS_ITEM_ID
 		LEFT JOIN
-		(SELECT *FROM exhibit_manage where delete_flag='0') as exm
+		(SELECT management_code, postage, purchasing_cost, wholsesaler_nm FROM exhibit_manage where delete_flag='0') as exm
 		ON(SITEM.item_code=exm.management_code)
 		
 		WHERE
