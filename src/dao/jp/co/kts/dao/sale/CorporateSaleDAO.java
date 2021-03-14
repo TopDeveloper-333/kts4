@@ -826,12 +826,26 @@ public class CorporateSaleDAO extends BaseDAO {
 		// 他社商品情報
 		if (StringUtils.isNotBlank(dto.getSalesItemCode())) {
 			parameters.addParameter("salesItemCode",
-					createLikeWord(dto.getSalesItemCode(), true, false));
+					createLikeWord(dto.getSalesItemCode(), true, true));
 		}
 
 		if (StringUtils.isNotBlank(dto.getSalesItemNm())) {
-			parameters.addParameter("salesItemNm",
-					createLikeWord(dto.getSalesItemNm(), true, true));
+			String temp = dto.getSalesItemNm();
+			String[] tempArray = temp.split(",");
+			
+			String sql="";
+			int tempFlag = 0;
+			for(String item : tempArray) {
+				if(tempFlag != 0) {
+					sql = sql + "' OR ";
+					sql = sql + "ITEM.ITEM_NM ILIKE '" + createLikeWord(item, true, true) ;
+				}else {
+					sql = createLikeWord(item, true, true);
+				}
+
+				tempFlag++;
+			}
+			parameters.addParameter("salesItemNm", sql);
 		}
 
 		// マスタから検索される場合フラグセット
@@ -869,6 +883,10 @@ public class CorporateSaleDAO extends BaseDAO {
 
 		if (StringUtils.isNotEmpty(dto.getSortFirstSub())) {
 			parameters.addParameter("sortOrder", dto.getSortFirstSub());
+		}
+
+		if (StringUtils.isNotEmpty(dto.getWholseSalerName())) {
+			parameters.addParameter("wholseSalerName", createLikeWord(dto.getWholseSalerName(), true, true));
 		}
 
 
