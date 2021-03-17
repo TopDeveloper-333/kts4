@@ -10281,7 +10281,11 @@
 
 				<if-equals value="2" varName="orderType">
 					AND
-					ORDER_TEL ILIKE ${orderContent}
+					((SLIP.destination_family_nm ||
+					SLIP.destination_first_nm) ILIKE ${orderContent}
+					OR (SLIP.destination_family_nm_kana
+					|| SLIP.destination_first_nm_kana) ILIKE
+					${orderContent})
 				</if-equals>			
 			</if-not-empty>
 
@@ -10488,8 +10492,8 @@
 		) AS S_SLIP
 		ON
 		SITEM_COST.SYS_SALES_SLIP_ID = S_SLIP.SYS_SALES_SLIP_ID
-		INNER JOIN
-		(SELECT *FROM exhibit_manage where delete_flag='0') as exm
+		LEFT JOIN
+		(SELECT management_code, wholsesaler_nm FROM exhibit_manage where delete_flag='0') as exm
 		ON(SITEM_COST.item_code=exm.management_code)
 		WHERE
 		1 = 1
@@ -10616,7 +10620,6 @@
 			,S_SLIP.CORPORATION_NM
 			,COALESCE(S_SLIP.CORPORATION_RATE_OVER,0) AS CORPORATION_RATE_OVER
 			,COALESCE(I_COST.COST,0) AS ITEM_KIND_COST
-			, wholsesaler_id
 			, wholsesaler_nm
 			, purchasing_cost
 			, exm.postage as dome_postage 
@@ -10676,8 +10679,8 @@
 		) AS I_COST
 		ON
 		SITEM.SYS_ITEM_ID = I_COST.SYS_ITEM_ID
-		INNER JOIN
-		(SELECT *FROM exhibit_manage where delete_flag='0') as exm
+		LEFT JOIN
+		(SELECT management_code, postage, purchasing_cost, wholsesaler_nm FROM exhibit_manage where delete_flag='0') as exm
 		ON(SITEM.item_code=exm.management_code)
 		
 		WHERE
@@ -10761,6 +10764,9 @@
 		END AS ITEM_CODE_ORDER
 		FROM
 		CORPORATE_SALES_ITEM AS C_SITEM_COST
+		LEFT JOIN
+		(SELECT *FROM exhibit_manage where delete_flag='0') as exh
+		ON(C_SITEM_COST.item_code=exh.management_code)
 		LEFT JOIN
 		(SELECT
 		SYS_ITEM_ID
@@ -11129,6 +11135,7 @@
 		NOT_ITEM.SYS_CORPORATE_SALES_SLIP_ID = ITEM.SYS_CORPORATE_SALES_SLIP_ID
 		WHERE
 		DELETE_FLAG ='0'
+		
 		<if-not-empty varName="salesItemCode">
 			AND
 			ITEM.ITEM_CODE ILIKE ${salesItemCode}
@@ -11229,6 +11236,10 @@
 		C_SITEM_COST.SYS_CORPORATE_SALES_SLIP_ID = C_SALE_SLIP.SYS_CORPORATE_SALES_SLIP_ID
 		WHERE
 		1 = 1
+		<if-not-empty varName="wholseSalerName">
+			AND
+			exh.wholsesaler_nm LIKE ${wholseSalerName}
+		</if-not-empty>
 		AND
 		C_SITEM_COST.DELETE_FLAG = '0'
 		AND

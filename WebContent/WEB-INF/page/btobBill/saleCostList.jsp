@@ -280,6 +280,7 @@
 						
 						$(".costCheck").eq(idx).children('input').prop('disabled', true);
 						$(".calcSaleCost").eq(idx).attr('disabled', true);
+						$(".reflectLatestSaleCostCost").eq(index).attr('disabled', true);
 						
 					});
 
@@ -325,9 +326,46 @@
 		$(".reflectLatestSaleCostCost").click(function() {
 
 			// 一覧のインデックスを設定
-			$("#listIdx").val($(".reflectLatestSaleCostCost").index(this));
+			$("#sysSalesIndex").val($(".reflectLatestSaleCostCost").index(this));
 
-			goTransaction("reflectLatestSaleCostlist.do");
+			var sysSalesIndex = $(".reflectLatestSaleCostCost").index(this);
+			
+			$.ajax({
+				type : 'post',
+				url : './reflectLatestSaleCostById.do',
+				dataType : 'json',
+				data:{
+					'sysSalesIndex' : sysSalesIndex,
+				}
+			}).done(function(data) {
+
+				console.log(data);
+				var returnArray = data.split(",");
+				
+				console.log(returnArray);
+				
+				var index = returnArray[0];
+				var cost = returnArray[1];
+				var kindCost = returnArray[2];
+				var domePostage = returnArray[3];
+				var listPrice = returnArray[4];
+				var itemRateOver = returnArray[5];
+
+				$(".costEdit").eq(index).html("<input type='text' name='cost' id='cost' class='priceText' value='" + cost + "' style='width: 80px; text-align: right;' maxlength='9'>")
+
+				$(".kindCostEdit").eq(index).html("<input type='text' name='kindCost' id='kindCost' class='priceText' value='" + kindCost + "' style='width: 80px; text-align: right;' maxlength='9'>")
+
+				$(".domePostageEdit").eq(index).html("<input type='text' name='domePostage' id='domePostage' class='priceText' value='" + domePostage + "' style='width: 80px; text-align: right;' maxlength='9'>")
+
+				$(".listPriceEdit").eq(index).html("<input type='text' name='listPrice' id='listPrice' class='priceText' value='" + listPrice + "' style='width: 80px; text-align: right;' maxlength='9'>")
+			
+				$(".itemRateOverEdit").eq(index).html("<input type='text' name='itemRateOver' id='itemRateOver' class='priceText' value='" + itemRateOver + "' style='width: 80px; text-align: right;' maxlength='9'>")
+			
+				$(".costCheck").eq(index).children('input').prop('disabled', false);
+				$(".costCheck").eq(index).children('input').prop('checked', true);
+			
+			});
+
 
 			return;
 		});
@@ -637,7 +675,7 @@
 			var id = $(this).find(".sysSalesSlipId_Link").val();
 			$("#sysSalesSlipId").val(id);
 			
-			FwGlobal.submitForm(document.forms[0],"/detailSale","detailSale" + $("#sysSalesSlipId").val(),"top=0,left=0,width="+ screen.width + "px,height=" + screen.height +"px;");
+			FwGlobal.submitForm(document.forms[0],"/detailSale","detailSale" + $("#sysSalesSlipId").val(),"top=130,left=500,width=780px,height=520px;");
 
 		});
 
@@ -1007,7 +1045,7 @@
 				<td >
 					<nested:select property="orderType">
 						<html:option value="1">注文者名</html:option>
-						<html:option value="2">注文者TEL</html:option>
+						<html:option value="2">お届先名</html:option>
 					</nested:select>
 				</td>
 			
@@ -1136,6 +1174,7 @@
 
 	<div id="list_area" >
 	<input type="hidden" name="sysSalesSlipId" id="sysSalesSlipId" />
+	<input type="hidden" name="sysSalesIndex" id="sysSalesIndex" />
 	<nested:hidden property="sysSaleItemIDListSize" styleId="sysSaleItemIDListSize" />
 	<nested:hidden property="saleCostPageIdx" styleId="pageIdx" />
 	<nested:hidden property="saleListPageMax" styleId="saleListPageMax" />
@@ -1158,9 +1197,11 @@
 				<th class="itemRateOver">商品掛け率</th>
 				<th class="calcHd">入力した定価で<br />金額算出
 				</th>
+				<th class="reflectHd">直近の原価を<br />反映
+				</th>
 				<th class="profit">利益判定</th>
 				<th class="check">確認</th>
-				<th class="check">編集</th>
+				<th class="saveHd">編集</th>
 			</tr>
 
 			<nested:iterate property="salesCostList" indexId="idx">
@@ -1206,6 +1247,8 @@
 				<td class="itemRateOverEdit"><nested:write property="itemRateOver" />&nbsp;％</td>
 				<td class="tdButton"><button type="button"
 					class="button_small_main calcSaleCost" disabled>算出</button></td>
+				<td class="tdButton"><button type="button"
+					class="button_small_main reflectLatestSaleCostCost" disabled>反映</button></td>
 				<td class="profitId"><nested:write property="profit" />&nbsp;円</td>
 				<td class="costCheck"><nested:checkbox property="costCheckFlag" disabled="true" /></td>
 				<td class="tdButton"><button type="button"
