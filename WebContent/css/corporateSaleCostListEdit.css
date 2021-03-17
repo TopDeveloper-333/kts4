@@ -504,3 +504,16 @@ a.button_small_main:focus{
  background-image: -o-linear-gradient(top, #0763CC, #0639C5);
  background-image: linear-gradient(to bottom, #0763CC, #0639C5);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#0763CC, endColorstr=#0639C5);
 }
+.domePostageHd {
+	max-width: 120px;
+	min-width: 120px;
+}
+
+.profitHd {
+	max-width: 120px;
+	min-width: 120px;
+}
+#list_area input[type=checkbox]{
+	transform: scale(2);
+    margin: 10px;
+}

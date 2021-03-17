@@ -203,7 +203,7 @@
 					
 					$(this).html('編集');
 
-					var sysSalesItemId = $(".sysSalesItemId").eq(index).val();
+					var sysCorporateSalesItemId = $(".sysCorporateSalesItemId").eq(index).val();
 					var cost = $(".costEdit").eq(index).children('input').val();
 					var kindCost = $(".kindCostEdit").eq(index).children('input').val();
 					var itemRateOver = $(".itemRateOverEdit").eq(index).children('input').val();
@@ -238,10 +238,10 @@
 					
 					$.ajax({
 						type : 'post',
-						url : './saveSaleCostById.do',
+						url : './savecorporateSaleCostById.do',
 						dataType : 'json',
 						data : {
-							'sysSalesItemId' : sysSalesItemId,
+							'sysCorporateSalesItemId' : sysCorporateSalesItemId,
 							'cost' : cost,
 							'kindCost' : kindCost,
 							'itemRateOver' : itemRateOver,
@@ -333,7 +333,7 @@
 			
 			$.ajax({
 				type : 'post',
-				url : './reflectLatestSaleCostById.do',
+				url : './reflectLatestCorporateSaleCostById.do',
 				dataType : 'json',
 				data:{
 					'sysSalesIndex' : sysSalesIndex,
@@ -1081,6 +1081,7 @@
 		<nested:hidden property="sysCorprateSaleItemIDListSize" styleId="sysCorprateSaleItemIDListSize" />
 		<nested:hidden property="corpSaleCostPageIdx" styleId="corpSaleCostPageIdx" />
 		<nested:hidden property="corpSaleListPageMax" styleId="corpSaleListPageMax" />
+		<input type="hidden" name="sysSalesIndex" id="sysSalesIndex" />
 		<table id="mstTable" class="list_table">
 			<tr>
 				<th class="saleSlipNo">伝票番号</th>
@@ -1117,6 +1118,7 @@
 
 				<tbody style="background:${backgroundColor};" class="corporateSalesSlipRow change_color">
 				<nested:hidden property="sysCorporateSalesSlipId" styleClass="sysCorporateSalesSlipId"></nested:hidden>
+				<nested:hidden property="sysCorporateSalesItemId" styleClass="sysCorporateSalesItemId"></nested:hidden>
 				<nested:hidden property="storeFlag"	styleClass="storeFlag" />
 				<tr>
 					<td>

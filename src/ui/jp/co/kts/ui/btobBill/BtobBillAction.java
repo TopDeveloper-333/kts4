@@ -116,10 +116,14 @@ public class BtobBillAction extends AppBaseAction {
 			return editCorporateSaleCost(appMapping, form, request);
 		}else if("/initCorporateSaleDetail".equals(appMapping.getPath())){
 			return initCorporateSaleDetail(appMapping, form, request);
+		}else if("/savecorporateSaleCostById".equals(appMapping.getPath())){
+			return savecorporateSaleCostById(appMapping, form, request, response);
 		}else if("/savecorporateSaleCost".equals(appMapping.getPath())){
 			return savecorporateSaleCost(appMapping, form, request);
 		}else if("/reflectLatestCorporateSaleCost".equals(appMapping.getPath())){
 			return reflectLatestCorporateSaleCost(appMapping, form, request);
+		}else if("/reflectLatestCorporateSaleCostById".equals(appMapping.getPath())){
+			return reflectLatestCorporateSaleCostById(appMapping, form, request, response);
 		}else if("/btobBillList".equals(appMapping.getPath())){
 			return btobBillList(appMapping, form, request);
 		}else if("/btobBillListPageNo".equals(appMapping.getPath())){
@@ -756,6 +760,41 @@ public class BtobBillAction extends AppBaseAction {
 		// 次へ遷移
 		return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_SUCCESS);
 	}
+	/**
+	 * 業販原価入力<br>
+	 * 業販原価一括編集画面の入力内容登録処理
+	 * @return 
+	 */
+	protected ActionForward savecorporateSaleCostById (AppActionMapping appMapping, BtobBillForm form,
+            HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+		BtobBillCorporateSaleCostService coopSaleCostService = new BtobBillCorporateSaleCostService();
+
+		ExtendCorporateSalesItemDTO corporateSalesCost = new ExtendCorporateSalesItemDTO();
+		String dd = request.getParameter("itemRateOver");
+		corporateSalesCost.setSysCorporateSalesItemId(new Long(request.getParameter("sysCorporateSalesItemId")));
+		corporateSalesCost.setCost(new Integer(request.getParameter("cost")));
+		corporateSalesCost.setKindCost(new Integer(request.getParameter("kindCost")));
+		corporateSalesCost.setListPrice(new Integer(request.getParameter("listPrice")));
+		corporateSalesCost.setItemRateOver(new BigDecimal(request.getParameter("itemRateOver")));
+		corporateSalesCost.setCostCheckFlag(request.getParameter("costCheckFlag"));
+		
+		int index = new Integer(request.getParameter("returnIndex"));
+		//開始
+		begin();
+
+		// 入力内容登録をDBに反映
+		coopSaleCostService.updateCorpSaleCostId(corporateSalesCost);
+
+		//登録成功
+		commit();
+
+		response.setCharacterEncoding("UTF-8");
+		PrintWriter printWriter = response.getWriter();
+		printWriter.print(JSON.encode(index));
+		
+		return null;
+	}
 
 	/**
 	 * 業販原価入力<br>
@@ -776,6 +815,32 @@ public class BtobBillAction extends AppBaseAction {
 		return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_SUCCESS);
 	}
 
+	protected ActionForward reflectLatestCorporateSaleCostById (AppActionMapping appMapping, BtobBillForm form,
+            HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+		BtobBillCorporateSaleCostService coopSaleCostService = new BtobBillCorporateSaleCostService();
+
+		// 売上原価一覧と選択行のインデックスから、
+		// 直近の原価を取得し、売上原価一覧に設定し直す。
+		List<ExtendCorporateSalesItemDTO> salesCostList = new ArrayList<>();
+		
+		ExtendCorporateSalesItemDTO salesCost = new ExtendCorporateSalesItemDTO();
+		
+		salesCostList = coopSaleCostService.reflectLatestCorpSaleCost(form.getCorpSalesCostList(),form.getCorpSaleCostListIdx());
+
+		int dd = new Integer(request.getParameter("sysSalesIndex"));
+		salesCost = salesCostList.get(new Integer(request.getParameter("sysSalesIndex")));
+
+		String returnValue = request.getParameter("sysSalesIndex") + "," + String.valueOf(salesCost.getCost()) + ","
+							+ String.valueOf(salesCost.getKindCost()) + "," + String.valueOf(salesCost.getDomePostage()) + ","
+							+ String.valueOf(salesCost.getListPrice()) + "," + String.valueOf(salesCost.getItemRateOver()) ;
+		response.setCharacterEncoding("UTF-8");
+		PrintWriter printWriter = response.getWriter();
+		printWriter.print(JSON.encode(returnValue));
+		
+		return null;
+	}
+	
 	/**
 	 * 法人間請求書管理<br>
 	 * 法人間請求書管理画面の初期表示処理<br>

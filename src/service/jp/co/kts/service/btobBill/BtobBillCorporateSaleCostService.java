@@ -196,6 +196,14 @@ public class BtobBillCorporateSaleCostService {
 
 	}
 
+	public void updateCorpSaleCostId(ExtendCorporateSalesItemDTO corporateSalesCost) throws DaoException{
+
+		CorporateSaleDAO corporateSaleDAO = new CorporateSaleDAO();
+
+//		setCheckFlags(salesCost);
+		corporateSaleDAO.updateCorpSalesCost(corporateSalesCost);
+
+	}
 	/**
 	 * 選択した業販原価情報の直近の原価を取得し、原価を書き換えて、一覧に設定し直す。
 	 *
