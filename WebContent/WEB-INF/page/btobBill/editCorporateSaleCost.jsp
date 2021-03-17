@@ -645,8 +645,8 @@
 				<th class="costHd">原価(メーカー)</th>
 				<th class="domePostageHd">送料</th>
 				<th class="kindCostHd">Kind原価</th>
-				<th class="domePostageHd">送料</th>
 				<th class="listPriceHd">定価</th>
+				<th class="domePostageHd">送料</th>
 				<th class="itemRateOverHd">商品掛け率</th>
 				<th class="calcHd">入力した定価で<br/>金額算出</th>
 				<th class="reflectHd">直近の原価を<br/>反映</th>
@@ -684,10 +684,10 @@
 						styleClass="priceText domePostage"
 						style="width: 80px; text-align: right;" maxlength="9" />&nbsp;円</td>
 				<td><nested:text property="kindCost" styleClass="priceText kindCost" style="width: 80px; text-align: right;"  maxlength="9" />&nbsp;円</td>
+				<td><nested:text property="listPrice" styleClass="priceText listPrice" style="width: 80px; text-align: right;"  maxlength="9" />&nbsp;円</td>
 				<td><nested:text property="domePostage"
 						styleClass="priceText domePostageKind"
 						style="width: 80px; text-align: right;" maxlength="9" />&nbsp;円</td>
-				<td><nested:text property="listPrice" styleClass="priceText listPrice" style="width: 80px; text-align: right;"  maxlength="9" />&nbsp;円</td>
 				<td><nested:text property="itemRateOver" styleClass="priceTextRateOver itemRateOver" style="width: 80px; text-align: right;"  maxlength="9" />&nbsp;％</td>
 				<td class="tdButton"><a href="Javascript:void(0);" class="button_small_main calcSaleCost" tabindex="-1" >算出</a></td>
 				<td class="tdButton"><a href="Javascript:void(0);" class="button_small_main reflectLatestCorporateSaleCost" tabindex="-1" >反映</a></td>

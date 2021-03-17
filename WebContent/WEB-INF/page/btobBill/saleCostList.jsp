@@ -1205,8 +1205,8 @@
 				<th class="cost">原価(メーカー)</th>
 				<th class="domePostage">送料</th>
 				<th class="kindCost">Kind原価</th>
-				<th class="domePostage">送料</th>
 				<th class="listPrice">定価</th>
+				<th class="domePostage">送料</th>
 				<th class="itemRateOver">商品掛け率</th>
 				<th class="calcHd">入力した定価で<br />金額算出</th>
 				<th class="reflectHd">直近の原価を<br />反映</th>
@@ -1254,8 +1254,8 @@
 				<td class="costEdit"><nested:write property="cost" format="###,###,###" />&nbsp;円</td>
 				<td class="domePostageEdit"><nested:write property="domePostage" format="###,###,###" />&nbsp;円</td>
 				<td class="kindCostEdit"><nested:write property="kindCost" format="###,###,###" />&nbsp;円</td>
-				<td class="domePostageKindEdit"><nested:write property="domePostage" format="###,###,###" />&nbsp;円</td>
 				<td class="listPriceEdit"><nested:write property="listPrice" format="###,###,###" />&nbsp;円</td>
+				<td class="domePostageKindEdit"><nested:write property="domePostage" format="###,###,###" />&nbsp;円</td>
 				<td class="itemRateOverEdit"><nested:write property="itemRateOver" />&nbsp;％</td>
 				<td class="tdButton"><button type="button"
 					class="button_small_main calcSaleCost" disabled>算出</button></td>
