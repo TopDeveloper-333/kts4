@@ -127,6 +127,11 @@
 			rateOver = removeComma(rateOver);
 			postage = removeComma(postage);
 			cRateOver = removeComma(cRateOver);
+			
+			if(parseInt(listPrice) == 0)	return;
+			if(parseInt(rateOver) == 0)	return;
+			
+			console.log(listPrice);
 
 			// カインドコストの計算処理
 			// 定価と掛率に0.01を掛けた数値でカインドコストを算出する。
@@ -136,7 +141,7 @@
 			var kindDot = tempKindCost % 10;
 			if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
 			
-			var kindCost = parseInt(tempKindCost) + parseInt(postage);
+			var kindCost = parseInt(tempKindCost);
 
 			kindCost = new String(kindCost).replace(/,/g, "");
 			while (kindCost != (kindCost = kindCost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
@@ -421,7 +426,7 @@
 							var kindDot = tempKindCost % 10;
 							if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
 							
-							var kindCost = parseInt(tempKindCost) + parseInt(postage);
+							var kindCost = parseInt(tempKindCost);
 
 							$(".kindCostEdit").eq(index).children('input').val(kindCost);
 							addComma($(".kindCostEdit").eq(index).children('input').val());
@@ -831,6 +836,16 @@
 			removeCommaList($(".priceTextMinus"));
 			removeCommaGoTransaction('corporateSaleCostList.do');
 		});
+		
+        $(window).keydown(function(event){
+            if(event.keyCode == 13) {
+    			$("#searchPreset").val(0);
+    			$(".overlay").css("display", "block");
+    			$(".message").text("検索中");
+    			removeCommaList($(".priceTextMinus"));
+    			removeCommaGoTransaction('corporateSaleCostList.do');
+            }
+        });
 
 		//売上詳細
 		$(".corporateSalesSlipRow").dblclick(function () {
@@ -1144,7 +1159,7 @@
 					<td class="tdButton"><button type="button"
 						class="button_small_main reflectLatestSaleCostCost" disabled>反映</button></td>
 					<td class="profitId"><nested:write property="profit" />&nbsp;円</td>
-					<td><nested:checkbox property="costCheckFlag" disabled="true" /></td>
+					<td class="costCheck"><nested:checkbox property="costCheckFlag" disabled="true" /></td>
 					<td class="tdButton"><button type="button"
 						class="button_small_main saleCostEdit" >編集</button></td>
 				</tr>
