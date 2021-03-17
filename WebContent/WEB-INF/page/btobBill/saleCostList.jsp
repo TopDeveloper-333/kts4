@@ -270,6 +270,11 @@
 						domePostage = new String(domePostage).replace(/,/g, "");
 						while (domePostage != (domePostage = domePostage.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
 						$('.domePostageEdit').eq(idx).html(domePostage + "&nbsp;円");
+
+						var domePostageKind = $(".domePostageKindEdit").eq(idx).children('input').val();
+						domePostageKind = new String(domePostageKind).replace(/,/g, "");
+						while (domePostageKind != (domePostageKind = domePostageKind.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+						$('.domePostageKindEdit').eq(idx).html(domePostageKind + "&nbsp;円");
 						
 						var listPrice = $(".listPriceEdit").eq(idx).children('input').val();
 						listPrice = new String(listPrice).replace(/,/g, "");
@@ -309,6 +314,11 @@
 				domePostage = parseInt(domePostage);
 
 				$(".domePostageEdit").eq(index).html("<input type='text' name='domePostage' id='domePostage' class='priceText' value='" + domePostage + "' style='width: 80px; text-align: right;' maxlength='9'>")
+
+				var domePostageKind = removeComma($(".domePostageKindEdit").eq(index).text());
+				domePostageKind = parseInt(domePostageKind);
+
+				$(".domePostageKindEdit").eq(index).html("<input type='text' name='domePostageKind' id='domePostageKind' class='priceText' value='" + domePostageKind + "' style='width: 80px; text-align: right;' maxlength='9'>")
 
 				var listPrice = removeComma($(".listPriceEdit").eq(index).text());
 				listPrice = parseInt(listPrice);
@@ -356,6 +366,8 @@
 				$(".kindCostEdit").eq(index).html("<input type='text' name='kindCost' id='kindCost' class='priceText' value='" + kindCost + "' style='width: 80px; text-align: right;' maxlength='9'>")
 
 				$(".domePostageEdit").eq(index).html("<input type='text' name='domePostage' id='domePostage' class='priceText' value='" + domePostage + "' style='width: 80px; text-align: right;' maxlength='9'>")
+				
+				$(".domePostageKindEdit").eq(index).html("<input type='text' name='domePostageKind' id='domePostageKind' class='priceText' value='" + domePostage + "' style='width: 80px; text-align: right;' maxlength='9'>")
 
 				$(".listPriceEdit").eq(index).html("<input type='text' name='listPrice' id='listPrice' class='priceText' value='" + listPrice + "' style='width: 80px; text-align: right;' maxlength='9'>")
 			
@@ -1191,6 +1203,7 @@
 				<th class="pieceRate">単価</th>
 				<th class="corporationRateOverHd">法人掛け率</th>
 				<th class="cost">原価(メーカー)</th>
+				<th class="domePostage">送料</th>
 				<th class="kindCost">Kind原価</th>
 				<th class="domePostage">送料</th>
 				<th class="listPrice">定価</th>
@@ -1239,8 +1252,9 @@
 				<td class="pieceRateEdit"><nested:write property="pieceRate" format="###,###,###" />&nbsp;円</td>
 				<td class="corporationRateOverEdit"><nested:write property="corporationRateOver" />&nbsp;％</td>
 				<td class="costEdit"><nested:write property="cost" format="###,###,###" />&nbsp;円</td>
-				<td class="kindCostEdit"><nested:write property="kindCost" format="###,###,###" />&nbsp;円</td>
 				<td class="domePostageEdit"><nested:write property="domePostage" format="###,###,###" />&nbsp;円</td>
+				<td class="kindCostEdit"><nested:write property="kindCost" format="###,###,###" />&nbsp;円</td>
+				<td class="domePostageKindEdit"><nested:write property="domePostage" format="###,###,###" />&nbsp;円</td>
 				<td class="listPriceEdit"><nested:write property="listPrice" format="###,###,###" />&nbsp;円</td>
 				<td class="itemRateOverEdit"><nested:write property="itemRateOver" />&nbsp;％</td>
 				<td class="tdButton"><button type="button"
