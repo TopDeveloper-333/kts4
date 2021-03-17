@@ -26,7 +26,7 @@ public class DomesticExhibitionDTO {
 	private long listPrice;
 
 	/** 掛率 */
-	private long itemRateOver;
+	private double itemRateOver;
 
 	/** メーカーID */
 	private long sysMakerId;
@@ -158,7 +158,7 @@ public class DomesticExhibitionDTO {
 	 * 掛率を取得します。
 	 * @return 掛率
 	 */
-	public long getItemRateOver() {
+	public double getItemRateOver() {
 	    return itemRateOver;
 	}
 
@@ -166,7 +166,7 @@ public class DomesticExhibitionDTO {
 	 * 掛率を設定します。
 	 * @param itemRateOver 掛率
 	 */
-	public void setItemRateOver(long itemRateOver) {
+	public void setItemRateOver(double itemRateOver) {
 	    this.itemRateOver = itemRateOver;
 	}
 
