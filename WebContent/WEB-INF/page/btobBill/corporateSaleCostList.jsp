@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="./css/jquery-ui-1.10.4.custom.css" type="text/css" />
 	<link rel="stylesheet" href="./css/font-awesome.min.css"/>
 <!-- 	<script type="text/javascript" src="./js/prototype.js"></script> -->
+	<script src="./js/fw.js" type="text/javascript" type="text/javascript"></script>
 	<script src="./js/jquery-1.10.2.min.js" language="javascript"></script>
 	<script src="./js/jquery-ui-1.10.4.custom.min.js" language="javascript"></script>
 
@@ -857,8 +858,10 @@
 		// 法人リンク
 		$(".salesSlipLink").click(function () {
 
-			$("#sysCorporateSalesSlipId").val($(this).find(".sysCorporateSalesSlipId_link").val());
-			goTransaction("initCorporateSaleDetail.do");
+			var id = $(this).find(".sysCorporateSalesSlipId_link").val();
+			$("#sysCorporateSalesSlipId").val(id);
+			
+			FwGlobal.submitForm(document.forms[0],"/initCorporateSaleDetail","CorporateSaleDetail" + $("#sysSalesSlipId").val(),"top=130,left=500,width=780px,height=520px;");
 
 		});
 
@@ -882,6 +885,16 @@
 		$(".pickingListFlg").change(function () {
 			pickingListFlgChange = 1;
 		});
+		
+		$(".itemCodeLink").click(function () {
+
+			var value = $(this).find(".itemCode").val();
+			
+			$("#managementCode").val(value);
+
+			goTransactionNew("searchDomesticExhibition.do");
+		});
+
 
 	});
 
@@ -1144,7 +1157,14 @@
 					</td>
 					<td><nested:write property="corporationNm" /></td>
 					<td><nested:write property="scheduledLeavingDate" /></td>
-					<td><nested:write property="itemCode" /></td>
+					<td>
+						<a href="Javascript:(void);" class="itemCodeLink" >
+							<nested:write property="itemCode" />
+							<input type="hidden" name="managementCode" id="managementCode">
+							<nested:hidden property="itemCode" styleClass="itemCode"></nested:hidden>
+						</a>
+					
+					</td>
 					<td><nested:write property="itemNm" /></td>
 					<td><nested:write property="orderNum" /></td>
 					<td class="pieceRateEdit"><nested:write property="pieceRate" format="###,###,###" />&nbsp;円</td>
