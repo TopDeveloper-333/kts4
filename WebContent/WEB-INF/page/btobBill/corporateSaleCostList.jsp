@@ -41,6 +41,7 @@
 	<script>
 	$(document).ready(function(){
 		$(".overlay").css("display", "none");
+		$("#sortFirstSub").val(1);
 
 		// 法人リンクの選択文字
 		$("#corpLink<bean:write name="btobBillForm" property="corpSaleCostSearchDTO.sysCorporationId" />").removeAttr("href");
@@ -525,7 +526,7 @@
 							<nested:select property="sortFirst">
 								<html:optionsCollection property="saleSearchMap" value="key" label="value" />
 							</nested:select>
-							<nested:select property="sortFirstSub">
+							<nested:select property="sortFirstSub" styleId="sortFirstSub">
 								<html:optionsCollection property="saleSearchSortOrder" value="key" label="value" />
 							</nested:select>
 						</td>
