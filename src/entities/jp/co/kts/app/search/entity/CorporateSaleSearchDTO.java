@@ -160,7 +160,7 @@ public class CorporateSaleSearchDTO {
 	private String test;
 	
 	private String wholseSalerName;
-
+	
 	// end
 
 
