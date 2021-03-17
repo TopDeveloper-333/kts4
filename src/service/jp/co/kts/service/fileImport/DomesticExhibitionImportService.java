@@ -299,7 +299,7 @@ public class DomesticExhibitionImportService {
 					purchasingCost = Long.valueOf(strPurchasingCost);
 				}
 				
-				itemRateOver = (purchasingCost - postage) / listPrice;
+				itemRateOver = (purchasingCost - postage) / listPrice * 100;
 			}else {
 				purchasingCost = listPrice * (itemRateOver * RATE_OVER_PERCENT) + postage;
 			}
@@ -316,7 +316,7 @@ public class DomesticExhibitionImportService {
 		//返却用DTOにセット
 		//オープン価格フラグがある場合、定価/掛率/送料/仕入原価には0が入る
 		dto.setListPrice((int)Math.floor(listPrice));
-		dto.setItemRateOver((int)Math.floor(itemRateOver));
+		dto.setItemRateOver(itemRateOver);
 		dto.setPostage((int)Math.floor(postage));
 		dto.setPurchasingCost((int)Math.floor(purchasingCost));
 		return dto;
