@@ -649,6 +649,7 @@
 				<th class="pieceRate">単価</th>
 				<th class="corporationRateOverHd">法人掛け率</th>
 				<th class="costHd">原価(メーカー)</th>
+				<th class="domePostageHd">送料</th>
 				<th class="kindCostHd">Kind原価</th>
 				<th class="domePostageHd">送料</th>
 				<th class="listPriceHd">定価</th>
@@ -692,11 +693,14 @@
 						</td>
 						<td><nested:text property="cost" styleClass="priceText cost"
 								style="width: 80px; text-align: right;" maxlength="9" />&nbsp;円</td>
+						<td><nested:text property="domePostage"
+								styleClass="priceText domePostage"
+								style="width: 80px; text-align: right;" maxlength="9" />&nbsp;円</td>
 						<td><nested:text property="kindCost"
 								styleClass="priceText kindCost"
 								style="width: 80px; text-align: right;" maxlength="9" />&nbsp;円</td>
 						<td><nested:text property="domePostage"
-								styleClass="priceText domePostage"
+								styleClass="priceText domePostageKind"
 								style="width: 80px; text-align: right;" maxlength="9" />&nbsp;円</td>
 						<td><nested:text property="listPrice"
 								styleClass="priceText listPrice"
