@@ -504,3 +504,26 @@ td.deliveryStatus{
 .check {
 	width: 20px;
 }
+#list_area input[type=checkbox]{
+	transform: scale(2);
+    margin: 10px;
+}
+
+.reflectHd {
+	max-width: 80px;
+	min-width: 80px;
+}
+
+.calcHd {
+	max-width: 80px;
+	min-width: 80px;
+}
+.saveHd {
+	max-width: 80px;
+	min-width: 80px;
+}
+.tdButton {
+	min-width: 80px;
+	max-width: 80px;
+	text-align: center;
+}

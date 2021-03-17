@@ -339,10 +339,7 @@
 				}
 			}).done(function(data) {
 
-				console.log(data);
 				var returnArray = data.split(",");
-				
-				console.log(returnArray);
 				
 				var index = returnArray[0];
 				var cost = returnArray[1];
@@ -1195,10 +1192,8 @@
 				<th class="domePostage">送料</th>
 				<th class="listPrice">定価</th>
 				<th class="itemRateOver">商品掛け率</th>
-				<th class="calcHd">入力した定価で<br />金額算出
-				</th>
-				<th class="reflectHd">直近の原価を<br />反映
-				</th>
+				<th class="calcHd">入力した定価で<br />金額算出</th>
+				<th class="reflectHd">直近の原価を<br />反映</th>
 				<th class="profit">利益判定</th>
 				<th class="check">確認</th>
 				<th class="saveHd">編集</th>
