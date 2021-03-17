@@ -126,6 +126,9 @@
 			postage = removeComma(postage);
 			cRateOver = removeComma(cRateOver);
 
+			if(parseInt(listPrice) == 0)	return;
+			if(parseInt(rateOver) == 0)	return;
+
 			// カインドコストの計算処理
 			// 定価と掛率に0.01を掛けた数値でカインドコストを算出する。
 			var kindCostArray = calcCost(parseInt(listPrice), parseFloat(rateOver)); /// return [intValue1, intValue2, power]
@@ -134,7 +137,7 @@
 			var kindDot = tempKindCost % 10;
 			if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
 			
-			var kindCost = parseInt(tempKindCost) + parseInt(postage);
+			var kindCost = parseInt(tempKindCost);
 
 			kindCost = new String(kindCost).replace(/,/g, "");
 			while (kindCost != (kindCost = kindCost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
@@ -417,7 +420,7 @@
 							var kindDot = tempKindCost % 10;
 							if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
 							
-							var kindCost = parseInt(tempKindCost) + parseInt(postage);
+							var kindCost = parseInt(tempKindCost);
 
 							$(".kindCostEdit").eq(index).children('input').val(kindCost);
 							addComma($(".kindCostEdit").eq(index).children('input').val());
