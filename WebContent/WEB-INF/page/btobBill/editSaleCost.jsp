@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="./css/jquery-ui-1.10.4.custom.css"
 	type="text/css" />
 <!-- 	<script type="text/javascript" src="./js/prototype.js"></script> -->
+<script src="./js/fw.js" type="text/javascript" type="text/javascript"></script>
 <script src="./js/jquery-1.10.2.min.js" language="javascript"></script>
 <script src="./js/jquery-ui-1.10.4.custom.min.js" language="javascript"></script>
 
@@ -89,6 +90,10 @@
 		}
 		
 		
+		$(".domePostage").change(function() {
+			  console.log("Input text changed!");
+		});
+		
 		$('.profitId').each(function(profit){
 			var val = removeComma($(this).text());
 			val = parseInt(val);
@@ -166,17 +171,15 @@
 			
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			if(storeFlag == '1'){
-				var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
-			}else{
-				var profit = pieceRate-parseInt(pieceRate*0.1)-(parseInt(cost)+parseInt(postage));
-			}
+			var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
 
 			var color = '';
 			if(profit < 0 ){
 				color = "red";
 			}else if(profit > 800){
 				color = "white";
+			}else {
+				color = "orange";
 			}
 			profit = new String(profit).replace(/,/g, "");
 			while (profit != (profit = profit.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
@@ -238,6 +241,24 @@
 				$(".lastIdx").html(slipPageNum);
 
 			}
+
+			$(".salesSlipLink").click(function () {
+
+				var id = $(this).find(".sysSalesSlipId_Link").val();
+				$("#sysSalesSlipId").val(id);
+				
+				FwGlobal.submitForm(document.forms[0],"/detailSale","detailSale" + $("#sysSalesSlipId").val(),"top=130,left=500,width=780px,height=520px;");
+
+			});
+
+			$(".itemCodeLink").click(function () {
+
+				var value = $(this).find(".itemCode").val();
+				
+				$("#managementCode").val(value);
+
+				goTransactionNew("searchDomesticExhibition.do");
+			});
 
 			$(".pageNum").html(startIdx);
 			var endIdx = startIdx + (maxDisp - 1);
@@ -349,11 +370,11 @@
 
 							// 送料取得
 							var postage = $(".domePostage").eq(index).val();
-							if ( postage == 0 || postage == "") {
+/* 							if ( postage == 0 || postage == "") {
 								alert("送料が設定されていません。");
 								return;
 							}
-
+ */
 							// 法人掛け率取得
 							var cRateOver = $(".corporationRateOver").eq(index)
 									.val();
@@ -405,17 +426,15 @@
 							}
 							var storeFlag = $(".storeFlag").eq(index).val();
 							
-							if(storeFlag == '1'){
-								var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
-							}else{
-								var profit = pieceRate-parseInt(pieceRate*0.1)-(parseInt(cost)+parseInt(postage));
-							}
+							var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
 
 							var color = '';
 							if(profit < 0 ){
 								color = "red";
 							}else if(profit > 800){
 								color = "white";
+							}else {
+								color = "orange";
 							}
 							profit = new String(profit).replace(/,/g, "");
 							while (profit != (profit = profit.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
@@ -644,7 +663,7 @@
 				<th class="corporationNm">取引先法人</th>
 				<th class="shipmentPlanDate">出庫予定日</th>
 				<th class="itemCode">品番</th>
-				<th class="itemNm">商品名</th>
+				<th class="itemNm" style="width:250px; max-width:250px">商品名</th>
 				<th class="orderNm">注文数</th>
 				<th class="pieceRate">単価</th>
 				<th class="corporationRateOverHd">法人掛け率</th>
@@ -674,6 +693,7 @@
 
 				<tbody style="background:${backgroundColor};"
 					class="salesSlipRow change_color_only">
+			<nested:hidden property="sysSalesSlipId" styleClass="sysSalesSlipId"></nested:hidden>
 					<nested:hidden property="sysSalesItemId"
 						styleClass="sysSalesItemId" />
 					<nested:hidden property="storeFlag"
@@ -681,10 +701,22 @@
 					<nested:hidden property="pieceRate"
 						styleClass="pieceRateHidden" />
 					<tr>
-						<td><nested:write property="saleSlipNo" /></td>
+						<td>
+							<a href="Javascript:(void);" class="salesSlipLink" >
+								<nested:write property="saleSlipNo" />
+								<nested:hidden property="sysSalesSlipId" styleClass="sysSalesSlipId_Link"></nested:hidden>
+							</a>
+						</td>
 						<td><nested:write property="corporationNm" /></td>
 						<td><nested:write property="shipmentPlanDate" /></td>
-						<td><nested:write property="itemCode" /></td>
+						<td>
+							<a href="Javascript:(void);" class="itemCodeLink" >
+								<nested:write property="itemCode" />
+								<input type="hidden" name="managementCode" id="managementCode">
+								<nested:hidden property="itemCode" styleClass="itemCode"></nested:hidden>
+							</a>
+						
+						</td>
 						<td><nested:write property="itemNm" /></td>
 						<td><nested:write property="orderNum" /></td>
 						<td><nested:write property="pieceRate" format="###,###,###" />&nbsp;円</td>

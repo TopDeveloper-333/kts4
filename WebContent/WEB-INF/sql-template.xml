@@ -10522,7 +10522,7 @@
 
 		<if-not-empty varName="wholseSalerName">
 			AND
-			exm.wholsesaler_nm LIKE ${wholseSalerName}
+			exm.wholsesaler_nm ILIKE ${wholseSalerName}
 		</if-not-empty>
 		
 		<!-- Œ´‰¿ðŒðŒ -->
@@ -11238,7 +11238,7 @@
 		1 = 1
 		<if-not-empty varName="wholseSalerName">
 			AND
-			exh.wholsesaler_nm LIKE ${wholseSalerName}
+			exh.wholsesaler_nm ILIKE ${wholseSalerName}
 		</if-not-empty>
 		AND
 		C_SITEM_COST.DELETE_FLAG = '0'

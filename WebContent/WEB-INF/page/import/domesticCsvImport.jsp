@@ -40,8 +40,7 @@
 			errStr = errStr + $(this).html() + "\n";
 		});
 		if (errStr != '') {
-			alert(errStr);
-			$('#errorArea').hide();
+			alert("登録か完了しました。");
 		}
 	 });
 $(function () {

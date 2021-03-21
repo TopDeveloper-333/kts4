@@ -176,17 +176,15 @@
 			
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			if(storeFlag == '1'){
-				var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(removeComma(cost))-parseInt(postage);
-			}else{
-				var profit = pieceRate-parseInt(pieceRate*0.1)-(parseInt(removeComma(cost))+parseInt(postage));
-			}
+			var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(removeComma(cost))-parseInt(postage);
 
 			var color = '';
 			if(profit < 0 ){
 				color = "red";
 			}else if(profit > 800){
 				color = "white";
+			}else {
+				color = "orange";
 			}
 			profit = new String(profit).replace(/,/g, "");
 			while (profit != (profit = profit.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
@@ -206,96 +204,7 @@
 			if($(this).html() == "保存"){
 
 				if (confirm("保存しますか？")) {
-					
-					$(this).html('編集');
-
-					var sysCorporateSalesItemId = $(".sysCorporateSalesItemId").eq(index).val();
-					var cost = $(".costEdit").eq(index).children('input').val();
-					var kindCost = $(".kindCostEdit").eq(index).children('input').val();
-					var itemRateOver = $(".itemRateOverEdit").eq(index).children('input').val();
-					var listPrice = $(".listPriceEdit").eq(index).children('input').val();
-					
-					
-					if (cost == 0 || cost == "") {
-						alert("単価が設定されていません。");
-						return;
-					}
-					if (kindCost == 0 || kindCost == "") {
-						alert("Kind原価が設定されていません。");
-						return;
-					}
-					if (listPrice == 0 || listPrice == "") {
-						alert("定価が設定されていません。");
-						return;
-					}
-					if (itemRateOver == 0 || itemRateOver == "") {
-						alert("掛け率が設定されていません。");
-						return;
-					}
-
-					
-					if($(".costCheck").eq(index).children('input').is(':checked') == true)
-						var costCheckFlag = 1;
-					else
-						var costCheckFlag = 0;
-					
-					var returnIndex = index;
-
-					
-					$.ajax({
-						type : 'post',
-						url : './savecorporateSaleCostById.do',
-						dataType : 'json',
-						data : {
-							'sysCorporateSalesItemId' : sysCorporateSalesItemId,
-							'cost' : cost,
-							'kindCost' : kindCost,
-							'itemRateOver' : itemRateOver,
-							'listPrice' : listPrice,
-							'costCheckFlag' : costCheckFlag,
-							'returnIndex' : returnIndex,
-							
-						}
-					}).done(function(data) {
-
-						var idx = data;
-
-						var cost = $(".costEdit").eq(idx).children('input').val();
-						cost = new String(cost).replace(/,/g, "");
-						while (cost != (cost = cost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
-						$('.costEdit').eq(idx).html(cost + "&nbsp;円");
-						
-						var kindCost = $(".kindCostEdit").eq(idx).children('input').val();
-						kindCost = new String(kindCost).replace(/,/g, "");
-						while (kindCost != (kindCost = kindCost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
-						$('.kindCostEdit').eq(idx).html(kindCost + "&nbsp;円");
-						
-						var domePostage = $(".domePostageEdit").eq(idx).children('input').val();
-						domePostage = new String(domePostage).replace(/,/g, "");
-						while (domePostage != (domePostage = domePostage.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
-						$('.domePostageEdit').eq(idx).html(domePostage + "&nbsp;円");
-
-						var domePostageKind = $(".domePostageKindEdit").eq(idx).children('input').val();
-						domePostageKind = new String(domePostageKind).replace(/,/g, "");
-						while (domePostageKind != (domePostageKind = domePostageKind.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
-						$('.domePostageKindEdit').eq(idx).html(domePostageKind + "&nbsp;円");
-
-						var listPrice = $(".listPriceEdit").eq(idx).children('input').val();
-						listPrice = new String(listPrice).replace(/,/g, "");
-						while (listPrice != (listPrice = listPrice.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
-						$('.listPriceEdit').eq(idx).html(listPrice + "&nbsp;円");
-
-						var itemRateOver = $(".itemRateOverEdit").eq(idx).children('input').val();
-						itemRateOver = new String(itemRateOver).replace(/,/g, "");
-						while (itemRateOver != (itemRateOver = itemRateOver.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
-						$('.itemRateOverEdit').eq(idx).html(itemRateOver + "&nbsp;%");
-						
-						$(".costCheck").eq(idx).children('input').prop('disabled', true);
-						$(".calcSaleCost").eq(idx).attr('disabled', true);
-						$(".reflectLatestSaleCostCost").eq(index).attr('disabled', true);
-						
-					});
-
+			        saveSaleCostById(index);
 				}
 
 			}else{
@@ -339,6 +248,111 @@
 			}
 		})
 		
+				// 変更内容を保存
+		$(".saveSaleCost").click(function() {
+
+			if (confirm("変更を反映させます。よろしいですか？")) {
+				$(".saleCostEdit").each(function(index, item){                 
+					if ($(".saleCostEdit").eq(index).html() == "保存") {
+				        console.log($(".saleCostEdit").eq(index).html());
+				        saveSaleCostById(index);
+					}
+			    });    
+			}
+			return;
+		});
+		
+		function saveSaleCostById(index) {
+			$(".saleCostEdit").eq(index).html('編集');
+
+			var sysCorporateSalesItemId = $(".sysCorporateSalesItemId").eq(index).val();
+			var cost = $(".costEdit").eq(index).children('input').val();
+			var kindCost = $(".kindCostEdit").eq(index).children('input').val();
+			var itemRateOver = $(".itemRateOverEdit").eq(index).children('input').val();
+			var listPrice = $(".listPriceEdit").eq(index).children('input').val();
+			
+			
+/* 			if (cost == 0 || cost == "") {
+				alert("単価が設定されていません。");
+				return;
+			}
+			if (kindCost == 0 || kindCost == "") {
+				alert("Kind原価が設定されていません。");
+				return;
+			}
+			if (listPrice == 0 || listPrice == "") {
+				alert("定価が設定されていません。");
+				return;
+			}
+			if (itemRateOver == 0 || itemRateOver == "") {
+				alert("掛け率が設定されていません。");
+				return;
+			}
+ */
+			
+			if($(".costCheck").eq(index).children('input').is(':checked') == true)
+				var costCheckFlag = 1;
+			else
+				var costCheckFlag = 0;
+			
+			var returnIndex = index;
+
+			
+			$.ajax({
+				type : 'post',
+				url : './savecorporateSaleCostById.do',
+				dataType : 'json',
+				data : {
+					'sysCorporateSalesItemId' : sysCorporateSalesItemId,
+					'cost' : cost,
+					'kindCost' : kindCost,
+					'itemRateOver' : itemRateOver,
+					'listPrice' : listPrice,
+					'costCheckFlag' : costCheckFlag,
+					'returnIndex' : returnIndex,
+					
+				}
+			}).done(function(data) {
+
+				var idx = data;
+
+				var cost = $(".costEdit").eq(idx).children('input').val();
+				cost = new String(cost).replace(/,/g, "");
+				while (cost != (cost = cost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+				$('.costEdit').eq(idx).html(cost + "&nbsp;円");
+				
+				var kindCost = $(".kindCostEdit").eq(idx).children('input').val();
+				kindCost = new String(kindCost).replace(/,/g, "");
+				while (kindCost != (kindCost = kindCost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+				$('.kindCostEdit').eq(idx).html(kindCost + "&nbsp;円");
+				
+				var domePostage = $(".domePostageEdit").eq(idx).children('input').val();
+				domePostage = new String(domePostage).replace(/,/g, "");
+				while (domePostage != (domePostage = domePostage.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+				$('.domePostageEdit').eq(idx).html(domePostage + "&nbsp;円");
+
+				var domePostageKind = $(".domePostageKindEdit").eq(idx).children('input').val();
+				domePostageKind = new String(domePostageKind).replace(/,/g, "");
+				while (domePostageKind != (domePostageKind = domePostageKind.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+				$('.domePostageKindEdit').eq(idx).html(domePostageKind + "&nbsp;円");
+
+				var listPrice = $(".listPriceEdit").eq(idx).children('input').val();
+				listPrice = new String(listPrice).replace(/,/g, "");
+				while (listPrice != (listPrice = listPrice.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+				$('.listPriceEdit').eq(idx).html(listPrice + "&nbsp;円");
+
+				var itemRateOver = $(".itemRateOverEdit").eq(idx).children('input').val();
+				itemRateOver = new String(itemRateOver).replace(/,/g, "");
+				while (itemRateOver != (itemRateOver = itemRateOver.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+				$('.itemRateOverEdit').eq(idx).html(itemRateOver + "&nbsp;%");
+				
+				$(".costCheck").eq(idx).children('input').prop('disabled', true);
+				$(".calcSaleCost").eq(idx).attr('disabled', true);
+				$(".reflectLatestSaleCostCost").eq(index).attr('disabled', true);
+				
+			});
+		}
+
 		// 直近の原価を反映
 		$(".reflectLatestSaleCostCost").click(function() {
 
@@ -414,11 +428,11 @@
 
 							// 送料取得
 							var postage = $(".domePostageEdit").eq(index).children('input').val();
-							if ( postage == 0 || postage == "") {
+/* 							if ( postage == 0 || postage == "") {
 								alert("送料が設定されていません。");
 								return;
 							}
-
+ */
 							// 法人掛け率取得
 							var cRateOver = $(".corporationRateOverEdit").eq(index).text();
 							if (cRateOver == "") {
@@ -473,17 +487,15 @@
 							console.log(pieceRate);
 							var storeFlag = $(".storeFlag").eq(index).val();
 							
-							if(storeFlag == '1'){
-								var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
-							}else{
-								var profit = pieceRate-parseInt(pieceRate*0.1)-(parseInt(cost)+parseInt(postage));
-							}
+							var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
 
 							var color = '';
 							if(profit < 0 ){
 								color = "red";
 							}else if(profit > 800){
 								color = "white";
+							}else {
+								color = "orange";
 							}
 							profit = new String(profit).replace(/,/g, "");
 							while (profit != (profit = profit.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
@@ -1097,6 +1109,7 @@
 		<table class="editButtonTable">
 			<tr>
 				<td><a class="button_main editCorporateSaleCost" href="Javascript:void(0);">一括編集する</a></td>
+				<td><a class="button_main saveSaleCost" href="Javascript:void(0);">一括保存する</a></td>
 			</tr>
 		</table>
 	</div>
@@ -1128,7 +1141,7 @@
 				<th class="corporationNm">取引先法人</th>
 				<th class="shipmentPlanDate">出庫予定日</th>
 				<th class="itemCode">品番</th>
-				<th class="itemNm">商品名</th>
+				<th class="itemNm" style="width:250px; max-width:250px">商品名</th>
 				<th class="orderNm">注文数</th>
 				<th class="pieceRate">単価</th>
 				<th class="corporationRateOverHd">法人掛け率</th>
