@@ -493,7 +493,7 @@ public class CsvImportService {
 
 								if (exhbyRsltDto == null) {
 									ErrorMessageDTO erroeMessage = new ErrorMessageDTO();
-									erroeMessage.setErrorMessage("出品DB未登録商品コード　　" + exhibitionDto.getManagementCode() + "　　商品名　　" + exhibitionDto.getItemNm());
+									erroeMessage.setErrorMessage("受注番号 " + csvImportDTO.getOrderNo() + "　の品番　　" + csvImportDTO.getShopItemCd() + "が出品DB未登録の為登録されませんでした。");
 									csvErrorDTO.getErrorMessageList().add(erroeMessage);
 									csvImportList.remove(j--);
 									continue;
@@ -772,7 +772,7 @@ public class CsvImportService {
 			csvErrorDTO.setSuccess(false);
 			csvErrorDTO.setFileName(csvImportDTO.getFileNm());
 			ErrorMessageDTO messageDTO = new ErrorMessageDTO();
-			messageDTO.setErrorMessage("出品DB未登録商品コード　　" + csvImportDTO.getShopItemCd() + "　　商品名　　" + csvImportDTO.getItemNm());
+			messageDTO.setErrorMessage("受注番号 " + csvImportDTO.getOrderNo() + "　の品番　　" + csvImportDTO.getShopItemCd() + "が出品DB未登録の為登録されませんでした。");
 			csvErrorDTO.getErrorMessageList().add(messageDTO);
 		}
 

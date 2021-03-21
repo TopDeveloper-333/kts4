@@ -592,13 +592,13 @@ public class CsvImportAction extends AppBaseAction{
 			form.setTrueCount(form.getCsvErrorDTO().getTrueCount());
 		}
 
-		if (!form.getCsvErrorDTO().isSuccess()) {
-			messageDTO.setMessageFlg("1");
-			messageDTO.setMessage("インポートに失敗しました。");
-			form.setRegistryDto(messageDTO);
-			rollback();
-			return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_FAILURE);
-		}
+//		if (!form.getCsvErrorDTO().isSuccess()) {
+//			messageDTO.setMessageFlg("1");
+//			messageDTO.setMessage("インポートに失敗しました。");
+//			form.setRegistryDto(messageDTO);
+//			rollback();
+//			return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_FAILURE);
+//		}
 
 		messageDTO.setMessageFlg("0");
 		messageDTO.setMessage("インポートが完了しました。");
@@ -680,16 +680,16 @@ public class CsvImportAction extends AppBaseAction{
 			form.setTrueCount(dto.getTrueCount() + form.getTrueCount());
 		}
 
-		for (ErrorDTO error : form.getCsvErrorList()) {
-			if (!error.isSuccess()) {
-
-				messageDTO.setMessageFlg("1");
-				messageDTO.setMessage("インポートに失敗しました。");
-				form.setRegistryDto(messageDTO);
-				rollback();
-				return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_FAILURE);
-			}
-		}
+//		for (ErrorDTO error : form.getCsvErrorList()) {
+//			if (!error.isSuccess()) {
+//
+//				messageDTO.setMessageFlg("1");
+//				messageDTO.setMessage("インポートに失敗しました。");
+//				form.setRegistryDto(messageDTO);
+//				rollback();
+//				return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_FAILURE);
+//			}
+//		}
 
 		messageDTO.setMessageFlg("0");
 		messageDTO.setMessage("インポートが完了しました。");
