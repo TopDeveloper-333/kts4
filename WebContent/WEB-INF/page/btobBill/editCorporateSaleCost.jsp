@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="./css/jquery-ui-1.10.4.custom.min.css" type="text/css" />
 	<link rel="stylesheet" href="./css/jquery-ui-1.10.4.custom.css" type="text/css" />
 <!-- 	<script type="text/javascript" src="./js/prototype.js"></script> -->
+	<script src="./js/fw.js" type="text/javascript" type="text/javascript"></script>
 	<script src="./js/jquery-1.10.2.min.js" language="javascript"></script>
 	<script src="./js/jquery-ui-1.10.4.custom.min.js" language="javascript"></script>
 
@@ -97,6 +98,8 @@
 				color = "red";
 			}else if(val > 800){
 				color = "white";
+			}else {
+				color = "orange";
 			}
 			$(this).attr('style', 'background-color:'+color+';');
 			
@@ -165,17 +168,15 @@
 			
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			if(storeFlag == '1'){
-				var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
-			}else{
-				var profit = pieceRate-parseInt(pieceRate*0.1)-(parseInt(cost)+parseInt(postage));
-			}
+			var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
 
 			var color = '';
 			if(profit < 0 ){
 				color = "red";
 			}else if(profit > 800){
 				color = "white";
+			}else {
+				color = "orange";
 			}
 			profit = new String(profit).replace(/,/g, "");
 			while (profit != (profit = profit.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
@@ -323,6 +324,28 @@
 
 			return;
 		});
+		
+		// 法人リンク
+		$(".salesSlipLink").click(function () {
+
+			var id = $(this).find(".sysCorporateSalesSlipId_link").val();
+			$("#sysCorporateSalesSlipId").val(id);
+			
+			FwGlobal.submitForm(document.forms[0],"/initCorporateSaleDetail","CorporateSaleDetail" + $("#sysSalesSlipId").val(),"top=130,left=500,width=780px,height=520px;");
+
+		});
+
+
+		// 法人リンク
+		$(".corpLink").click(function(){
+			var corporationId = $(this).find(".sysCorporationId").val();
+			$("#sysCorporationId").val(corporationId);
+			$("#corpSaleCostPageIdx").val(0);
+			$("#searchPreset").val(0);
+			removeCommaList($(".priceTextMinus"));
+			removeCommaGoTransaction('corporateSaleCostList.do');
+		});
+
 
 		// 入力した原価で金額算出
 		$(".calcSaleCost").click (function (){
@@ -343,11 +366,11 @@
 				return;
 			}
 			var postage = $(".domePostage").eq(index).val();
-			if ( postage == 0 || postage == "") {
+/* 			if ( postage == 0 || postage == "") {
 				alert("送料が設定されていません。");
 				return;
 			}
-			// 法人掛け率取得
+ */			// 法人掛け率取得
 			var cRateOver = $(".corporationRateOver").eq(index).val();
 			if(cRateOver == ""){
 				cRateOver = 0;
@@ -397,17 +420,15 @@
 			}
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			if(storeFlag == '1'){
-				var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
-			}else{
-				var profit = pieceRate-parseInt(pieceRate*0.1)-(parseInt(cost)+parseInt(postage));
-			}
+			var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
 
 			var color = '';
 			if(profit < 0 ){
 				color = "red";
 			}else if(profit > 800){
 				color = "white";
+			}else {
+				color = "orange";
 			}
 			profit = new String(profit).replace(/,/g, "");
 			while (profit != (profit = profit.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
@@ -638,7 +659,7 @@
 				<th class="corporationNm">取引先法人</th>
 				<th class="shipmentPlanDate">出庫予定日</th>
 				<th class="itemCode">品番</th>
-				<th class="itemNm">商品名</th>
+				<th class="itemNm" style="width:250px; max-width:250px">商品名</th>
 				<th class="orderNm">注文数</th>
 				<th class="pieceRate">単価</th>
 				<th class="corporationRateOverHd">法人掛け率</th>
@@ -669,10 +690,22 @@
 			<nested:hidden property="pieceRate"	styleClass="pieceRateHidden" />
 
 			<tr>
-				<td><nested:write property="saleSlipNo" /></td>
+					<td>
+						<a href="Javascript:(void);" class="salesSlipLink">
+							<nested:write property="saleSlipNo" />
+							<nested:hidden property="sysCorporateSalesSlipId" styleClass="sysCorporateSalesSlipId_link"></nested:hidden>
+						</a>
+					</td>
 				<td><nested:write property="corporationNm" /></td>
 				<td><nested:write property="scheduledLeavingDate" /></td>
-				<td><nested:write property="itemCode" /></td>
+					<td>
+						<a href="Javascript:(void);" class="itemCodeLink" >
+							<nested:write property="itemCode" />
+							<input type="hidden" name="managementCode" id="managementCode">
+							<nested:hidden property="itemCode" styleClass="itemCode"></nested:hidden>
+						</a>
+					
+					</td>
 				<td><nested:write property="itemNm" /></td>
 				<td><nested:write property="orderNum" /></td>
 				<td><nested:write property="pieceRate" format="###,###,###" />&nbsp;円</td>
