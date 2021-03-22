@@ -103,6 +103,8 @@
 				color = "red";
 			}else if(val > 800){
 				color = "white";
+			}else {
+				color = "orange";
 			}
 			$(this).attr('style', 'background-color:'+color+';');
 			
