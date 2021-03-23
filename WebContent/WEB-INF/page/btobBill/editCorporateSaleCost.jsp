@@ -366,11 +366,8 @@
 				return;
 			}
 			var postage = $(".domePostage").eq(index).val();
-/* 			if ( postage == 0 || postage == "") {
-				alert("送料が設定されていません。");
-				return;
-			}
- */			// 法人掛け率取得
+			$(".domePostageKind").eq(index).val(postage);
+
 			var cRateOver = $(".corporationRateOver").eq(index).val();
 			if(cRateOver == ""){
 				cRateOver = 0;

@@ -426,9 +426,7 @@
 
 							// 送料取得
 							var postage = $(".domePostageEdit").eq(index).children('input').val();
- 							if ( postage != 0 || postage != "") {
- 								$(".domePostageKindEdit").eq(index).children('input').val(postage);
- 							}
+							$(".domePostageKindEdit").eq(index).children('input').val(postage);
 
 
 							// 法人掛け率取得

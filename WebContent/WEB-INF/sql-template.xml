@@ -2929,7 +2929,7 @@
 		<!-- WHEN S_ITEM.SYS_ITEM_ID IS NULL OR S_ITEM.SYS_ITEM_ID = 0 -->
 		<!-- THEN S_ITEM.COST -->
 		<!-- END AS COST -->
-		, S_ITEM.COST
+		, (S_ITEM.COST + POSTAGE) AS COST
 		<!-- ,CASE -->
 		<!-- WHEN S_ITEM.SYS_ITEM_ID IS NOT NULL AND S_ITEM.SYS_ITEM_ID != 0 THEN
 			M_ITEM.ITEM_NM -->
@@ -2993,6 +2993,16 @@
 		)AS M_ITEM
 		ON
 		S_ITEM.SYS_ITEM_ID = M_ITEM.SYS_ITEM_ID
+		<if-equals value="1" varName="getListFlg">
+		LEFT JOIN
+		(SELECT POSTAGE, SYS_SALES_SLIP_ID FROM SALES_SLIP 
+			<if-not-equals value="0" varName="sysSalesSlipId">
+				WHERE 
+				SYS_SALES_SLIP_ID = ${sysSalesSlipId}
+			</if-not-equals>
+		) AS S_SLIP ON S_ITEM.SYS_SALES_SLIP_ID=S_SLIP.SYS_SALES_SLIP_ID
+		</if-equals>
+		
 		ORDER BY
 		S_ITEM.SYS_SALES_ITEM_ID
 	</sql-template>
@@ -9086,7 +9096,7 @@
 		<!-- WHEN S_ITEM.SYS_ITEM_ID IS NULL OR S_ITEM.SYS_ITEM_ID = 0 THEN -->
 		<!-- S_ITEM.COST -->
 		<!-- END AS COST -->
-		,S_ITEM.COST
+		,S_ITEM.COST + POSTAGE AS COST
 		<!-- ,CASE -->
 		<!-- WHEN S_ITEM.SYS_ITEM_ID IS NOT NULL AND S_ITEM.SYS_ITEM_ID != 0 THEN
 			M_ITEM.ITEM_NM -->
@@ -9189,6 +9199,9 @@
 			S_ITEM.SALES_DATE &lt;= ${salesDateTo}
 		</if-not-empty>
 		)AS S_ITEM
+		LEFT JOIN
+		(SELECT management_code, POSTAGE FROM exhibit_manage where delete_flag='0') as exm
+		ON(S_ITEM.item_code=exm.management_code)
 		LEFT JOIN
 		(SELECT
 		M_ITEM.SYS_ITEM_ID
