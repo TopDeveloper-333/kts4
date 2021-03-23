@@ -90,20 +90,7 @@
 		
 		
 		$('.profitId').each(function(profit){
-			var val = removeComma($(this).text());
-			val = parseInt(val);
-	        
-			var color = '';
-			if(val < 0 ){
-				color = "red";
-			}else if(val > 800){
-				color = "white";
-			}else {
-				color = "orange";
-			}
-			$(this).attr('style', 'background-color:'+color+';');
-			
-			
+						
 			var index = $('.profitId').index(this);
 
 			var listPrice = removeComma($(".listPrice").eq(index).val());
@@ -126,8 +113,6 @@
 			postage = removeComma(postage);
 			cRateOver = removeComma(cRateOver);
 
-			if(parseInt(listPrice) == 0)	return;
-			if(parseInt(rateOver) == 0)	return;
 
 			// カインドコストの計算処理
 			// 定価と掛率に0.01を掛けた数値でカインドコストを算出する。
@@ -138,6 +123,7 @@
 			if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
 			
 			var kindCost = parseInt(tempKindCost);
+			var tempKindCost = kindCost;
 
 			$('.kindCost').eq(index).val(kindCost);
 			addComma($(".kindCost").eq(index).val());			
@@ -153,7 +139,8 @@
 			var dot = tempCost % 10;
 			if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
 			
-			var cost = parseInt(tempCost) + parseInt(postage);
+			var cost = parseInt(tempCost);
+			var tempCost = cost;
 
 			$('.cost').eq(index).val(cost);
 			addComma($(".cost").eq(index).val());			
@@ -168,7 +155,7 @@
 			
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
+			var profit = parseInt(tempCost)-parseInt(tempKindCost);
 
 			var color = '';
 			if(profit < 0 ){
@@ -405,7 +392,7 @@
 			var dot = tempCost % 10;
 			if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
 			
-			var cost = parseInt(tempCost) + parseInt(postage);
+			var cost = parseInt(tempCost);
 
 			$(".cost").eq(index).val(cost);
 			addComma($(".cost").eq(index).val());
@@ -417,7 +404,7 @@
 			}
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
+			var profit = parseInt(cost) - parseInt(kindCost);
 
 			var color = '';
 			if(profit < 0 ){

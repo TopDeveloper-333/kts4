@@ -92,18 +92,6 @@
 		}
 		
 		$('.profitId').each(function(profit){
-			var val = removeComma($(this).text());
-			val = parseInt(val);
-	        
-			var color = '';
-			if(val < 0 ){
-				color = "red";
-			}else if(val > 800){
-				color = "white";
-			}else {
-				color = "orange";
-			}
-			$(this).attr('style', 'background-color:'+color+';');
 			
 			
 			var index = $('.profitId').index(this);
@@ -128,8 +116,6 @@
 			postage = removeComma(postage);
 			cRateOver = removeComma(cRateOver);
 
-			if(parseInt(listPrice) == 0)	return;
-			if(parseInt(rateOver) == 0)	return;
 
 			// カインドコストの計算処理
 			// 定価と掛率に0.01を掛けた数値でカインドコストを算出する。
@@ -140,6 +126,8 @@
 			if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
 			
 			var kindCost = parseInt(tempKindCost);
+			
+			var tempKindCost = kindCost;
 
 			kindCost = new String(kindCost).replace(/,/g, "");
 			while (kindCost != (kindCost = kindCost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
@@ -158,23 +146,20 @@
 			if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
 			
 			var cost = parseInt(tempCost);
+			
+			var tempCost = cost;
 
 			cost = new String(cost).replace(/,/g, "");
 			while (cost != (cost = cost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
 			$('.costEdit').eq(index).html(cost + "&nbsp;円");
 
-			// 単価取得
-			var pieceRate = removeComma($(".pieceRateEdit").eq(index).text());
-			if (pieceRate == "") {
-				pieceRate = 0;
-			}
-			
-			pieceRate = parseInt(pieceRate);
 			
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			var profit = parseInt(cost)-parseInt(kindCost);
+			var profit = parseInt(tempCost)-parseInt(tempKindCost);
 
+			console.log(parseInt(cost));
+			console.log(parseInt(kindCost));
 			var color = '';
 			if(profit < 0 ){
 				color = "red";
@@ -187,6 +172,8 @@
 			while (profit != (profit = profit.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
 			
 			$(this).html(profit + "&nbsp;円");
+			console.log(profit);
+			
 			$(this).attr('style', 'background-color:'+color+';');
 			
 		});		
