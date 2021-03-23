@@ -372,9 +372,7 @@
 
 							// 送料取得
 							var postage = $(".domePostage").eq(index).val();
- 							if ( postage != 0 || postage != "") {
- 								$(".domePostageKind").eq(index).val(postage);
- 							}
+							$(".domePostageKind").eq(index).val(postage);
 
 							// 法人掛け率取得
 							var cRateOver = $(".corporationRateOver").eq(index)
