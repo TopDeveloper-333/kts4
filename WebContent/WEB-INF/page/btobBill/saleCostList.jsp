@@ -157,7 +157,7 @@
 			var dot = tempCost % 10;
 			if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
 			
-			var cost = parseInt(tempCost) + parseInt(postage);
+			var cost = parseInt(tempCost);
 
 			cost = new String(cost).replace(/,/g, "");
 			while (cost != (cost = cost.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
@@ -173,7 +173,7 @@
 			
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(removeComma(cost))-parseInt(postage);
+			var profit = parseInt(cost)-parseInt(kindCost);
 
 			var color = '';
 			if(profit < 0 ){
@@ -268,7 +268,9 @@
 			var kindCost = $(".kindCostEdit").eq(index).children('input').val();
 			var itemRateOver = $(".itemRateOverEdit").eq(index).children('input').val();
 			var listPrice = $(".listPriceEdit").eq(index).children('input').val();
-			
+			var itemCode = $(".itemCodeValue").eq(index).val();
+			var postage = $(".domePostageEdit").eq(index).children('input').val();
+
 			
 /* 			if (cost == 0 || cost == "") {
 				alert("単価が設定されていません。");
@@ -308,6 +310,9 @@
 					'listPrice' : listPrice,
 					'costCheckFlag' : costCheckFlag,
 					'returnIndex' : returnIndex,
+					'itemCode' : itemCode,
+					'domePostage' : postage,
+
 					
 				}
 			}).done(function(data) {
@@ -329,10 +334,7 @@
 				while (domePostage != (domePostage = domePostage.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
 				$('.domePostageEdit').eq(idx).html(domePostage + "&nbsp;円");
 
-				var domePostageKind = $(".domePostageKindEdit").eq(idx).children('input').val();
-				domePostageKind = new String(domePostageKind).replace(/,/g, "");
-				while (domePostageKind != (domePostageKind = domePostageKind.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
-				$('.domePostageKindEdit').eq(idx).html(domePostageKind + "&nbsp;円");
+				$('.domePostageKindEdit').eq(idx).html(domePostage + "&nbsp;円");
 				
 				var listPrice = $(".listPriceEdit").eq(idx).children('input').val();
 				listPrice = new String(listPrice).replace(/,/g, "");
@@ -422,11 +424,10 @@
 
 							// 送料取得
 							var postage = $(".domePostageEdit").eq(index).children('input').val();
-/* 							if ( postage == 0 || postage == "") {
-								alert("送料が設定されていません。");
-								return;
-							}
- */
+ 							if ( postage != 0 || postage != "") {
+ 								$(".domePostageKindEdit").eq(index).children('input').val(postage);
+ 							}
+
 
 							// 法人掛け率取得
 							var cRateOver = $(".corporationRateOverEdit").eq(index).text();
@@ -465,7 +466,7 @@
 							var dot = tempCost % 10;
 							if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
 							
-							var cost = parseInt(tempCost) + parseInt(postage);
+							var cost = parseInt(tempCost);
 
 							$(".costEdit").eq(index).children('input').val(cost);
 							addComma($(".costEdit").eq(index).children('input').val());
@@ -479,10 +480,9 @@
 							
 							pieceRate = parseInt(pieceRate);
 							
-							console.log(pieceRate);
 							var storeFlag = $(".storeFlag").eq(index).val();
 							
-							var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
+							var profit = parseInt(cost)-parseInt(kindCost);
 
 							var color = '';
 							if(profit < 0 ){
@@ -1247,7 +1247,7 @@
 					<a href="Javascript:(void);" class="itemCodeLink" >
 						<nested:write property="itemCode" />
 						<input type="hidden" name="managementCode" id="managementCode">
-						<nested:hidden property="itemCode" styleClass="itemCode"></nested:hidden>
+						<nested:hidden property="itemCode" styleClass="itemCodeValue"></nested:hidden>
 					</a>
 				
 				</td>
