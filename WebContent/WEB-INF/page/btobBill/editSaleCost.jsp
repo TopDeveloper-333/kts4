@@ -158,7 +158,7 @@
 			var dot = tempCost % 10;
 			if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
 			
-			var cost = parseInt(tempCost) + parseInt(postage);
+			var cost = parseInt(tempCost);
 
 			$('.cost').eq(index).val(cost);
 			addComma($(".cost").eq(index).val());			
@@ -173,7 +173,7 @@
 			
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
+			var profit = parseInt(cost) - parseInt(kindCost);
 
 			var color = '';
 			if(profit < 0 ){
@@ -372,11 +372,10 @@
 
 							// 送料取得
 							var postage = $(".domePostage").eq(index).val();
-/* 							if ( postage == 0 || postage == "") {
-								alert("送料が設定されていません。");
-								return;
-							}
- */
+ 							if ( postage != 0 || postage != "") {
+ 								$(".domePostageKind").eq(index).val(postage);
+ 							}
+
 							// 法人掛け率取得
 							var cRateOver = $(".corporationRateOver").eq(index)
 									.val();
@@ -415,7 +414,7 @@
 							var dot = tempCost % 10;
 							if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
 							
-							var cost = parseInt(tempCost) + parseInt(postage);
+							var cost = parseInt(tempCost);
 
 							$(".cost").eq(index).val(cost);
 							addComma($(".cost").eq(index).val());
@@ -428,7 +427,7 @@
 							}
 							var storeFlag = $(".storeFlag").eq(index).val();
 							
-							var profit = parseInt(pieceRate/1.1)-parseInt(pieceRate*0.1)-parseInt(cost)-parseInt(postage);
+							var profit = parseInt(cost) - parseInt(kindCost);
 
 							var color = '';
 							if(profit < 0 ){

@@ -22,6 +22,7 @@ import jp.co.keyaki.cleave.fw.ui.web.struts.AppBaseAction;
 import jp.co.keyaki.cleave.fw.ui.web.struts.AppBaseForm;
 import jp.co.keyaki.cleave.fw.ui.web.struts.StrutsBaseConst;
 import jp.co.kts.app.common.entity.BtobBillItemDTO;
+import jp.co.kts.app.common.entity.DomesticExhibitionDTO;
 import jp.co.kts.app.common.entity.MstCorporationDTO;
 import jp.co.kts.app.common.entity.MstUserDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendBtobBillDTO;
@@ -32,6 +33,7 @@ import jp.co.kts.app.output.entity.CorporateSaleListTotalDTO;
 import jp.co.kts.app.output.entity.ErrorDTO;
 import jp.co.kts.app.output.entity.ResultItemSearchDTO;
 import jp.co.kts.app.search.entity.CorporateSaleCostSearchDTO;
+import jp.co.kts.dao.mst.DomesticExhibitionDAO;
 import jp.co.kts.service.btobBill.BtobBillCorporateSaleCostService;
 import jp.co.kts.service.btobBill.BtobBillSaleCostService;
 import jp.co.kts.service.btobBill.BtobBillService;
@@ -514,6 +516,9 @@ public class BtobBillAction extends AppBaseAction {
 
 		BtobBillSaleCostService btobSaleService = new BtobBillSaleCostService();
 
+		DomesticExhibitionDAO domesticDAO = new DomesticExhibitionDAO();
+		DomesticExhibitionDTO domesticDto = new DomesticExhibitionDTO();
+
 		ExtendSalesItemDTO salesCost = new ExtendSalesItemDTO();
 		String dd = request.getParameter("itemRateOver");
 		salesCost.setSysSalesItemId(new Long(request.getParameter("sysSalesItemId")));
@@ -524,11 +529,15 @@ public class BtobBillAction extends AppBaseAction {
 		salesCost.setCostCheckFlag(request.getParameter("costCheckFlag"));
 		
 		int index = new Integer(request.getParameter("returnIndex"));
+		
+		domesticDto.setManagementCode(request.getParameter("itemCode"));
+		domesticDto.setPostage(new Integer(request.getParameter("domePostage")));
 		//開始
 		begin();
 
 		// 入力内容登録をDBに反映
 		btobSaleService.updateSaleCostId(salesCost);
+		domesticDAO.updateItemCodeDomesticExhibition(domesticDto);
 
 		//登録成功
 		commit();
@@ -771,6 +780,10 @@ public class BtobBillAction extends AppBaseAction {
 		BtobBillCorporateSaleCostService coopSaleCostService = new BtobBillCorporateSaleCostService();
 
 		ExtendCorporateSalesItemDTO corporateSalesCost = new ExtendCorporateSalesItemDTO();
+
+		DomesticExhibitionDAO domesticDAO = new DomesticExhibitionDAO();
+		DomesticExhibitionDTO domesticDto = new DomesticExhibitionDTO();
+		
 		String dd = request.getParameter("itemRateOver");
 		corporateSalesCost.setSysCorporateSalesItemId(new Long(request.getParameter("sysCorporateSalesItemId")));
 		corporateSalesCost.setCost(new Integer(request.getParameter("cost")));
@@ -779,15 +792,21 @@ public class BtobBillAction extends AppBaseAction {
 		corporateSalesCost.setItemRateOver(new BigDecimal(request.getParameter("itemRateOver")));
 		corporateSalesCost.setCostCheckFlag(request.getParameter("costCheckFlag"));
 		
+		domesticDto.setPostage(new Integer(request.getParameter("domePostage")));
+		domesticDto.setManagementCode(request.getParameter("itemCode"));
+		
 		int index = new Integer(request.getParameter("returnIndex"));
 		//開始
 		begin();
 
 		// 入力内容登録をDBに反映
 		coopSaleCostService.updateCorpSaleCostId(corporateSalesCost);
+		domesticDAO.updateItemCodeDomesticExhibition(domesticDto);
 
 		//登録成功
 		commit();
+
+		
 
 		response.setCharacterEncoding("UTF-8");
 		PrintWriter printWriter = response.getWriter();

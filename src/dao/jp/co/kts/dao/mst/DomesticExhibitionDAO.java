@@ -161,6 +161,14 @@ public class DomesticExhibitionDAO extends BaseDAO {
 		return update("UPD_DOMESTICEXHIBITION", parameters);
 	}
 
+	public int updateItemCodeDomesticExhibition(DomesticExhibitionDTO dto) throws DaoException {
+		SQLParameters parameters = new SQLParameters();
+
+		addParametersFromBeanProperties(dto, parameters);
+
+		return update("UPD_DOMESTICEXHIBITION_ITEM_CODE", parameters);
+	}
+
 	/**
 	 * 登録処理：通常商品
 	 * @param dto

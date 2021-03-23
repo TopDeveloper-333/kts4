@@ -10713,6 +10713,7 @@
 		,S_ITEM.KIND_COST
 		,S_ITEM.LIST_PRICE
 		,S_ITEM.ITEM_RATE_OVER
+		,exm.postage as dome_postage
 		FROM
 		(
 		SELECT
@@ -10744,6 +10745,9 @@
 		WHERE
 		DELETE_FLAG = '0'
 		) AS S_ITEM
+		LEFT JOIN
+		(SELECT management_code, postage, purchasing_cost, wholsesaler_nm FROM exhibit_manage where delete_flag='0') as exm
+		ON(S_ITEM.item_code=exm.management_code)
 		WHERE
 		S_ITEM.ITEM_CODE = ${itemCode}
 		ORDER BY
@@ -11361,11 +11365,11 @@
 		,S_SLIP.CORPORATION_NM
 		,COALESCE(S_SLIP.CORPORATION_RATE_OVER,0) AS CORPORATION_RATE_OVER
 		,COALESCE(I_COST.COST,0) AS ITEM_KIND_COST
-			, wholsesaler_nm
-			, purchasing_cost
-			, exm.postage as dome_postage 
-			,1 as store_flag
-			,(SITEM.PIECE_RATE/1.1) - (SITEM.PIECE_RATE*0.1) - COALESCE(SITEM.COST,0) - exm.postage as profit
+		, wholsesaler_nm
+		, purchasing_cost
+		, exm.postage as dome_postage 
+		,1 as store_flag
+		,(SITEM.PIECE_RATE/1.1) - (SITEM.PIECE_RATE*0.1) - COALESCE(SITEM.COST,0) - exm.postage as profit
 		FROM
 		CORPORATE_SALES_ITEM AS SITEM
 		INNER JOIN
@@ -11446,6 +11450,7 @@
 		,S_ITEM.KIND_COST
 		,S_ITEM.LIST_PRICE
 		,S_ITEM.ITEM_RATE_OVER
+		,exm.postage as dome_postage
 		FROM
 		(
 		SELECT
@@ -11477,6 +11482,9 @@
 		WHERE
 		DELETE_FLAG = '0'
 		) AS S_ITEM
+		LEFT JOIN
+		(SELECT management_code, postage, purchasing_cost, wholsesaler_nm FROM exhibit_manage where delete_flag='0') as exm
+		ON(S_ITEM.item_code=exm.management_code)
 		WHERE
 		S_ITEM.ITEM_CODE = ${itemCode}
 		ORDER BY
@@ -13726,6 +13734,15 @@
 			,UPDATE_USER_ID = ${updateUserId}
 		WHERE
 			SYS_MANAGEMENT_ID = ${sysManagementId}
+	</sql-template>
+
+	<sql-template id="UPD_DOMESTICEXHIBITION_ITEM_CODE">
+		UPDATE
+			EXHIBIT_MANAGE
+		SET
+			POSTAGE = ${postage}
+		WHERE
+			MANAGEMENT_CODE = ${managementCode}
 	</sql-template>
 
 	<sql-template id="INS_DOMESTICEXHIBITION">

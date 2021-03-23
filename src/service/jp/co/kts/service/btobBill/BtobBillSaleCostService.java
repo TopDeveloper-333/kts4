@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 
 import jp.co.keyaki.cleave.common.util.StringUtil;
 import jp.co.keyaki.cleave.fw.dao.DaoException;
+import jp.co.kts.app.common.entity.DomesticExhibitionDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendSalesItemDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendSalesSlipDTO;
 import jp.co.kts.app.output.entity.SysItemIdDTO;
@@ -14,6 +15,7 @@ import jp.co.kts.app.output.entity.SysSaleItemIDDTO;
 import jp.co.kts.app.output.entity.SysSalesSlipIdDTO;
 import jp.co.kts.app.search.entity.SaleCostSearchDTO;
 import jp.co.kts.app.search.entity.SaleSearchDTO;
+import jp.co.kts.dao.mst.DomesticExhibitionDAO;
 import jp.co.kts.dao.sale.SaleDAO;
 import jp.co.kts.ui.web.struts.WebConst;
 
@@ -216,7 +218,15 @@ public class BtobBillSaleCostService {
 		for(ExtendSalesItemDTO dto : salesCostList){
 			setCheckFlags(dto);
 			saleDAO.updateSalesCost(dto);
-		}
+
+			DomesticExhibitionDAO domesticDAO = new DomesticExhibitionDAO();
+			DomesticExhibitionDTO domesticDto = new DomesticExhibitionDTO();
+			
+			domesticDto.setManagementCode(dto.getItemCode());
+			domesticDto.setPostage(dto.getDomePostage());
+			
+			domesticDAO.updateItemCodeDomesticExhibition(domesticDto);
+}
 
 	}
 
@@ -249,6 +259,8 @@ public class BtobBillSaleCostService {
 		salesCostList.get(saleCostListIdx).setCost(salesItemDTO.getCost());
 		// Kind原価
 		salesCostList.get(saleCostListIdx).setKindCost(salesItemDTO.getKindCost());
+		
+		salesCostList.get(saleCostListIdx).setDomePostage(salesItemDTO.getDomePostage());
 		// 定価
 		salesCostList.get(saleCostListIdx).setListPrice(salesItemDTO.getListPrice());
 		// 商品掛け率
