@@ -914,7 +914,7 @@
 		
 		$(".itemCodeLink").click(function () {
 
-			var value = $(this).find(".itemCode").val();
+			var value = $(this).find(".itemCodeValue").val();
 			
 			$("#managementCode").val(value);
 

@@ -2068,6 +2068,13 @@
 		SYS_SALES_SLIP_ID =
 		${sysSalesSlipId}
 	</sql-template>
+	<sql-template id="UPD_SALES_SLIP_POSTAGE">
+		UPDATE SALES_SLIP SET
+		POSTAGE = ${postage}
+		WHERE
+		SYS_SALES_SLIP_ID =
+		${sysSalesSlipId}
+	</sql-template>
 
 	<sql-template id="UPD_SALES_ITEM">
 		UPDATE SALES_ITEM SET

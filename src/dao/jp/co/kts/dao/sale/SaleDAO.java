@@ -547,6 +547,14 @@ public class SaleDAO extends BaseDAO {
 		return update("UPD_SALES_SLIP", parameters);
 	}
 
+	public int updateSalesSlipPostage(ExtendSalesSlipDTO dto) throws DaoException {
+
+		SQLParameters parameters = new SQLParameters();
+		addParametersFromBeanProperties(dto, parameters);
+
+		return update("UPD_SALES_SLIP_POSTAGE", parameters);
+	}
+
 	public void updateSalesItem(ExtendSalesItemDTO dto) throws DaoException {
 
 		SQLParameters parameters = new SQLParameters();

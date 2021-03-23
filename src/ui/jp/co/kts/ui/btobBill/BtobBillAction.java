@@ -29,11 +29,13 @@ import jp.co.kts.app.extendCommon.entity.ExtendBtobBillDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendCorporateSalesItemDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendCorporateSalesSlipDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendSalesItemDTO;
+import jp.co.kts.app.extendCommon.entity.ExtendSalesSlipDTO;
 import jp.co.kts.app.output.entity.CorporateSaleListTotalDTO;
 import jp.co.kts.app.output.entity.ErrorDTO;
 import jp.co.kts.app.output.entity.ResultItemSearchDTO;
 import jp.co.kts.app.search.entity.CorporateSaleCostSearchDTO;
 import jp.co.kts.dao.mst.DomesticExhibitionDAO;
+import jp.co.kts.dao.sale.SaleDAO;
 import jp.co.kts.service.btobBill.BtobBillCorporateSaleCostService;
 import jp.co.kts.service.btobBill.BtobBillSaleCostService;
 import jp.co.kts.service.btobBill.BtobBillService;
@@ -518,6 +520,9 @@ public class BtobBillAction extends AppBaseAction {
 
 		DomesticExhibitionDAO domesticDAO = new DomesticExhibitionDAO();
 		DomesticExhibitionDTO domesticDto = new DomesticExhibitionDTO();
+		
+		ExtendSalesSlipDTO slipDto = new ExtendSalesSlipDTO();
+		SaleDAO saleDAO = new SaleDAO();
 
 		ExtendSalesItemDTO salesCost = new ExtendSalesItemDTO();
 		String dd = request.getParameter("itemRateOver");
@@ -532,12 +537,16 @@ public class BtobBillAction extends AppBaseAction {
 		
 		domesticDto.setManagementCode(request.getParameter("itemCode"));
 		domesticDto.setPostage(new Integer(request.getParameter("domePostage")));
+		
+		slipDto.setPostage(new Integer(request.getParameter("domePostage")));
+		slipDto.setSysSalesSlipId(new Integer(request.getParameter("sysSalesSlipId")));
 		//開始
 		begin();
 
 		// 入力内容登録をDBに反映
 		btobSaleService.updateSaleCostId(salesCost);
 		domesticDAO.updateItemCodeDomesticExhibition(domesticDto);
+		saleDAO.updateSalesSlipPostage(slipDto);
 
 		//登録成功
 		commit();

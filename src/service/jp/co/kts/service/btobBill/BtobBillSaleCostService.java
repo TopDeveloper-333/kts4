@@ -226,6 +226,13 @@ public class BtobBillSaleCostService {
 			domesticDto.setPostage(dto.getDomePostage());
 			
 			domesticDAO.updateItemCodeDomesticExhibition(domesticDto);
+			
+			ExtendSalesSlipDTO slipDto = new ExtendSalesSlipDTO();
+			
+			slipDto.setSysSalesSlipId(dto.getSysSalesSlipId());
+			slipDto.setPostage(dto.getDomePostage());
+			
+			saleDAO.updateSalesSlipPostage(slipDto);
 }
 
 	}
