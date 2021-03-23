@@ -270,6 +270,7 @@
 			var listPrice = $(".listPriceEdit").eq(index).children('input').val();
 			var itemCode = $(".itemCodeValue").eq(index).val();
 			var postage = $(".domePostageEdit").eq(index).children('input').val();
+			var sysSalesSlipId = $('.sysSalesSlipId').eq(index).val();
 
 			
 /* 			if (cost == 0 || cost == "") {
@@ -304,6 +305,7 @@
 				dataType : 'json',
 				data : {
 					'sysSalesItemId' : sysSalesItemId,
+					'sysSalesSlipId' : sysSalesSlipId,
 					'cost' : cost,
 					'kindCost' : kindCost,
 					'itemRateOver' : itemRateOver,
@@ -707,7 +709,7 @@
 
 		$(".itemCodeLink").click(function () {
 
-			var value = $(this).find(".itemCode").val();
+			var value = $(this).find(".itemCodeValue").val();
 			
 			$("#managementCode").val(value);
 
