@@ -412,8 +412,8 @@
 							}
 
 							// 送料取得
-							var postage = $(".domePostageEdit").eq(index).children('input').val();
-							$(".domePostageKindEdit").eq(index).children('input').val(postage);
+							var postage = $(".domePostageKindEdit").eq(index).children('input').val();
+							$(".domePostageEdit").eq(index).children('input').val(postage);
 
 
 							// 法人掛け率取得
@@ -1058,11 +1058,21 @@
 				<td >
 					<nested:select property="orderType">
 						<html:option value="1">注文者名</html:option>
-						<html:option value="2">お届先のＴＥＬ</html:option>
+						<html:option value="2">届け先名</html:option>
 					</nested:select>
 				</td>
 			
 				<td><nested:text property="orderContent" styleClass="text_w250" maxlength="30" /></td>
+			</tr>
+			<tr>
+				<td >
+					<nested:select property="telType">
+						<html:option value="1">注文者TEL</html:option>
+						<html:option value="2">届け先TEL</html:option>
+					</nested:select>
+				</td>
+			
+				<td><nested:text property="telContent" styleClass="text_w250" maxlength="30" /></td>
 			</tr>
 			<tr>
 				<td>一言メモ</td>
