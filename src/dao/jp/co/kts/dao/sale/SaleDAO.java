@@ -797,6 +797,12 @@ public class SaleDAO extends BaseDAO {
 			parameters.addParameter("orderContent", createLikeWord(dto.getOrderContent(), true, true));
 		}
 
+		parameters.addParameter("telType", dto.getTelType());
+
+		if (StringUtils.isNotEmpty(dto.getTelContent())) {
+			parameters.addParameter("telContent", createLikeWord(dto.getTelContent(), true, true));
+		}
+
 		if (StringUtils.isNotEmpty(dto.getWholseSalerName())) {
 			parameters.addParameter("wholseSalerName", createLikeWord(dto.getWholseSalerName(), true, true));
 		}

@@ -131,6 +131,10 @@ public class SaleSearchDTO {
 	private int orderType;
 	
 	private String orderContent;
+
+	private int telType;
+	
+	private String telContent;
 	
 	private String wholseSalerName;
 
@@ -627,6 +631,22 @@ public class SaleSearchDTO {
 	
 	public void setWholseSalerName(String wholseSalerName) {
 		this.wholseSalerName = wholseSalerName;
+	}
+
+	public int getTelType() {
+		return telType;
+	}
+
+	public void setTelType(int telType) {
+		this.telType = telType;
+	}
+
+	public String getTelContent() {
+		return telContent;
+	}
+
+	public void setTelContent(String telContent) {
+		this.telContent = telContent;
 	}
 
 }

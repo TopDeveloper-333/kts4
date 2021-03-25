@@ -352,8 +352,8 @@
 				alert("掛け率が設定されていません。");
 				return;
 			}
-			var postage = $(".domePostage").eq(index).val();
-			$(".domePostageKind").eq(index).val(postage);
+			var postage = $(".domePostageKind").eq(index).val();
+			$(".domePostage").eq(index).val(postage);
 
 			var cRateOver = $(".corporationRateOver").eq(index).val();
 			if(cRateOver == ""){

@@ -353,8 +353,8 @@
 							}
 
 							// 送料取得
-							var postage = $(".domePostage").eq(index).val();
-							$(".domePostageKind").eq(index).val(postage);
+							var postage = $(".domePostageKind").eq(index).val();
+							$(".domePostage").eq(index).val(postage);
 
 							// 法人掛け率取得
 							var cRateOver = $(".corporationRateOver").eq(index)

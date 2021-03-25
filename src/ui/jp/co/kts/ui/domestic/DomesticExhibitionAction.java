@@ -149,7 +149,7 @@ public class DomesticExhibitionAction extends AppBaseAction {
 		 */
 		
 		String itemCode = request.getParameter("managementCode");
-		if(itemCode != "") {
+		if(itemCode != null) {
 			form.getDomesticExhibitionSearchDTO().setManagementCode(itemCode);
 			if (StringUtils.isEmpty(form.getDomesticExhibitionSearchDTO().getListPageMax())) {
 				form.getDomesticExhibitionSearchDTO().setListPageMax("1");

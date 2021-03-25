@@ -10309,6 +10309,18 @@
 				</if-equals>			
 			</if-not-empty>
 
+			<if-not-empty varName="telContent">
+				<if-equals value="1" varName="telType">
+					AND
+					ORDER_TEL ILIKE ${telContent}
+				</if-equals>			
+
+				<if-equals value="2" varName="telType">
+					AND
+					destination_tel ILIKE ${telContent}
+				</if-equals>			
+			</if-not-empty>
+
 			<if-not-empty varName="invoiceClassification">
 				AND
 				INVOICE_CLASSIFICATION =

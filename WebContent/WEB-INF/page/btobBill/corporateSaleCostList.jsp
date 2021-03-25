@@ -415,8 +415,8 @@
 							}
 
 							// 送料取得
-							var postage = $(".domePostageEdit").eq(index).children('input').val();
-							$(".domePostageKindEdit").eq(index).children('input').val(postage);
+							var postage = $(".domePostageKindEdit").eq(index).children('input').val();
+							$(".domePostageEdit").eq(index).children('input').val(postage);
 
 							// 法人掛け率取得
 							var cRateOver = $(".corporationRateOverEdit").eq(index).text();
