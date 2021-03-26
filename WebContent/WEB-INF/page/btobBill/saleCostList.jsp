@@ -156,10 +156,8 @@
 			
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			var profit = parseInt(tempCost)-parseInt(tempKindCost);
+			var profit = parseInt(parseInt(listPrice)/1.1) - parseInt(parseInt(listPrice)*0.1) - parseInt(tempCost) - parseInt(postage);
 
-			console.log(parseInt(cost));
-			console.log(parseInt(kindCost));
 			var color = '';
 			if(profit < 0 ){
 				color = "red";
@@ -469,8 +467,8 @@
 							
 							var storeFlag = $(".storeFlag").eq(index).val();
 							
-							var profit = parseInt(cost)-parseInt(kindCost);
-
+							var profit = parseInt(parseInt(listPrice)/1.1) - parseInt(parseInt(listPrice)*0.1) - parseInt(cost) - parseInt(postage);
+							
 							var color = '';
 							if(profit < 0 ){
 								color = "red";
