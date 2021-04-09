@@ -120,13 +120,13 @@
 			var tempKindCost = (kindCostArray[0] * kindCostArray[1]) / kindCostArray[2];
 
 			var kindDot = tempKindCost % 10;
-			if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
+			//if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
 			
-			var kindCost = parseInt(tempKindCost);
+			var kindCost = parseInt(removeComma($(".purchasingCost").eq(index).val()));
 			var tempKindCost = kindCost;
 
-			$('.kindCost').eq(index).val(kindCost);
-			addComma($(".kindCost").eq(index).val());			
+			$('.purchasingCost').eq(index).val(kindCost);
+			addComma($(".purchasingCost").eq(index).val());			
 			// 原価の計算処理
 			// 掛率と法人掛率で定価用の掛率を算出する。
 			var rate = parseFloat(rateOver) + parseFloat(cRateOver);
@@ -137,7 +137,7 @@
 			var tempCost = (costArray[0] * costArray[1]) / costArray[2];
 			
 			var dot = tempCost % 10;
-			if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
+			//if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
 			
 			var cost = parseInt(tempCost);
 			var tempCost = cost;
@@ -146,7 +146,7 @@
 			addComma($(".cost").eq(index).val());			
 
 			// 単価取得
-			var pieceRate = $(".pieceRateHidden").eq(index).val();
+			var pieceRate = $(".pieceRateEdit").eq(index).val();
 			if (pieceRate == "") {
 				pieceRate = 0;
 			}
@@ -155,7 +155,7 @@
 			
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			var profit = parseInt(parseInt(listPrice)/1.1) - parseInt(parseInt(listPrice)*0.1) - parseInt(tempCost) - parseInt(postage);
+			var profit = parseInt(parseInt(pieceRate)/1.1) - parseInt(parseInt(pieceRate)*0.1) - parseInt(tempCost) - parseInt(postage);
 
 			var color = '';
 			if(profit < 0 ){
@@ -318,7 +318,7 @@
 			var id = $(this).find(".sysCorporateSalesSlipId_link").val();
 			$("#sysCorporateSalesSlipId").val(id);
 			
-			FwGlobal.submitForm(document.forms[0],"/initCorporateSaleDetail","CorporateSaleDetail" + $("#sysSalesSlipId").val(),"top=130,left=500,width=780px,height=520px;");
+			FwGlobal.submitForm(document.forms[0],"/initCorporateSaleDetail","CorporateSaleDetail" + $("#sysSalesSlipId").val(),"top=130,left=500,width=780px,height=520px,toolbar=0,location=0,directories=0,status=0,menubar=0,scrollbars=1,resizable=1");
 
 		});
 
@@ -374,12 +374,12 @@
 			var tempKindCost = (kindCostArray[0] * kindCostArray[1]) / kindCostArray[2];
 			
 			var kindDot = tempKindCost % 10;
-			if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
+			//if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
 			
 			var kindCost = parseInt(tempKindCost);
 
-			$(".kindCost").eq(index).val(kindCost);
-			addComma($(".kindCost").eq(index).val());
+			$(".purchasingCost").eq(index).val(kindCost);
+			addComma($(".purchasingCost").eq(index).val());
 
 			// 原価の計算処理
 			// 掛率と法人掛率で定価用の掛率を算出する。
@@ -390,7 +390,7 @@
 			var tempCost = (costArray[0] * costArray[1]) / costArray[2];
 			
 			var dot = tempCost % 10;
-			if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
+			//if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
 			
 			var cost = parseInt(tempCost);
 
@@ -398,13 +398,16 @@
 			addComma($(".cost").eq(index).val());
 
 			// 単価取得
-			var pieceRate = $(".pieceRateHidden").eq(index).val();
+			var pieceRate = $(".pieceRateEdit").eq(index).val();
 			if (pieceRate == "") {
 				pieceRate = 0;
 			}
+			
+			pieceRate = parseInt(pieceRate);
+			
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			var profit = parseInt(parseInt(listPrice)/1.1) - parseInt(parseInt(listPrice)*0.1) - parseInt(cost) - parseInt(postage);
+			var profit = parseInt(parseInt(pieceRate)/1.1) - parseInt(parseInt(pieceRate)*0.1) - parseInt(cost) - parseInt(postage);
 
 			var color = '';
 			if(profit < 0 ){
@@ -479,8 +482,8 @@
 			var index = $(".cost").index(this);
 			switch(e.which){
 			case 39: // [→]
-				$(".kindCost").eq(index).focus();
-				$(".kindCost").eq(index).select();
+				$(".purchasingCost").eq(index).focus();
+				$(".purchasingCost").eq(index).select();
 				break;
 			case 37: // [←]
 				index--;
@@ -500,9 +503,9 @@
 		});
 
 		// Kind原価のカーソルキー移動
-		$(".kindCost").keyup (function (e){
+		$(".purchasingCost").keyup (function (e){
 			// 一覧のインデックスを設定
-			var index = $(".kindCost").index(this);
+			var index = $(".purchasingCost").index(this);
 			switch(e.which){
 			case 39: // [→]
 				$(".listPrice").eq(index).focus();
@@ -514,13 +517,13 @@
 				break;
 			case 38: // [↑]
 				index--;
-				$(".kindCost").eq(index).focus();
-				$(".kindCost").eq(index).select();
+				$(".purchasingCost").eq(index).focus();
+				$(".purchasingCost").eq(index).select();
 				break;
 			case 40: // [↓]
 				index++;
-				$(".kindCost").eq(index).focus();
-				$(".kindCost").eq(index).select();
+				$(".purchasingCost").eq(index).focus();
+				$(".purchasingCost").eq(index).select();
 				break;
 			}
 		});
@@ -535,8 +538,8 @@
 				$(".itemRateOver").eq(index).select();
 				break;
 			case 37: // [←]
-				$(".kindCost").eq(index).focus();
-				$(".kindCost").eq(index).select();
+				$(".purchasingCost").eq(index).focus();
+				$(".purchasingCost").eq(index).select();
 				break;
 			case 38: // [↑]
 				index--;
@@ -692,7 +695,7 @@
 					</td>
 				<td><nested:write property="itemNm" /></td>
 				<td><nested:write property="orderNum" /></td>
-				<td><nested:write property="pieceRate" format="###,###,###" />&nbsp;円</td>
+				<td class="pieceRateEdit"><nested:write property="pieceRate" format="###,###,###" />&nbsp;円</td>
 				<td><nested:write property="corporationRateOver" />&nbsp;％
 					<nested:hidden property="corporationRateOver" styleClass="corporationRateOver" />
 				</td>
@@ -700,7 +703,7 @@
 				<td><nested:text property="domePostage"
 						styleClass="priceText domePostage"
 						style="width: 80px; text-align: right;" maxlength="9" />&nbsp;円</td>
-				<td><nested:text property="kindCost" styleClass="priceText kindCost" style="width: 80px; text-align: right;"  maxlength="9" />&nbsp;円</td>
+				<td><nested:text property="purchasingCost" styleClass="priceText purchasingCost" style="width: 80px; text-align: right;"  maxlength="9" />&nbsp;円</td>
 				<td><nested:text property="listPrice" styleClass="priceText listPrice" style="width: 80px; text-align: right;"  maxlength="9" />&nbsp;円</td>
 				<td><nested:text property="domePostage"
 						styleClass="priceText domePostageKind"

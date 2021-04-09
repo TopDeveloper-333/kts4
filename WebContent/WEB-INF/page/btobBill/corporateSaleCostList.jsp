@@ -125,9 +125,9 @@
 			var tempKindCost = (kindCostArray[0] * kindCostArray[1]) / kindCostArray[2];
 
 			var kindDot = tempKindCost % 10;
-			if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
+			//if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
 			
-			var kindCost = parseInt(tempKindCost);
+			var kindCost = parseInt(removeComma($(".kindCostEdit").eq(index).text()));
 			var tempKindCost = kindCost;
 
 			kindCost = new String(kindCost).replace(/,/g, "");
@@ -144,7 +144,7 @@
 			var tempCost = (costArray[0] * costArray[1]) / costArray[2];
 			
 			var dot = tempCost % 10;
-			if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
+			//if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
 			
 			var cost = parseInt(tempCost);
 			var tempCost = cost;
@@ -163,7 +163,7 @@
 			
 			var storeFlag = $(".storeFlag").eq(index).val();
 			
-			var profit = parseInt(parseInt(listPrice)/1.1) - parseInt(parseInt(listPrice)*0.1) - parseInt(tempCost) - parseInt(postage);
+			var profit = parseInt(parseInt(pieceRate)/1.1) - parseInt(parseInt(pieceRate)*0.1) - parseInt(tempCost) - parseInt(postage);
 
 			var color = '';
 			if(profit < 0 ){
@@ -436,7 +436,7 @@
 							var tempKindCost = (kindCostArray[0] * kindCostArray[1]) / kindCostArray[2];
 							
 							var kindDot = tempKindCost % 10;
-							if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
+							//if(kindDot > 0)	tempKindCost = parseInt(tempKindCost) + parseInt(1);
 							
 							var kindCost = parseInt(tempKindCost);
 
@@ -453,7 +453,7 @@
 							var tempCost = (costArray[0] * costArray[1]) / costArray[2];
 							
 							var dot = tempCost % 10;
-							if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
+							//if(dot > 0)	tempCost = parseInt(tempCost) + parseInt(1);
 							
 							var cost = parseInt(tempCost);
 
@@ -469,10 +469,9 @@
 							
 							pieceRate = parseInt(pieceRate);
 							
-							console.log(pieceRate);
 							var storeFlag = $(".storeFlag").eq(index).val();
 							
-							var profit = parseInt(parseInt(listPrice)/1.1) - parseInt(parseInt(listPrice)*0.1) - parseInt(cost) - parseInt(postage);
+							var profit = parseInt(parseInt(pieceRate)/1.1) - parseInt(parseInt(pieceRate)*0.1) - parseInt(cost) - parseInt(postage);
 
 							var color = '';
 							if(profit < 0 ){
@@ -870,7 +869,7 @@
 			var id = $(this).find(".sysCorporateSalesSlipId_link").val();
 			$("#sysCorporateSalesSlipId").val(id);
 			
-			FwGlobal.submitForm(document.forms[0],"/initCorporateSaleDetail","CorporateSaleDetail" + $("#sysSalesSlipId").val(),"top=130,left=500,width=780px,height=520px;");
+			FwGlobal.submitForm(document.forms[0],"/initCorporateSaleDetail","CorporateSaleDetail" + $("#sysSalesSlipId").val(),"top=130,left=500,width=780px,height=520px,toolbar=0,location=0,directories=0,status=0,menubar=0,scrollbars=1,resizable=1");
 
 		});
 
@@ -1182,7 +1181,7 @@
 					<td class="corporationRateOverEdit"><nested:write property="corporationRateOver" />&nbsp;％</td>
 					<td class="costEdit"><nested:write property="cost" format="###,###,###" />&nbsp;円</td>
 					<td class="domePostageEdit"><nested:write property="domePostage" format="###,###,###" />&nbsp;円</td>
-					<td class="kindCostEdit"><nested:write property="kindCost" format="###,###,###" />&nbsp;円</td>
+					<td class="kindCostEdit"><nested:write property="purchasingCost" format="###,###,###" />&nbsp;円</td>
 					<td class="listPriceEdit"><nested:write property="listPrice" format="###,###,###" />&nbsp;円</td>
 					<td class="domePostageKindEdit"><nested:write property="domePostage" format="###,###,###" />&nbsp;円</td>
 					<td class="itemRateOverEdit"><nested:write property="itemRateOver" />&nbsp;％</td>
