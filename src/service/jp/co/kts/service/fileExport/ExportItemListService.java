@@ -395,6 +395,8 @@ public class ExportItemListService extends FileExportExcelService implements Aut
 			callCreateCell(row, colIdx++).setCellValue(dto.getItemCost12());
 			// ウルトラレーシング事業部
 			callCreateCell(row, colIdx++).setCellValue(dto.getItemCost13());
+			// bellwors
+			callCreateCell(row, colIdx++).setCellValue(dto.getItemCost14());
 
 			/****************************************以下売価情報**********************************************/
 			// KTS
@@ -421,6 +423,8 @@ public class ExportItemListService extends FileExportExcelService implements Aut
 			callCreateCell(row, colIdx++).setCellValue(dto.getItemPrice12());
 			// ウルトラレーシング事業部
 			callCreateCell(row, colIdx++).setCellValue(dto.getItemPrice13());
+			// bellwork
+			callCreateCell(row, colIdx++).setCellValue(dto.getItemPrice14());
 
 			row = null;
 			rowIdx++;
@@ -527,6 +531,9 @@ public class ExportItemListService extends FileExportExcelService implements Aut
 			case "13":
 				dto.setItemCost13(itemCost.get(i).getItemCost());
 				break;
+			case "14":
+				dto.setItemCost14(itemCost.get(i).getItemCost());
+				break;
 			case "99":
 				dto.setKindCost(itemCost.get(i).getItemCost());
 				break;
@@ -571,6 +578,9 @@ public class ExportItemListService extends FileExportExcelService implements Aut
 				break;
 			case "13":
 				dto.setItemPrice13(itemPrice.get(i).getItemPrice());
+				break;
+			case "14":
+				dto.setItemPrice14(itemPrice.get(i).getItemPrice());
 				break;
 			}
 		}
@@ -887,6 +897,8 @@ public class ExportItemListService extends FileExportExcelService implements Aut
 			callCreateCell(row, colIdx++).setCellValue(dto.getPurchasingCost());
 			//更新日
 			callCreateCell(row, colIdx++).setCellValue(dto.getUpdateDate());
+			//担当部署名
+			callCreateCell(row, colIdx++).setCellValue(castRichTextString(dto.getDepartmentNm()));
 
 			row = null;
 			rowIdx++;

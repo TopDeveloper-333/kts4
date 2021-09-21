@@ -2328,7 +2328,7 @@
 		DELETE_FLAG = '0'
 		<if-not-empty varName="orderNo">
 			AND
-			ORDER_NO ILIKE ${orderNo}
+			ORDER_NO = ${orderNo}
 		</if-not-empty>
 		<if-not-equals value="0" varName="sysSalesSlipId">
 			AND
@@ -2336,7 +2336,6 @@
 			${sysSalesSlipId}
 		</if-not-equals>
 		)AS SLIP
-		<!--  2021 NSG •s—v‚È‚Ì‚Åœ‹Ž
 		INNER JOIN
 		(SELECT
 		SYS_SALES_SLIP_ID
@@ -2359,7 +2358,6 @@
 		)AS S_ITEM
 		ON
 		S_ITEM.SYS_SALES_SLIP_ID = SLIP.SYS_SALES_SLIP_ID
-		-->
 	</sql-template>
 
 	<!-- ”„ãˆê—— -->
@@ -2943,26 +2941,8 @@
 		<!-- WHEN S_ITEM.SYS_ITEM_ID IS NULL OR S_ITEM.SYS_ITEM_ID = 0 -->
 		<!-- THEN S_ITEM.COST -->
 		<!-- END AS COST -->
-		,CASE
-		WHEN S_ITEM.UPDATED_FLAG = 1 AND S_ITEM.POSTAGE IS NOT NULL THEN
-			S_ITEM.COST + S_ITEM.POSTAGE/abs(S_ITEM.ORDER_NUM) 
-		WHEN (S_ITEM.UPDATED_FLAG IS NULL OR S_ITEM.UPDATED_FLAG = 0) AND exm.postage IS NOT NULL THEN
-			S_ITEM.COST + exm.postage/abs(S_ITEM.ORDER_NUM)
-		WHEN (S_ITEM.UPDATED_FLAG IS NULL OR S_ITEM.UPDATED_FLAG = 0) AND exm.postage IS NULL THEN
-			S_ITEM.COST
-		END AS COST
-		,CASE
-		WHEN S_ITEM.UPDATED_FLAG = 1 THEN
-			S_ITEM.POSTAGE
-		WHEN S_ITEM.UPDATED_FLAG IS NULL OR S_ITEM.UPDATED_FLAG = 0 THEN
-			exm.POSTAGE
-		END AS POSTAGE
-		,CASE
-		WHEN exm.postage IS NOT NULL THEN
-			S_ITEM.COST + exm.postage/abs(S_ITEM.ORDER_NUM)
-		WHEN exm.postage IS NULL THEN
-			S_ITEM.COST
-		END AS DOME_COST
+		,(S_ITEM.COST + S_ITEM.POSTAGE/S_ITEM.ORDER_NUM) AS COST
+		,(S_ITEM.COST + exm.postage/S_ITEM.ORDER_NUM) AS DOME_COST
 		<!-- ,CASE -->
 		<!-- WHEN S_ITEM.SYS_ITEM_ID IS NOT NULL AND S_ITEM.SYS_ITEM_ID != 0 THEN
 			M_ITEM.ITEM_NM -->
@@ -8346,7 +8326,7 @@
 		DELETE_FLAG = '0'
 		<if-not-equals value="0" varName="orderNo">
 			AND
-			order_no ILIKE ${orderNo}
+			order_no = ${orderNo}
 		</if-not-equals>
 	</sql-template>
 
@@ -9135,26 +9115,8 @@
 		<!-- WHEN S_ITEM.SYS_ITEM_ID IS NULL OR S_ITEM.SYS_ITEM_ID = 0 THEN -->
 		<!-- S_ITEM.COST -->
 		<!-- END AS COST -->
-		,CASE
-		WHEN S_ITEM.UPDATED_FLAG = 1 AND S_ITEM.POSTAGE IS NOT NULL THEN
-			S_ITEM.COST + S_ITEM.POSTAGE/abs(S_ITEM.ORDER_NUM) 
-		WHEN (S_ITEM.UPDATED_FLAG IS NULL OR S_ITEM.UPDATED_FLAG = 0) AND exm.postage IS NOT NULL THEN
-			S_ITEM.COST + exm.postage/abs(S_ITEM.ORDER_NUM)
-		WHEN (S_ITEM.UPDATED_FLAG IS NULL OR S_ITEM.UPDATED_FLAG = 0) AND exm.postage IS NULL THEN
-			S_ITEM.COST
-		END AS COST
-		,CASE
-		WHEN S_ITEM.UPDATED_FLAG = 1 THEN
-			S_ITEM.POSTAGE
-		WHEN S_ITEM.UPDATED_FLAG IS NULL OR S_ITEM.UPDATED_FLAG = 0 THEN
-			exm.postage
-		END AS POSTAGE
-		,CASE
-		WHEN exm.postage IS NOT NULL THEN
-			S_ITEM.COST + exm.postage/abs(S_ITEM.ORDER_NUM)
-		WHEN exm.postage IS NULL THEN
-			S_ITEM.COST
-		END AS DOME_COST
+		,(S_ITEM.COST + S_ITEM.POSTAGE/S_ITEM.ORDER_NUM) AS COST
+		,(S_ITEM.COST + exm.postage/S_ITEM.ORDER_NUM) AS DOME_COST
 		<!-- ,CASE -->
 		<!-- WHEN S_ITEM.SYS_ITEM_ID IS NOT NULL AND S_ITEM.SYS_ITEM_ID != 0 THEN
 			M_ITEM.ITEM_NM -->
@@ -12141,7 +12103,7 @@
 		,COST_CHECK_FLAG
 		,RETURN_FLG
 		,TAX_RATE
-		,exm.postage AS DOME_POSTAGE
+		,exm.postage
 		FROM
 		SALES_ITEM AS ITEM
 		INNER JOIN
@@ -13396,7 +13358,7 @@
 		,COST_CHECK_FLAG
 		,RETURN_FLG
 		,TAX_RATE
-		,exm.postage AS DOME_POSTAGE
+		,exm.postage
 		FROM
 		CORPORATE_SALES_ITEM AS ITEM
 		INNER JOIN
@@ -13738,7 +13700,6 @@
 		,EM.CREATE_DATE
 		,EM.CREATE_USER_ID
 		,EM.SET_ITEM_FLG
-		,EM.DEPARTMENT_NM
 		,MM.MAKER_NM
 		,MM.MAKER_NM_KANA
 		FROM
@@ -13808,9 +13769,6 @@
 		</if-not-empty>
 		<if-not-empty varName="itemNm">
 			AND EM.ITEM_NM ILIKE ${itemNm}
-		</if-not-empty>
-		<if-not-empty varName="departmentNm">
-			AND EM.DEPARTMENT_NM ILIKE ${departmentNm}
 		</if-not-empty>
 
 		<if-not-null varName="purchasingCostFrom">
@@ -13884,7 +13842,6 @@
 			,OPEN_PRICE_FLG = ${openPriceFlg}
 			,UPDATE_DATE = current_timestamp
 			,UPDATE_USER_ID = ${updateUserId}
-			,DEPARTMENT_NM = ${departmentNm}
 		WHERE
 			SYS_MANAGEMENT_ID = ${sysManagementId}
 	</sql-template>
@@ -13918,8 +13875,7 @@
 			,UPDATE_USER_ID
 			,CREATE_DATE
 			,CREATE_USER_ID
-			,SET_ITEM_FLG
-			,DEPARTMENT_NM)
+			,SET_ITEM_FLG)
 		VALUES(
 			${sysManagementId}
 			,${managementCode}
@@ -13938,8 +13894,7 @@
 			,${createUserId}
 			,current_timestamp
 			,${updateUserId}
-			,${setItemFlg}
-			,${departmentNm})
+			,${setItemFlg})
 	</sql-template>
 
 	<sql-template id="SEL_DOMESTIC_ORDER_ITEM_TARGET">
@@ -14052,7 +14007,6 @@
 			,EM.PURCHASING_COST
 			,EM.POSTAGE
 			,EM.OPEN_PRICE_FLG
-			,EM.DEPARTMENT_NM
 			,to_char(EM.UPDATE_DATE, 'YYYY/MM/DD') AS UPDATE_DATE
 			,MM.MAKER_NM
 			,MM.MAKER_NM_KANA
@@ -14111,9 +14065,6 @@
 		<if-not-empty varName="itemNm">
 			AND EM.ITEM_NM ILIKE ${itemNm}
 		</if-not-empty>
-		<if-not-empty varName="departmentNm">
-			AND EM.DEPARTMENT_NM ILIKE ${departmentNm}
-		</if-not-empty>
 
 		<if-not-null varName="purchasingCostFrom">
 			<if-not-equals value="0" varName="purchasingCostFrom">
@@ -14169,7 +14120,6 @@
 		,PURCHASING_COST
 		,POSTAGE
 		,OPEN_PRICE_FLG
-		,DEPARTMENT_NM
 		FROM
 		EXHIBIT_MANAGE
 		WHERE
@@ -14194,7 +14144,6 @@
 		,PURCHASING_COST
 		,POSTAGE
 		,OPEN_PRICE_FLG
-		,DEPARTMENT_NM
 		FROM
 		EXHIBIT_MANAGE
 		WHERE
@@ -14228,7 +14177,6 @@
 			,PURCHASING_COST
 			,POSTAGE
 			,OPEN_PRICE_FLG
-			,DEPARTMENT_NM
 		FROM
 			EXHIBIT_MANAGE
 		WHERE
@@ -14293,7 +14241,6 @@
 			,EM.PURCHASING_COST
 			,EM.POSTAGE
 			,EM.OPEN_PRICE_FLG
-			,EM.DEPARTMENT_NM
 			,EM.DELETE_FLAG
 			,to_char(EM.UPDATE_DATE, 'YYYY/MM/DD') as UPDATE_DATE
 			,EM.UPDATE_USER_ID
@@ -14321,7 +14268,6 @@
 			,EM.PURCHASING_COST
 			,EM.POSTAGE
 			,EM.OPEN_PRICE_FLG
-			,EM.DEPARTMENT_NM
 			,SEM.SYS_SET_MANAGEMENT_ID
 			,SEM.SYS_MANAGEMENT_ID
 			,SEM.FORM_SYS_MANAGEMENT_ID
@@ -14412,7 +14358,6 @@
 		,EM.UPDATE_USER_ID
 		,EM.CREATE_DATE
 		,EM.CREATE_USER_ID
-		,EM.DEPARTMENT_NM
 		,EM.SET_ITEM_FLG
 		FROM
 
@@ -14458,7 +14403,6 @@
 			,EM.PURCHASING_COST
 			,EM.POSTAGE
 			,EM.OPEN_PRICE_FLG
-			,EM.DEPARTMENT_NM
 			,EM.DELETE_FLAG
 			,EM.UPDATE_DATE
 			,EM.UPDATE_USER_ID

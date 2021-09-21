@@ -71,6 +71,8 @@ public class DomesticExhibitionSearchDTO {
 	/** 国内商品検索タイプ */
 	private String searchItemType;
 
+	/** 担当部署名 */
+	private String departmentNm;
 
 	/**
 	 * 管理品番を取得します。
@@ -439,5 +441,21 @@ public class DomesticExhibitionSearchDTO {
 	 */
 	public void setSearchItemType(String searchItemType) {
 		this.searchItemType = searchItemType;
+	}
+
+	/**
+	 * 担当部署名を取得します。
+	 * @return 担当部署名
+	 */
+	public String getDepartmentNm() {
+	    return departmentNm;
+	}
+
+	/**
+	 * 担当部署名を設定します。
+	 * @param wholsesalerNm 担当部署名
+	 */
+	public void setDepartmentNm(String departmentNm) {
+	    this.departmentNm = departmentNm;
 	}
 }

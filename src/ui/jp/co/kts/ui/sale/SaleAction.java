@@ -653,5 +653,4 @@ public class SaleAction extends AppBaseAction{
 
 		return null;
 	}
-
 }

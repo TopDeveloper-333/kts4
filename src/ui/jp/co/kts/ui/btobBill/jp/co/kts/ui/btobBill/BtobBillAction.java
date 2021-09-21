@@ -532,6 +532,9 @@ public class BtobBillAction extends AppBaseAction {
 		salesCost.setListPrice(new Integer(request.getParameter("listPrice")));
 		salesCost.setItemRateOver(new BigDecimal(request.getParameter("itemRateOver")));
 		salesCost.setCostCheckFlag(request.getParameter("costCheckFlag"));
+		salesCost.setProfit(new Integer(request.getParameter("profit")));
+		salesCost.setPostage(new Integer(request.getParameter("domePostage")));
+		salesCost.setUpdatedFlag(new Integer(request.getParameter("updatedFlag")));
 		
 		int index = new Integer(request.getParameter("returnIndex"));
 		
@@ -545,8 +548,8 @@ public class BtobBillAction extends AppBaseAction {
 
 		// 入力内容登録をDBに反映
 		btobSaleService.updateSaleCostId(salesCost);
-		domesticDAO.updateItemCodeDomesticExhibition(domesticDto);
-		saleDAO.updateSalesSlipPostage(slipDto);
+//		domesticDAO.updateItemCodeDomesticExhibition(domesticDto);
+//		saleDAO.updateSalesSlipPostage(slipDto);
 
 		//登録成功
 		commit();
@@ -592,7 +595,7 @@ public class BtobBillAction extends AppBaseAction {
 		salesCost = salesCostList.get(new Integer(request.getParameter("sysSalesIndex")));
 
 		String returnValue = request.getParameter("sysSalesIndex") + "," + String.valueOf(salesCost.getCost()) + ","
-							+ String.valueOf(salesCost.getKindCost()) + "," + String.valueOf(salesCost.getDomePostage()) + ","
+							+ String.valueOf(salesCost.getKindCost()) + "," + String.valueOf(salesCost.getPostage()) + ","
 							+ String.valueOf(salesCost.getListPrice()) + "," + String.valueOf(salesCost.getItemRateOver()) ;
 		response.setCharacterEncoding("UTF-8");
 		PrintWriter printWriter = response.getWriter();
@@ -800,7 +803,10 @@ public class BtobBillAction extends AppBaseAction {
 		corporateSalesCost.setListPrice(new Integer(request.getParameter("listPrice")));
 		corporateSalesCost.setItemRateOver(new BigDecimal(request.getParameter("itemRateOver")));
 		corporateSalesCost.setCostCheckFlag(request.getParameter("costCheckFlag"));
-		
+		corporateSalesCost.setProfit(new Integer(request.getParameter("profit")));
+		corporateSalesCost.setPostage(new Integer(request.getParameter("domePostage")));
+		corporateSalesCost.setUpdatedFlag(new Integer(request.getParameter("updatedFlag")));
+
 		domesticDto.setPostage(new Integer(request.getParameter("domePostage")));
 		domesticDto.setManagementCode(request.getParameter("itemCode"));
 		
@@ -810,7 +816,7 @@ public class BtobBillAction extends AppBaseAction {
 
 		// 入力内容登録をDBに反映
 		coopSaleCostService.updateCorpSaleCostId(corporateSalesCost);
-		domesticDAO.updateItemCodeDomesticExhibition(domesticDto);
+//		domesticDAO.updateItemCodeDomesticExhibition(domesticDto);
 
 		//登録成功
 		commit();
@@ -860,7 +866,7 @@ public class BtobBillAction extends AppBaseAction {
 		salesCost = salesCostList.get(new Integer(request.getParameter("sysSalesIndex")));
 
 		String returnValue = request.getParameter("sysSalesIndex") + "," + String.valueOf(salesCost.getCost()) + ","
-							+ String.valueOf(salesCost.getKindCost()) + "," + String.valueOf(salesCost.getDomePostage()) + ","
+							+ String.valueOf(salesCost.getKindCost()) + "," + String.valueOf(salesCost.getPostage()) + ","
 							+ String.valueOf(salesCost.getListPrice()) + "," + String.valueOf(salesCost.getItemRateOver()) ;
 		response.setCharacterEncoding("UTF-8");
 		PrintWriter printWriter = response.getWriter();

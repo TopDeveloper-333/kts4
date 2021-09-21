@@ -1568,9 +1568,8 @@ function commmaAddFnc() {
 						<tr>
 							<th>商品名<label class="necessary">※</label></th>
 							<td colspan="3">
-								<nested:textarea property="itemNm" style="width: 400px;" styleClass="itemNmCheck" cols="20" rows="1" onfocus="PxTextareaAdjuster(this);" onkeyup="PxTextareaAdjuster(this);"
-										onchange="PxTextareaAdjuster(this);" onblur="PxTextareaAdjuster(this);">
-								</nested:textarea>
+								<nested:text property="itemNm" style="width: 400px;" styleClass="itemNmCheck"  onfocus="PxTextareaAdjuster(this);" onkeyup="PxTextareaAdjuster(this);"
+										onchange="PxTextareaAdjuster(this);" onblur="PxTextareaAdjuster(this);" />
 <%-- 								<nested:hidden property="beforeItemNm" /> --%>
 							</td>
 						</tr>

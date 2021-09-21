@@ -13,6 +13,9 @@ public class ExtendDomesticManageDTO extends DomesticExhibitionDTO{
 	/** メーカー入力フラグ:Exceliインポート用 */
 	private String makerInputFlg;
 
+	/** 担当部署名 */
+	private String departmentNm;
+
 	/**
 	 * メーカー名を取得します。
 	 * @return メーカー名
@@ -59,6 +62,22 @@ public class ExtendDomesticManageDTO extends DomesticExhibitionDTO{
 	 */
 	public void setMakerInputFlg(String makerInputFlg) {
 	    this.makerInputFlg = makerInputFlg;
+	}
+
+	/**
+	 * 担当部署名を取得します。
+	 * @return 担当部署名
+	 */
+	public String getDepartmentNm() {
+	    return departmentNm;
+	}
+
+	/**
+	 * 担当部署名を設定します。
+	 * @param makerNm 担当部署名
+	 */
+	public void setDepartmentNm(String departmentNm) {
+	    this.departmentNm = departmentNm;
 	}
 
 }

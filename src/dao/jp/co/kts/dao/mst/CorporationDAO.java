@@ -43,6 +43,13 @@ public class CorporationDAO extends BaseDAO {
 		return select("SEL_CORPORATION_NM", parameters, ResultSetHandlerFactory.getFirstColumnStringRowHandler());
 	}
 
+	public String getCorporationId(String corporationNm) throws DaoException {
+		SQLParameters parameters = new SQLParameters();
+		parameters.addParameter("corporationNm", corporationNm);
+
+		return select("SEL_CORPORATION_ID", parameters, ResultSetHandlerFactory.getFirstColumnStringRowHandler());
+	}
+
 	public void updateCorporation(MstCorporationDTO corporationDTO) throws DaoException {
 		SQLParameters parameters = new SQLParameters();
 		addParametersFromBeanProperties(corporationDTO, parameters);

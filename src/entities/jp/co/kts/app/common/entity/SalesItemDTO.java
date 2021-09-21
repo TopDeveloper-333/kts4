@@ -36,6 +36,10 @@ public class SalesItemDTO  {
 
 	/** 原価 */
 	private int cost;
+	
+	private int domeCost;
+
+	private int updatedFlag;
 
 	/** 削除フラグ */
 	private String deleteFlag;
@@ -222,6 +226,10 @@ public class SalesItemDTO  {
 		return this.cost;
 	}
 
+	public int getDomeCost() {
+		return this.domeCost;
+	}
+
 	/**
 	 * <p>
 	 * 原価 を設定します。
@@ -230,6 +238,10 @@ public class SalesItemDTO  {
 	 */
 	public void setCost(int cost) {
 		this.cost = cost;
+	}
+
+	public void setDomeCost(int domeCost) {
+		this.domeCost = domeCost;
 	}
 
 	/**
@@ -422,6 +434,14 @@ public class SalesItemDTO  {
 	 */
 	public void setRslLeaveFlag(String rslLeaveFlag) {
 		this.rslLeaveFlag = rslLeaveFlag;
+	}
+
+	public int getUpdatedFlag() {
+		return updatedFlag;
+	}
+
+	public void setUpdatedFlag(int updatedFlag) {
+		this.updatedFlag = updatedFlag;
 	}
 }
 

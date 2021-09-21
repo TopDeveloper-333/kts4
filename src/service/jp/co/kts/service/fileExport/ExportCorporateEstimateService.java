@@ -60,7 +60,7 @@ public class ExportCorporateEstimateService {
 	 * @throws Exception
 	 */
 	public void estimate(HttpServletResponse response,
-			ExtendCorporateSalesSlipDTO slipDto) throws Exception {
+			ExtendCorporateSalesSlipDTO slipDto, String tax) throws Exception {
 
 		Date date = new Date();
 
@@ -84,7 +84,7 @@ public class ExportCorporateEstimateService {
 
 		document.open();
 
-		exportEstimate(document, writer, baseFont, font, date, slipDto);
+		exportEstimate(document, writer, baseFont, font, date, slipDto, Integer.valueOf(tax));
 
 		document.close();
 	}
@@ -104,13 +104,13 @@ public class ExportCorporateEstimateService {
 	 * @throws Exception
 	 */
 	private void exportEstimate(Document document, PdfWriter writer, BaseFont baseFont, Font font, Date date,
-			ExtendCorporateSalesSlipDTO slipDto) throws Exception {
+			ExtendCorporateSalesSlipDTO slipDto, int tax) throws Exception {
 
 		/** 見積書 */
 		estimateHeader(document, writer, baseFont, date, slipDto);
 		estimate(document, writer, font, baseFont, slipDto);
 		/** 商品一覧 */
-		Map<String, Integer> itemTableMap = orderItemDetail(document, writer, font, baseFont, slipDto, 595);
+		Map<String, Integer> itemTableMap = orderItemDetail(document, writer, font, baseFont, slipDto, 595, tax);
 
 		if (itemTableMap.get("tableHeight") != 0) {
 
@@ -122,7 +122,7 @@ public class ExportCorporateEstimateService {
 				//改ページ
 				document.newPage();
 				//改ページ後の商品テーブル作成
-				endPointY = orderItemDetailNewPage(document, writer, font, baseFont, slipDto, 800, itemTableMap);
+				endPointY = orderItemDetailNewPage(document, writer, font, baseFont, slipDto, 800, itemTableMap, tax);
 			}
 			//備考欄、注文者情報、納入先情報を表示(商品テーブルのY地点に合わせるため、備考欄･注文者情報･納入先情報を一緒にした)
 			estimateFooterNewPage(document, writer, font, baseFont, slipDto, endPointY, itemTableMap);
@@ -154,7 +154,7 @@ public class ExportCorporateEstimateService {
 	 * @throws Exception
 	 */
 	public void estimateList(HttpServletResponse response,
-			List<ExtendCorporateSalesSlipDTO> slipList) throws Exception {
+			List<ExtendCorporateSalesSlipDTO> slipList, String tax) throws Exception {
 
 		Date date = new Date();
 
@@ -180,7 +180,7 @@ public class ExportCorporateEstimateService {
 
 		for (ExtendCorporateSalesSlipDTO slipDto : slipList) {
 
-			exportEstimate(document, writer, baseFont, font, date, slipDto);
+			exportEstimate(document, writer, baseFont, font, date, slipDto, Integer.valueOf(tax));
 			// 改ページ
 			document.newPage();
 		}
@@ -780,7 +780,7 @@ public class ExportCorporateEstimateService {
 	 */
 	private static Map<String, Integer> orderItemDetail(Document document, PdfWriter writer,
 			Font font, BaseFont baseFont, ExtendCorporateSalesSlipDTO slipDto,
-			float orderCurrentHeight) throws Exception {
+			float orderCurrentHeight, int tax) throws Exception {
 
 		CorporateSaleDisplayService corporateSaleDisplayService = new CorporateSaleDisplayService();
 		List<ExtendCorporateSalesItemDTO> itemList = corporateSaleDisplayService.getCorporateSalesItemList(
@@ -955,7 +955,7 @@ public class ExportCorporateEstimateService {
 					//消費税表示
 					cellItemNm =  new PdfPCell(new Paragraph("＜ 消 費 税 ＞　" ,font));
 					PdfPCell taxCell = new PdfPCell(new Paragraph(
-							StringUtil.formatCalc(BigDecimal.valueOf(slipDto.getTax())), font));
+							StringUtil.formatCalc(BigDecimal.valueOf(tax)), font));
 
 					cellItemNm.setHorizontalAlignment(2);
 					taxCell.setHorizontalAlignment(2);
@@ -1050,7 +1050,7 @@ public class ExportCorporateEstimateService {
 		//消費税表示
 		cellItemNm =  new PdfPCell(new Paragraph("＜ 消 費 税 ＞　" ,font));
 		PdfPCell taxCell = new PdfPCell(new Paragraph(
-				StringUtil.formatCalc(BigDecimal.valueOf(slipDto.getTax())), font));
+				StringUtil.formatCalc(BigDecimal.valueOf(tax)), font));
 
 		cellItemNm.setHorizontalAlignment(2);
 		taxCell.setHorizontalAlignment(2);
@@ -1120,7 +1120,7 @@ public class ExportCorporateEstimateService {
 	 */
 	public int orderItemDetailNewPage(Document document, PdfWriter writer,
 			Font font, BaseFont baseFont, ExtendCorporateSalesSlipDTO slipDto,
-			float orderCurrentHeight, Map<String, Integer> map) throws Exception {
+			float orderCurrentHeight, Map<String, Integer> map, int tax) throws Exception {
 
 		CorporateSaleDisplayService corporateSaleDisplayService = new CorporateSaleDisplayService();
 		List<ExtendCorporateSalesItemDTO> itemList = corporateSaleDisplayService.getCorporateSalesItemList(
@@ -1273,7 +1273,7 @@ public class ExportCorporateEstimateService {
 					//消費税表示
 					cellItemNm =  new PdfPCell(new Paragraph("＜ 消 費 税 ＞　" ,font));
 					PdfPCell taxCell = new PdfPCell(new Paragraph(
-							StringUtil.formatCalc(BigDecimal.valueOf(slipDto.getTax())), font));
+							StringUtil.formatCalc(BigDecimal.valueOf(tax)), font));
 
 					cellItemNm.setHorizontalAlignment(2);
 					taxCell.setHorizontalAlignment(2);
@@ -1359,7 +1359,7 @@ public class ExportCorporateEstimateService {
 		//消費税表示
 		cellItemNm =  new PdfPCell(new Paragraph("＜ 消 費 税 ＞　" ,font));
 		PdfPCell taxCell = new PdfPCell(new Paragraph(
-				StringUtil.formatCalc(BigDecimal.valueOf(slipDto.getTax())), font));
+				StringUtil.formatCalc(BigDecimal.valueOf(tax)), font));
 
 		cellItemNm.setHorizontalAlignment(2);
 		taxCell.setHorizontalAlignment(2);

@@ -86,6 +86,8 @@ public class ExtendCorporateSalesItemDTO extends CorporateSalesItemDTO {
 	// 税率
 	private int taxRate;
 
+	private int updatedFlag;
+
 	public String getShipmentPlanDate() {
 		return shipmentPlanDate;
 	}
@@ -414,5 +416,14 @@ public class ExtendCorporateSalesItemDTO extends CorporateSalesItemDTO {
 	public void setTaxRate(int taxRate) {
 		this.taxRate = taxRate;
 	}
+
+	public int getUpdatedFlag() {
+		return updatedFlag;
+	}
+
+	public void setUpdatedFlag(int updatedFlag) {
+		this.updatedFlag = updatedFlag;
+	}
+
 
 }

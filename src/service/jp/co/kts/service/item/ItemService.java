@@ -2594,7 +2594,33 @@ public class ItemService {
 	public void registryKeepList(List<ExtendKeepDTO> addKeepList, long sysItemId)
 			throws DaoException {
 
-		for (ExtendKeepDTO dto : addKeepList) {
+		List<ExtendKeepDTO> oldKeepList = getKeepList(sysItemId);
+		List<ExtendKeepDTO> newKeepList = new ArrayList<>();
+		List<ExtendKeepDTO> updateKeepList = new ArrayList<>();
+
+		for (ExtendKeepDTO add : addKeepList) {
+
+			if (StringUtils.isEmpty(add.getOrderNo()) || add.getKeepNum() == 0) {
+				continue;
+			}
+
+			boolean isExist = false;
+			for (ExtendKeepDTO old : oldKeepList) {
+				if (StringUtils.equals(add.getOrderNo(), old.getOrderNo())) {
+					isExist = true;
+					break;
+				}
+			}
+			if (isExist) {
+				updateKeepList.add(add);
+			}else {
+				newKeepList.add(add);
+			}
+		}
+
+		updateKeepList(updateKeepList);
+		
+		for (ExtendKeepDTO dto : newKeepList) {
 
 			if (StringUtils.isEmpty(dto.getOrderNo()) || dto.getKeepNum() == 0) {
 				continue;
@@ -2607,7 +2633,33 @@ public class ItemService {
 	public void registryExternalKeepList(List<ExtendKeepDTO> addExternalKeepList, long sysItemId)
 			throws DaoException {
 
-		for (ExtendKeepDTO dto : addExternalKeepList) {
+		List<ExtendKeepDTO> oldExternalKeepList = getExternalKeepList(sysItemId);
+		List<ExtendKeepDTO> newExternalKeepList = new ArrayList<>();
+		List<ExtendKeepDTO> updateExternalKeepList = new ArrayList<>();
+
+		for (ExtendKeepDTO add : addExternalKeepList) {
+
+			if (StringUtils.isEmpty(add.getOrderNo()) || add.getKeepNum() == 0) {
+				continue;
+			}
+
+			boolean isExist = false;
+			for (ExtendKeepDTO old : oldExternalKeepList) {
+				if (StringUtils.equals(add.getOrderNo(), old.getOrderNo())) {
+					isExist = true;
+					break;
+				}
+			}
+			if (isExist) {
+				updateExternalKeepList.add(add);
+			}else {
+				newExternalKeepList.add(add);
+			}
+		}
+
+		updateExternalKeepList(updateExternalKeepList);
+
+		for (ExtendKeepDTO dto : newExternalKeepList) {
 
 			if (StringUtils.isEmpty(dto.getOrderNo()) || dto.getKeepNum() == 0) {
 				continue;

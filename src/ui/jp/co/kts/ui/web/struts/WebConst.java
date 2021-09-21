@@ -1768,6 +1768,7 @@ public class WebConst {
 	 * ：システム法人ID13
 	 */
 	public static final String SYS_CORPORATION_ID_13 = "13";
+
 	/**
 	 * ：法人コードM
 	 */

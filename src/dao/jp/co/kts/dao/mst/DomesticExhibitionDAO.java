@@ -384,6 +384,10 @@ public class DomesticExhibitionDAO extends BaseDAO {
 			Timestamp updateTo = new Timestamp(new SimpleDateFormat("yyyy/MM/dd").parse(df.format(cal.getTime())).getTime());
 			parameters.addParameter("updateDateTo", updateTo);
 		}
+		//担当部署名
+		if (StringUtils.isNotEmpty(dto.getDepartmentNm())) {
+			parameters.addParameter("departmentNm","%" + dto.getDepartmentNm() + "%");
+		}
 		//セット商品フラグ
 		if (StringUtils.isNotEmpty(dto.getSetItemFlg())) {
 			parameters.addParameter("setItemFlg", dto.getSetItemFlg());

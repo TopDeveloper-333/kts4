@@ -37,8 +37,10 @@ import jp.co.keyaki.cleave.common.util.StringUtil;
 import jp.co.kts.app.extendCommon.entity.ExtendCorporateSalesItemDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendCorporateSalesSlipDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendMstClientDTO;
+import jp.co.kts.app.extendCommon.entity.ExtendSetItemDTO;
 import jp.co.kts.app.output.entity.StoreDTO;
 import jp.co.kts.app.search.entity.CorporateSaleSearchDTO;
+import jp.co.kts.dao.item.ItemDAO;
 import jp.co.kts.service.mst.ClientService;
 import jp.co.kts.service.sale.CorporateSaleDisplayService;
 import jp.co.kts.ui.web.struts.WebConst;
@@ -162,11 +164,11 @@ public class ExportCorporatePickListService {
 					//Aパターンで出力：金額情報あり
 					float orderCurrentHeightA = 0;
 					orderCurrentHeightA = fixedPhrases(document, writer, font, baseFont,
-							slipDto);
+							slipDto, true);
 					orderCurrentHeightA = orderDetail(document, writer, font, baseFont,
 							slipDto, orderCurrentHeightA);
 					orderItemDetailA(document, writer, font, baseFont, slipDto,
-							orderCurrentHeightA, dateFrom, dateTo);
+							orderCurrentHeightA, dateFrom, dateTo, true);
 					// 改ページ
 					document.newPage();
 
@@ -181,7 +183,7 @@ public class ExportCorporatePickListService {
 					//Bパターンで出力：金額情報無し
 					float orderCurrentHeightB = 0;
 					orderCurrentHeightB = fixedPhrases(document, writer, font, baseFont,
-							slipDto);
+							slipDto, true);
 					orderCurrentHeightB = orderDetail(document, writer, font, baseFont,
 							slipDto, orderCurrentHeightB);
 					orderItemDetailB(document, writer, font, baseFont, slipDto,
@@ -197,11 +199,11 @@ public class ExportCorporatePickListService {
 				//Aパターンで出力：金額情報あり
 				float orderCurrentHeightA = 0;
 				orderCurrentHeightA = fixedPhrases(document, writer, font, baseFont,
-						slipDto);
+						slipDto, false);
 				orderCurrentHeightA = orderDetail(document, writer, font, baseFont,
 						slipDto, orderCurrentHeightA);
 				orderItemDetailA(document, writer, font, baseFont, slipDto,
-						orderCurrentHeightA, dateFrom, dateTo);
+						orderCurrentHeightA, dateFrom, dateTo, true);
 				// 改ページ
 				document.newPage();
 			}
@@ -854,7 +856,7 @@ public class ExportCorporatePickListService {
 	}
 
 	private static float fixedPhrases(Document document, PdfWriter writer,
-			Font font, BaseFont baseFont, ExtendCorporateSalesSlipDTO slipDto)
+			Font font, BaseFont baseFont, ExtendCorporateSalesSlipDTO slipDto, boolean pickFlag)
 			throws Exception {
 
 		PdfContentByte pdfContentByte = writer.getDirectContent();
@@ -874,36 +876,137 @@ public class ExportCorporatePickListService {
 		pdfContentByte.setFontAndSize(baseFont, 10);
 		ExtendMstClientDTO client = new ClientService().getDispClient(slipDto.getSysClientId());
 
-		// 得意先郵便番号
-		pdfContentByte.setTextMatrix(50, 790);
-		pdfContentByte.showText("〒" + client.getZip());
-		// 得意先住所(都道府県+市区町村+市区町村以降+建物名)
-		pdfContentByte.setTextMatrix(50, 780);
-		pdfContentByte.showText(client.getPrefectures()+client.getMunicipality()+client.getAddress()+client.getBuildingNm());
-		//得意先電話番号
-		if (!(client.getTel() == null || client.getTel().isEmpty())) {
-			pdfContentByte.setTextMatrix(50, 770);
-			pdfContentByte.showText("TEL:" + client.getTel());
+		boolean bremboFlag = false;
+		for (int ii = 0; ii < slipDto.getPickItemList().size(); ii++) {
+			if(slipDto
+					.getPickItemList().get(ii).getItemCode().startsWith("71")) {
+				
+				bremboFlag = true;
+				break;
+			}
 		}
-		//得意先FAX
-		if (!(client.getFax() == null || client.getFax().isEmpty())) {
-			pdfContentByte.setTextMatrix(50, 760);
-			pdfContentByte.showText("FAX:" + client.getFax());
-		}
-			//得意先名の長さによっては法人情報に被ってしまうためフォントサイズを制御
-		if (client.getClientNm().getBytes("Shift_JIS").length >= 28) {
-			pdfContentByte.setFontAndSize(baseFont, 10);
-		} else {
-			pdfContentByte.setFontAndSize(baseFont, 16);
-		}
-		// 得意先名
-		pdfContentByte.setTextMatrix(50, 740);
-		pdfContentByte.showText(client.getClientNm() + " 御中");
 
-		// 受注番号
-		pdfContentByte.setTextMatrix(350, 760);
-		pdfContentByte.setFontAndSize(baseFont, 9);
-		pdfContentByte.showText("受注番号：" + slipDto.getOrderNo());
+		if (bremboFlag) {
+			if (!pickFlag) {
+				// 得意先郵便番号
+				pdfContentByte.setTextMatrix(50, 790);
+				pdfContentByte.showText("〒" + client.getZip());
+				// 得意先住所(都道府県+市区町村+市区町村以降+建物名)
+				pdfContentByte.setTextMatrix(50, 780);
+				pdfContentByte.showText(client.getPrefectures()+client.getMunicipality()+client.getAddress()+client.getBuildingNm());
+				//得意先電話番号
+				if (!(client.getTel() == null || client.getTel().isEmpty())) {
+					pdfContentByte.setTextMatrix(50, 770);
+					pdfContentByte.showText("TEL:" + client.getTel());
+				}
+				//得意先FAX
+				if (!(client.getFax() == null || client.getFax().isEmpty())) {
+					pdfContentByte.setTextMatrix(50, 760);
+					pdfContentByte.showText("FAX:" + client.getFax());
+				}
+					//得意先名の長さによっては法人情報に被ってしまうためフォントサイズを制御
+				if (client.getClientNm().getBytes("Shift_JIS").length >= 28) {
+					pdfContentByte.setFontAndSize(baseFont, 10);
+				} else {
+					pdfContentByte.setFontAndSize(baseFont, 16);
+				}
+				// 得意先名
+				pdfContentByte.setTextMatrix(50, 740);
+				pdfContentByte.showText(client.getClientNm() + " 御中");
+
+				// 受注番号
+				pdfContentByte.setTextMatrix(350, 760);
+				pdfContentByte.setFontAndSize(baseFont, 9);
+				pdfContentByte.showText("受注番号：" + slipDto.getOrderNo());
+			}
+		}else {
+			if (!pickFlag) {
+				// 得意先郵便番号
+				pdfContentByte.setTextMatrix(50, 790);
+				pdfContentByte.showText("〒" + client.getZip());
+				// 得意先住所(都道府県+市区町村+市区町村以降+建物名)
+				pdfContentByte.setTextMatrix(50, 780);
+				pdfContentByte.showText(client.getPrefectures()+client.getMunicipality()+client.getAddress()+client.getBuildingNm());
+				//得意先電話番号
+				if (!(client.getTel() == null || client.getTel().isEmpty())) {
+					pdfContentByte.setTextMatrix(50, 770);
+					pdfContentByte.showText("TEL:" + client.getTel());
+				}
+				//得意先FAX
+				if (!(client.getFax() == null || client.getFax().isEmpty())) {
+					pdfContentByte.setTextMatrix(50, 760);
+					pdfContentByte.showText("FAX:" + client.getFax());
+				}
+					//得意先名の長さによっては法人情報に被ってしまうためフォントサイズを制御
+				if (client.getClientNm().getBytes("Shift_JIS").length >= 28) {
+					pdfContentByte.setFontAndSize(baseFont, 10);
+				} else {
+					pdfContentByte.setFontAndSize(baseFont, 16);
+				}
+				// 得意先名
+				pdfContentByte.setTextMatrix(50, 740);
+				pdfContentByte.showText(client.getClientNm() + " 御中");
+
+				// 受注番号
+				pdfContentByte.setTextMatrix(350, 760);
+				pdfContentByte.setFontAndSize(baseFont, 9);
+				pdfContentByte.showText("受注番号：" + slipDto.getOrderNo());
+			}else {
+				pdfContentByte.setTextMatrix(50, 750);
+				pdfContentByte.showText("納入先");
+
+				// 得意先郵便番号
+				pdfContentByte.setTextMatrix(50, 740);
+				pdfContentByte.showText("〒" + slipDto.getDestinationZip()  + " " + slipDto.getDestinationPrefectures() + slipDto.getDestinationMunicipality() + slipDto.getDestinationAddress());
+
+				if (!(slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())) {
+					pdfContentByte.setTextMatrix(50, 730);
+					pdfContentByte.showText("TEL：" + slipDto.getDestinationTel());
+				}
+
+				if (!(slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+					pdfContentByte.setTextMatrix(50, 720);
+					pdfContentByte.showText("FAX：" + slipDto.getDestinationFax());
+				}
+
+				if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
+						&& (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+					pdfContentByte.setTextMatrix(53, 730);
+				} else if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
+						|| (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+					pdfContentByte.setTextMatrix(53, 720);
+				} else {
+					pdfContentByte.setTextMatrix(50, 710);
+				}
+				pdfContentByte.showText( "配送方法：" + slipDto.getInvoiceClassification());
+				
+				String destinationNm = slipDto.getDestinationNm() + " 御中";
+				if (destinationNm.getBytes("Shift_JIS").length >= 50) {
+					pdfContentByte.setFontAndSize(baseFont, 10);
+					if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
+							&& (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+						pdfContentByte.setTextMatrix(53, 720);
+					} else if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
+							|| (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+						pdfContentByte.setTextMatrix(53, 710);
+					} else {
+						pdfContentByte.setTextMatrix(50, 700);
+					}
+				} else {
+					pdfContentByte.setFontAndSize(baseFont, 16);
+					if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
+							&& (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+						pdfContentByte.setTextMatrix(53, 710);
+					} else if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
+							|| (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+						pdfContentByte.setTextMatrix(53, 700);
+					} else {
+						pdfContentByte.setTextMatrix(50, 690);
+					}
+				}
+				pdfContentByte.showText(destinationNm);
+			}
+		}
 
 		// テキストの終了
 		pdfContentByte.endText();
@@ -934,48 +1037,50 @@ public class ExportCorporatePickListService {
 			CorporationTable.addCell(cell);
 		}
 
-
-		String corporationNm = storeDTO.getCorporationNm();
-		if (StringUtils.equals(storeDTO.getNameHeaderDispFlg(), "1")) {
-			//株式会社BCRの時「株式会社株式会社BCR」となってしまうため制御
-			if (!corporationNm.equals("株式会社BCR")) {
-				corporationNm = "株式会社 " + corporationNm;
+		if (bremboFlag && pickFlag) {
+		}else {
+			String corporationNm = storeDTO.getCorporationNm();
+			if (StringUtils.equals(storeDTO.getNameHeaderDispFlg(), "1")) {
+				//株式会社BCRの時「株式会社株式会社BCR」となってしまうため制御
+				if (!corporationNm.equals("株式会社BCR")) {
+					corporationNm = "株式会社 " + corporationNm;
+				}
 			}
-		}
-		cell = new PdfPCell(new Paragraph(corporationNm, font));
-		cell.setBorder(Rectangle.NO_BORDER);
-		CorporationTable.addCell(cell);
+			cell = new PdfPCell(new Paragraph(corporationNm, font));
+			cell.setBorder(Rectangle.NO_BORDER);
+			CorporationTable.addCell(cell);
 
 
-		if (StringUtils.equals(storeDTO.getZipDispFlg(), "1")) {
-			cell = new PdfPCell(new Paragraph("〒" + storeDTO.getZip(), font));
-			cell.setBorder(Rectangle.NO_BORDER);
-			CorporationTable.addCell(cell);
-		}
-		if (StringUtils.equals(storeDTO.getAddressDispFlg(), "1")) {
-			cell = new PdfPCell(new Paragraph(storeDTO.getAddress(), font));
-			cell.setBorder(Rectangle.NO_BORDER);
-			CorporationTable.addCell(cell);
-		}
+			if (StringUtils.equals(storeDTO.getZipDispFlg(), "1")) {
+				cell = new PdfPCell(new Paragraph("〒" + storeDTO.getZip(), font));
+				cell.setBorder(Rectangle.NO_BORDER);
+				CorporationTable.addCell(cell);
+			}
+			if (StringUtils.equals(storeDTO.getAddressDispFlg(), "1")) {
+				cell = new PdfPCell(new Paragraph(storeDTO.getAddress(), font));
+				cell.setBorder(Rectangle.NO_BORDER);
+				CorporationTable.addCell(cell);
+			}
 
-		if (StringUtils.equals(storeDTO.getTelNoDispFlg(), "1")) {
-			cell = new PdfPCell(new Paragraph("TEL:" + storeDTO.getTelNo(),
-					font));
-			cell.setBorder(Rectangle.NO_BORDER);
-			CorporationTable.addCell(cell);
-		}
+			if (StringUtils.equals(storeDTO.getTelNoDispFlg(), "1")) {
+				cell = new PdfPCell(new Paragraph("TEL:" + storeDTO.getTelNo(),
+						font));
+				cell.setBorder(Rectangle.NO_BORDER);
+				CorporationTable.addCell(cell);
+			}
 
-		if (StringUtils.equals(storeDTO.getFaxNoDispFlg(), "1")) {
-			cell = new PdfPCell(new Paragraph("FAX:" + storeDTO.getFaxNo(),
-					font));
-			cell.setBorder(Rectangle.NO_BORDER);
-			CorporationTable.addCell(cell);
-		}
-		if (StringUtils.equals(storeDTO.getMailDispFlg(), "1")) {
-			cell = new PdfPCell(new Paragraph("Email:"
-					+ storeDTO.getStoreMailAddress(), font));
-			cell.setBorder(Rectangle.NO_BORDER);
-			CorporationTable.addCell(cell);
+			if (StringUtils.equals(storeDTO.getFaxNoDispFlg(), "1")) {
+				cell = new PdfPCell(new Paragraph("FAX:" + storeDTO.getFaxNo(),
+						font));
+				cell.setBorder(Rectangle.NO_BORDER);
+				CorporationTable.addCell(cell);
+			}
+			if (StringUtils.equals(storeDTO.getMailDispFlg(), "1")) {
+				cell = new PdfPCell(new Paragraph("Email:"
+						+ storeDTO.getStoreMailAddress(), font));
+				cell.setBorder(Rectangle.NO_BORDER);
+				CorporationTable.addCell(cell);
+			}
 		}
 
 		cell = new PdfPCell(new Paragraph("　", font));
@@ -1056,7 +1161,7 @@ public class ExportCorporatePickListService {
 	 */
 	private static void orderItemDetailA(Document document, PdfWriter writer,
 			Font font, BaseFont baseFont, ExtendCorporateSalesSlipDTO slipDto,
-			float orderCurrentHeight, Date dateFrom, Date dateTo) throws Exception {
+			float orderCurrentHeight, Date dateFrom, Date dateTo, boolean pickFlag) throws Exception {
 
 		PdfPTable pdfPTable = new PdfPTable(5);
 		pdfPTable.setTotalWidth(495);
@@ -1246,46 +1351,116 @@ public class ExportCorporatePickListService {
 		// 納入先情報の枠を描画
 		pdfGraphics2D.drawRect(50, 730, 495, 75);
 
-		// 納入先情報
-		// テキストの開始
-		pdfContentByte.beginText();
-
-		pdfContentByte.setFontAndSize(baseFont, 9);
-
-		pdfContentByte.setTextMatrix(53, 95);
-		pdfContentByte.showText("納入先");
-
-		pdfContentByte.setTextMatrix(53, 85);
-		pdfContentByte.showText("〒" + slipDto.getDestinationZip()  + " " + slipDto.getDestinationPrefectures() + slipDto.getDestinationMunicipality() + slipDto.getDestinationAddress());
-
-		pdfContentByte.setTextMatrix(53, 75);
-		pdfContentByte.showText(slipDto.getDestinationNm() + "様");
-
-		if (!(slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())) {
-			pdfContentByte.setTextMatrix(53, 65);
-			pdfContentByte.showText("TEL：" + slipDto.getDestinationTel());
+		boolean bremboFlag = false;
+		for (int ii = 0; ii < slipDto.getPickItemList().size(); ii++) {
+			if(slipDto
+					.getPickItemList().get(ii).getItemCode().startsWith("71")) {
+				
+				bremboFlag = true;
+				break;
+			}
 		}
 
-		if (!(slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
-			pdfContentByte.setTextMatrix(53, 55);
-			pdfContentByte.showText("FAX：" + slipDto.getDestinationFax());
+		if (bremboFlag) {
+			if (!pickFlag) {
+				// 納入先情報
+				// テキストの開始
+				pdfContentByte.beginText();
+
+				pdfContentByte.setFontAndSize(baseFont, 9);
+
+				pdfContentByte.setTextMatrix(53, 95);
+				pdfContentByte.showText("納入先");
+
+				pdfContentByte.setTextMatrix(53, 85);
+				pdfContentByte.showText("〒" + slipDto.getDestinationZip()  + " " + slipDto.getDestinationPrefectures() + slipDto.getDestinationMunicipality() + slipDto.getDestinationAddress());
+
+				pdfContentByte.setTextMatrix(53, 75);
+				pdfContentByte.showText(slipDto.getDestinationNm() + "様");
+
+				if (!(slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())) {
+					pdfContentByte.setTextMatrix(53, 65);
+					pdfContentByte.showText("TEL：" + slipDto.getDestinationTel());
+				}
+
+				if (!(slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+					pdfContentByte.setTextMatrix(53, 55);
+					pdfContentByte.showText("FAX：" + slipDto.getDestinationFax());
+				}
+
+				//納入先電話番号と納入先FAXの有無によって配送方法の表示位置を指定する。
+				if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
+						&& (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+					pdfContentByte.setTextMatrix(53, 65);
+				} else if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
+						|| (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+					pdfContentByte.setTextMatrix(53, 55);
+				} else {
+					pdfContentByte.setTextMatrix(53, 45);
+				}
+				pdfContentByte.showText("配送方法：" + slipDto.getInvoiceClassification());
+
+				// テキストの終了
+				pdfContentByte.endText();
+			}else {
+				// 納入先情報
+				// テキストの開始
+				pdfContentByte.beginText();
+
+				pdfContentByte.setFontAndSize(baseFont, 9);
+
+				pdfContentByte.setTextMatrix(53, 95);
+				pdfContentByte.showText("【ご購入後の商品の問い合わせについて】");
+
+				pdfContentByte.setTextMatrix(53, 85);
+				pdfContentByte.showText("商品を購入された販売店までご連絡ください。");
+				// テキストの終了
+				pdfContentByte.endText();
+				
+			}
+		}else {
+			if (!pickFlag) {
+				// 納入先情報
+				// テキストの開始
+				pdfContentByte.beginText();
+
+				pdfContentByte.setFontAndSize(baseFont, 9);
+
+				pdfContentByte.setTextMatrix(53, 95);
+				pdfContentByte.showText("納入先");
+
+				pdfContentByte.setTextMatrix(53, 85);
+				pdfContentByte.showText("〒" + slipDto.getDestinationZip()  + " " + slipDto.getDestinationPrefectures() + slipDto.getDestinationMunicipality() + slipDto.getDestinationAddress());
+
+				pdfContentByte.setTextMatrix(53, 75);
+				pdfContentByte.showText(slipDto.getDestinationNm() + "様");
+
+				if (!(slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())) {
+					pdfContentByte.setTextMatrix(53, 65);
+					pdfContentByte.showText("TEL：" + slipDto.getDestinationTel());
+				}
+
+				if (!(slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+					pdfContentByte.setTextMatrix(53, 55);
+					pdfContentByte.showText("FAX：" + slipDto.getDestinationFax());
+				}
+
+				//納入先電話番号と納入先FAXの有無によって配送方法の表示位置を指定する。
+				if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
+						&& (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+					pdfContentByte.setTextMatrix(53, 65);
+				} else if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
+						|| (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
+					pdfContentByte.setTextMatrix(53, 55);
+				} else {
+					pdfContentByte.setTextMatrix(53, 45);
+				}
+				pdfContentByte.showText("配送方法：" + slipDto.getInvoiceClassification());
+
+				// テキストの終了
+				pdfContentByte.endText();
+			}
 		}
-
-		//納入先電話番号と納入先FAXの有無によって配送方法の表示位置を指定する。
-		if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
-				&& (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
-			pdfContentByte.setTextMatrix(53, 65);
-		} else if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
-				|| (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
-			pdfContentByte.setTextMatrix(53, 55);
-		} else {
-			pdfContentByte.setTextMatrix(53, 45);
-		}
-		pdfContentByte.showText("配送方法：" + slipDto.getInvoiceClassification());
-
-		// テキストの終了
-		pdfContentByte.endText();
-
 	}
 
 	/**
@@ -1414,51 +1589,6 @@ public class ExportCorporatePickListService {
 		pdfGraphics2D.dispose();
 		// 納入先情報の枠を描画
 		pdfGraphics2D.drawRect(50, 730, 495, 75);
-
-		// 納入先情報
-		// テキストの開始
-		pdfContentByte.beginText();
-
-		// フォントとサイズの設定
-		pdfContentByte.setFontAndSize(baseFont, 9);
-
-		pdfContentByte.setTextMatrix(53, 95);
-		pdfContentByte.showText("納入先");
-
-		pdfContentByte.setTextMatrix(53, 85);
-		pdfContentByte.showText("〒" + slipDto.getDestinationZip()  + " " + slipDto.getDestinationPrefectures() + slipDto.getDestinationMunicipality() + slipDto.getDestinationAddress());
-
-		pdfContentByte.setTextMatrix(53, 75);
-		pdfContentByte.showText(slipDto.getDestinationNm() + "様");
-
-		if (!(slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())) {
-			pdfContentByte.setTextMatrix(53, 65);
-			pdfContentByte.showText("TEL：" + slipDto.getDestinationTel());
-		}
-
-		if (!(slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
-			pdfContentByte.setTextMatrix(53, 55);
-			pdfContentByte.showText("FAX：" + slipDto.getDestinationFax());
-		}
-
-		//納入先電話番号と納入先FAXの有無によって配送方法の表示位置を指定する。
-		if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
-				&& (slipDto.getDestinationFax() == null || slipDto.getDestinationFax().isEmpty())) {
-			pdfContentByte.setTextMatrix(53, 65);
-		} else if ((slipDto.getDestinationTel() == null || slipDto.getDestinationTel().isEmpty())
-				|| (slipDto.getDestinationFax() == null|| slipDto.getDestinationFax().isEmpty())) {
-			pdfContentByte.setTextMatrix(53, 55);
-		} else {
-			pdfContentByte.setTextMatrix(53, 45);
-		}
-		// 表示する文字列の設定
-		pdfContentByte.showText("配送方法：");
-
-		// テキストの終了
-		pdfContentByte.endText();
-
-
-
 	}
 
 	public void totalPickList(HttpServletResponse response,

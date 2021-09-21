@@ -19,12 +19,13 @@ public class ServiceConst {
 	public static final int UPLOAD_EXCEL_ITEM_MANUAL_LAST_COLUMN = 2;
 	public static final int UPLOAD_EXCEL_BACK_ORDER_LAST_COLUMN = 5;
 	public static final int UPLOAD_EXCEL_SET_ITEM_LAST_COLUMN = 3;
-	public static final int UPLOAD_EXCEL_SET_PRICE_LAST_COLUMN = 27;
-	public static final int UPLOAD_EXCEL_SET_PRICE_LAST_COLUMN_NOTAUTH = 24;
-	public static final int UPLOAD_EXCEL_SET_DOMESTIC_COLUMN = 11;
+	public static final int UPLOAD_EXCEL_SET_PRICE_LAST_COLUMN = 29;
+	public static final int UPLOAD_EXCEL_SET_PRICE_LAST_COLUMN_NOTAUTH = 26;
+	public static final int UPLOAD_EXCEL_SET_DOMESTIC_COLUMN = 12;
 //	public static final int UPLOAD_EXCEL_SET_DOMESTIC_ITEM_COLUMN = 19;
 	public static final int UPLOAD_EXCEL_ITEM_COLUMN = 20;
 	public static final int UPLOAD_EXCEL_NOT_AUTH_ITEM_COLUMN = 13;
+	public static final int UPLOAD_EXCEL_SALE_SLIP_COLUMN = 67;
 
 
 	/**

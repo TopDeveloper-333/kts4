@@ -51,7 +51,7 @@ public class ExportCorporateOrderAcceptanceService {
 
 	// static int testrow = 40;
 	public void orderAcceptance(HttpServletResponse response,
-			ExtendCorporateSalesSlipDTO slipDto) throws Exception {
+			ExtendCorporateSalesSlipDTO slipDto, String tax) throws Exception {
 
 		Date date = new Date();
 
@@ -74,7 +74,7 @@ public class ExportCorporateOrderAcceptanceService {
 				AsianFontMapper.JapaneseEncoding_H, BaseFont.NOT_EMBEDDED), 9);
 
 		document.open();
-		exportOrderAcceptance(document, writer, baseFont, font, date, slipDto);
+		exportOrderAcceptance(document, writer, baseFont, font, date, slipDto, Integer.valueOf(tax));
 		document.close();
 
 		// return document;
@@ -82,14 +82,14 @@ public class ExportCorporateOrderAcceptanceService {
 	}
 
 	private void exportOrderAcceptance(Document document, PdfWriter writer, BaseFont baseFont, Font font, Date date,
-			ExtendCorporateSalesSlipDTO slipDto) throws Exception {
+			ExtendCorporateSalesSlipDTO slipDto, int tax) throws Exception {
 
 		/** 注文請書 */
 		orderAcceptanceHeader(document, writer, baseFont, date, slipDto);
 		orderAcceptance(document, writer, font, baseFont, slipDto);
 
 		/** 商品一覧 */
-		orderItemDetail(document, writer, font, baseFont, slipDto, 595);
+		orderItemDetail(document, writer, font, baseFont, slipDto, 595, tax);
 
 		ExportCorporateEstimateService service =
 				new ExportCorporateEstimateService();
@@ -109,7 +109,7 @@ public class ExportCorporateOrderAcceptanceService {
 	}
 
 	public void orderAcceptanceList(HttpServletResponse response,
-			List<ExtendCorporateSalesSlipDTO> slipList) throws Exception {
+			List<ExtendCorporateSalesSlipDTO> slipList, String tax) throws Exception {
 
 		Date date = new Date();
 
@@ -135,7 +135,7 @@ public class ExportCorporateOrderAcceptanceService {
 
 		for (ExtendCorporateSalesSlipDTO slipDto : slipList){
 
-			exportOrderAcceptance(document, writer, baseFont, font, date, slipDto);
+			exportOrderAcceptance(document, writer, baseFont, font, date, slipDto, Integer.valueOf(tax));
 			// 改ページ
 			document.newPage();
 		}
@@ -382,7 +382,7 @@ public class ExportCorporateOrderAcceptanceService {
 
 	private static void orderItemDetail(Document document, PdfWriter writer,
 			Font font, BaseFont baseFont, ExtendCorporateSalesSlipDTO slipDto,
-			float orderCurrentHeight) throws Exception {
+			float orderCurrentHeight, int tax) throws Exception {
 
 		CorporateSaleDisplayService corporateSaleDisplayService = new CorporateSaleDisplayService();
 		List<ExtendCorporateSalesItemDTO> itemList = corporateSaleDisplayService.getCorporateSalesItemList(
@@ -493,7 +493,7 @@ public class ExportCorporateOrderAcceptanceService {
 		//消費税表示
 		cellItemNm =  new PdfPCell(new Paragraph("＜ 消 費 税 ＞　" ,font));
 		PdfPCell taxCell = new PdfPCell(new Paragraph(
-				StringUtil.formatCalc(BigDecimal.valueOf(slipDto.getTax())), font));
+				StringUtil.formatCalc(BigDecimal.valueOf(tax)), font));
 
 		cellItemNm.setHorizontalAlignment(2);
 		taxCell.setHorizontalAlignment(2);

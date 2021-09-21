@@ -160,6 +160,7 @@
 
 		goTransaction("initLeaveStock.do");
 	}
+
 // 	function goExportTotalPickList(){
 // 		var ajaxOptions = {
 // 		asynchronous: true,
@@ -429,6 +430,14 @@
 
 			$("#sysSalesSlipId").val($(this).find(".sysSalesSlipId").val());
 			goTransaction("detailSale.do");
+		});
+
+		// 売上データインポートボタン
+		$(".saleSlipImport").click (function (){
+
+			goTransaction("initSaleSlipExcelImport.do");
+
+			return;
 		});
 
 // 		$(".pageNum").click (function () {
@@ -1144,6 +1153,9 @@
 			</li>
 			<li class="footer_button">
 				<a class="button_white saleListDownLoad" href="Javascript:void(0);">検索結果をダウンロード</a>
+			</li>
+			<li class="footer_button">
+				<a class="button_main saleSlipImport" href="Javascript:void(0);">売上データインポート</a>
 			</li>
 			<li class="footer_button">
 				<a class="button_main" href="Javascript:void(0);" onclick="goTransaction('initRegistrySales.do')">新規登録</a>

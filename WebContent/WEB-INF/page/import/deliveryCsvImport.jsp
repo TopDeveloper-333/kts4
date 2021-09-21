@@ -48,7 +48,12 @@ $(function () {
 
 	$(".importButton").click(function () {
 
-		if ($("#filupload_01").val() == "" || 
+		if ($("#filupload_01").val() == "") {
+
+			alert("ファイルを選択してください。");
+			return;
+		}
+/* 		if ($("#filupload_01").val() == "" || 
 				($("#select_box").val() == "0" && $("#deliveryCompanyId").val() == "0" )) {
 
 			alert("法人とファイルを選択してください。");
@@ -62,20 +67,20 @@ $(function () {
 
 			alert("「データを全て上書き」か「送り状番号のみ付与」を選択してください");
 		}
-
+ */
 		$(".overlay").css("display", "block");
 
-		//伝票上書
+/* 		//伝票上書
 		if (radio == "save") {
-
+ */
 			goTransaction("saveDeliveryCsvImport.do");
 
-		//配送番号のみ付与
+/* 		//配送番号のみ付与
 		} else if (radio == "addSlipNo") {
 
 			goTransaction("addSlipNoDeliveryCsvImport.do");
 		}
-
+ */
 	});
 
 	$(".listImportButton").click(function () {
@@ -152,13 +157,13 @@ $(function () {
 
 	<h4 class="heading">配送データ取込</h4>
 
-	<table class="copyRadio">
+<!-- 	<table class="copyRadio">
 		<tr>
 			<td><label><input type="radio" name="deliveryRadio" value="save" checked/>データを全て上書き</label></td>
 			<td><label><input type="radio" name="deliveryRadio" value="addSlipNo" />送り状番号のみ付与</label></td>
 		</tr>
 	</table>
-
+ -->
 	<div id="errorArea">
 		<nested:nest property="csvErrorDTO">
 			<nested:notEmpty property="fileName">
@@ -192,15 +197,15 @@ $(function () {
 	<div id="import_div">
 
 
-		<p class="import_message">※助ネコのフォーマット以外のCSVは取り込まないようにしてください。</p>
+<%--  		<p class="import_message">※助ネコのフォーマット以外のCSVは取り込まないようにしてください。</p>
 			<p class="import_message">(システムエラーになる可能性があります。)</p>
 		<br/>
 			<p class="import_elements"><nested:select property="corporationId" styleId="select_box">
 			<html:option value="0">　　　　　法人を選択してください　　　　　</html:option>
 							<nested:optionsCollection property="corporationList" label="corporationNm" value="sysCorporationId" />
 							</nested:select></p>
-
-			<!-- Added by Wahaha -->
+ --%>
+<%-- 			<!-- Added by Wahaha -->
 			<p class="import_message">※助ネコをご利用でない場合は、配送会社名をご選択ください</p> 
 			<p class="import_elements">
 				<nested:select property="deliveryCompanyId" styleId="deliveryCompanyId">
@@ -208,7 +213,7 @@ $(function () {
 					<nested:optionsCollection property="deliveryCompanyList" label="companyName" value="companyId" />
 				</nested:select>
 			</p>	
-
+ --%>
 			<p class="import_elements">
 			<nested:file property="fileUp" styleId="filupload_01" styleClass="dn" onchange="txtfilename_01.value = this.value;"/>
 				<input type="text" id="txtfilename_01" class="input_fileupload"  size="25" disabled="disabled"/>
@@ -222,7 +227,7 @@ $(function () {
 
 <!-- 		<fieldset class="contentstable"> -->
 
-			<h3 class="multi_import">一括取り込み</h3>
+<%-- 			<h3 class="multi_import">一括取り込み</h3>
 			<p class="import_message">※「OS_【法人名半角英数字】_【日付】.csv」このファイル名以外のものは取り込まないようにしてください。</p>
 			<br/>
 
@@ -234,7 +239,7 @@ $(function () {
 							onmouseout="this.className='fileUpload_red'" onclick="filuploadList_${idx}.click()" value=""/>
 				</p>
 			</nested:iterate>
-
+ --%>
 <!-- 			<p class="import_elements_multi"> -->
 <%-- 			<nested:file property="fileUp" styleId="filupload_01" styleClass="dn" onchange="txtfilename_01.value = this.value;"/> --%>
 <!-- 				<input type="text" id="txtfilename_01" class="input_fileupload_multi"  size="25" disabled="disabled"/> -->
@@ -264,11 +269,11 @@ $(function () {
 
 <!-- 		</fieldset> -->
 
-		<br/>
+<!-- 		<br/>
 		<div class="buttonPositionBottom">
 			<input type="button" class="import_red listImportButton" onmouseover="this.className='import_red_hover'" onmouseout="this.className='import_red'"/>
 		</div>
-<!-- 		<p class="import_submit"><input type="image" src="./img/import.gif" class="btn_submit" onmouseover="this .src='./img/import_over.gif'" onmouseout="this.src='./img/import.gif'" align="middle"/></p> -->
+ --><!-- 		<p class="import_submit"><input type="image" src="./img/import.gif" class="btn_submit" onmouseover="this .src='./img/import_over.gif'" onmouseout="this.src='./img/import.gif'" align="middle"/></p> -->
 	</div>
 	</html:form>
 

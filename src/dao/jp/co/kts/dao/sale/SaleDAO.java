@@ -850,6 +850,22 @@ public class SaleDAO extends BaseDAO {
 	}
 
 	/**
+	 * 送料情報を更新する。
+	 * @param ExtendSalesItemDTO
+	 * @throws DaoException
+	 */
+	public void updateSalesPostage(ExtendSalesItemDTO saleItemDTO)
+			throws DaoException {
+
+		SQLParameters parameters = new SQLParameters();
+		addParametersFromBeanProperties(saleItemDTO, parameters);
+
+		UserInfo userInfo = ActionContext.getLoginUserInfo();
+		parameters.addParameter("updateUserId", userInfo.getUserId());
+		update("UPD_SALES_ITEM_POSTAGE", parameters);
+	}
+
+	/**
 	 * 品番から直近の売上原価情報を取得する。
 	 * @param ExtendSalesItemDTO
 	 * @return ExtendSalesItemDTO

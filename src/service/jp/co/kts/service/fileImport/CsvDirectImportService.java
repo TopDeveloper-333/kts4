@@ -69,8 +69,25 @@ public class CsvDirectImportService {
 
 		InputStream inputStream = fileUp.getInputStream();
 		ErrorDTO csvErrorDTO = new ErrorDTO();
+		String fname = fileUp.getFileName();
+		long deliveryId = 1;
+		
+		if(fname.contains("発行済データ")) { // ヤマト
+			deliveryId = 1;
+		}else if(fname.contains("Eoa")) { // 佐川
+			deliveryId = 2;
+		}else if(fname.contains("SHUKKADL")) { // 西濃
+			deliveryId = 3;
+		}else if(fname.contains("〒")) { // 郵政
+			deliveryId = 4;
+		}
 
-		System.out.println("CsvDirectImportService::importFile() is called : " + deliveryCompanyId);
+		long corpoId = 0;
+		 /* 
+		 * String[] csvFileNames = StringUtils.split(fname, "_"); if(csvFileNames.length
+		 * > 1) { corpoId = Long.valueOf(csvFileNames[1].replace(".csv", "")); }
+		 */
+		System.out.println("CsvDirectImportService::importFile() is called : " + deliveryId);
 		
 		//		int messageIdx = 0;
 		if (StringUtils.isNotEmpty(exsistFileNm(fileUp.getFileName()))) {
@@ -79,7 +96,7 @@ public class CsvDirectImportService {
 			csvErrorDTO.setFileName("「" + fileUp.getFileName() + "」はすでにインポート済みファイルです。");
 			return csvErrorDTO;
 		}
-
+		
 		CsvConfig config = new CsvConfig();
 		CsvReader reader = new CsvReader(config, true);
 		CsvContext context = reader.parse(inputStream);
@@ -89,14 +106,14 @@ public class CsvDirectImportService {
 			String[] csvLineArray = csvRecord.toArray();
 
 			CsvImportDTO csvImportDTO = new CsvImportDTO();
-			csvImportDTO = setCsvImportList(deliveryCompanyId, csvLineArray);
+			csvImportDTO = setCsvImportList(deliveryId, csvLineArray);
 
 			csvImportDTO.setOrderRemarksMemo(csvImportDTO.getOrderMemo() + "\r\n" + csvImportDTO.getOrderRemarks());
 
 			csvImportDTO.setFileNm(fileUp.getFileName());
 
 			csvImportDTO.setSysImportId((new SequenceDAO().getMaxSysImportId() + 1));
-			csvImportDTO.setSysCorporationId(corporationId);
+			csvImportDTO.setSysCorporationId(corpoId);
 
 			//登録実行
 			new CsvImportDAO().registryCsvImport(csvImportDTO);

@@ -37,6 +37,8 @@ public class CorporateSalesItemDTO  {
 	/** 原価 */
 	private int cost;
 
+	private int domeCost;
+
 	/** 出予定庫日 */
 	private String scheduledLeavingDate;
 
@@ -91,6 +93,8 @@ public class CorporateSalesItemDTO  {
 	
 	private int profit;
 	
+	private int postage;
+
 	private int storeFlag;
 	/*  2015/12/15 ooyama ADD END 法人間請求書機能対応  */
 
@@ -244,6 +248,10 @@ public class CorporateSalesItemDTO  {
 		return this.cost;
 	}
 
+	public int getDomeCost() {
+		return this.domeCost;
+	}
+
 	/**
 	 * <p>
 	 * 原価 を設定します。
@@ -252,6 +260,10 @@ public class CorporateSalesItemDTO  {
 	 */
 	public void setCost(int cost) {
 		this.cost = cost;
+	}
+
+	public void setDomeCost(int domeCost) {
+		this.domeCost = domeCost;
 	}
 
 	/**
@@ -521,6 +533,14 @@ public class CorporateSalesItemDTO  {
 
 	public void setProfit(int profit) {
 		this.profit = profit;
+	}
+
+	public int getPostage() {
+		return postage;
+	}
+
+	public void setPostage(int postage) {
+		this.postage = postage;
 	}
 
 	public int getStoreFlag() {

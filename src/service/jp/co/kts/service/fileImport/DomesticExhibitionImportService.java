@@ -190,7 +190,10 @@ public class DomesticExhibitionImportService {
 							  break;
 						  }
 						  // 数値
-						  	text = String.valueOf((long)cell.getNumericCellValue());
+						  	text = String.valueOf(cell.getNumericCellValue());
+						  	double val = Double.valueOf(text)+0.1;
+						  	text = String.valueOf((long) val);
+
 						  	break;
 						 case Cell.CELL_TYPE_FORMULA:
 
@@ -254,6 +257,8 @@ public class DomesticExhibitionImportService {
 //		BeanUtils.setProperty(dto, "wholsesalerId", list.get(0));
 		//問屋名
 		BeanUtils.setProperty(dto, "wholsesalerNm", list.get(5));
+		//担当部署名
+		BeanUtils.setProperty(dto, "departmentNm", list.get(12));
 
 
 		return dto;
@@ -297,9 +302,10 @@ public class DomesticExhibitionImportService {
 			if (itemRateOver == 0) {
 				if (!GenericValidator.isBlankOrNull(strPurchasingCost)) {
 					purchasingCost = Long.valueOf(strPurchasingCost);
+					if ((purchasingCost - postage) > 0) {
+						itemRateOver = (purchasingCost - postage) / listPrice * 100;
+					}
 				}
-				
-				itemRateOver = (purchasingCost - postage) / listPrice * 100;
 			}else {
 				purchasingCost = listPrice * (itemRateOver * RATE_OVER_PERCENT) + postage;
 			}

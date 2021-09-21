@@ -211,7 +211,7 @@ public class DomesticImportInsertService extends DomesticExhibitionImportService
 			String makerNmKana = strDomesticInfoList.get(i).get(2);
 			//メーカー品番を一時的に取得します
 			String makerCode = strDomesticInfoList.get(i).get(3);
-			//オープン価格フラグを一時的に取得します
+			//オープン価格フラグを一時的に取得します:
 			String openPriceFlg = strDomesticInfoList.get(i).get(6);
 			//定価を一時的に取得します
 			String strListPrice = strDomesticInfoList.get(i).get(7);
@@ -221,6 +221,8 @@ public class DomesticImportInsertService extends DomesticExhibitionImportService
 			String strPostage = strDomesticInfoList.get(i).get(9);
 			//仕入原価を一時的に取得します
 			String purchasingCost = strDomesticInfoList.get(i).get(10);
+			//担当部署ー名を一時的に取得します
+			String departmentNm = strDomesticInfoList.get(i).get(12);
 
 			//管理品番半角英数ハイフンチェック
 			ServiceValidator.strMatchesCheckSlash(result, managementCd, String.valueOf(errorIndex),"管理品番");
@@ -339,6 +341,8 @@ public class DomesticImportInsertService extends DomesticExhibitionImportService
 			domesticExhibitionDto.setPostage(priceCalcDto.getPostage());
 			domesticExhibitionDto.setPurchasingCost(priceCalcDto.getPurchasingCost());
 			domesticExhibitionDto.setOpenPriceFlg(priceCalcDto.getOpenPriceFlg());
+			
+			domesticExhibitionDto.setDepartmentNm(departmentNm);
 
 			maxSysManagementId++;
 

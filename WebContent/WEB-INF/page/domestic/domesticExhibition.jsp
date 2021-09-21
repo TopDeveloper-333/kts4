@@ -142,6 +142,10 @@
 					<td><nested:text property="itemNm" styleClass="text_w250"></nested:text>（部分一致）</td>
 				</tr>
 				<tr>
+					<td>担当部署名</td>
+					<td><nested:text property="departmentNm" styleClass="text_w250"></nested:text>（部分一致）</td>
+				</tr>
+				<tr>
 					<td>問屋</td>
 					<td><nested:text property="wholsesalerNm" styleClass="wholsesalerNm wholsesalerNmText"></nested:text>（部分一致）</td>
 				</tr>
@@ -251,6 +255,7 @@
 				<th class="w70">送料</th>
 				<th class="w100">仕入原価</th>
 				<th class="w70">更新日</th>
+				<th class="w150">担当部署名<label class="necessary">※</label></th>
 			</tr>
 
 <!-- 表示分 -->
@@ -304,6 +309,8 @@
 					<td class="w100"><nested:text styleClass="purchasingCost priceTextWrongMes right textSize_100" property="purchasingCost" maxlength="20" />&nbsp;円</td>
 					<!-- 更新日時 -->
 					<td class="w70 td_center"><span><nested:write property="updateDate"/></span></td>
+					<!-- 担当部署名 -->
+					<td class=" w220 td_center"><nested:text styleClass="dpartmentNm w230" property="departmentNm" /></td>
 				</tr>
 				</nested:iterate>
 			<!-- 追加分 -->
@@ -361,6 +368,8 @@
 					<!-- 仕入原価：追加 -->
 					<td class="w100"><nested:text styleClass="addPurchasingCost priceTextWrongMes right textSize_100" property="purchasingCost" maxlength="20" />&nbsp;円</td>
 					<td class="w70"><a class="button_white setRegistry" href="javascript:void(0);">SET</a></td>
+					<!-- 担当部署名 -->
+					<td class=" w220 td_center"><nested:text styleClass="addDpartmentNm w230" property="departmentNm" /></td>
 
 				</tr>
 			</nested:iterate>
@@ -987,6 +996,7 @@
 			tr.find('.addWholsesalerNm').addClass(" wholsesalerNmCheck");
 			tr.find('.addOpenPriceFlg').addClass(" openPriceFlgCheck");
 			tr.find('.addListPrice').addClass(" listPriceCheck");
+			tr.find('.addDepartmentNm').addClass(" departmentNmCheck");
 
 			tr.show();
 			addDomesticExhibitionIdx++;
@@ -1165,6 +1175,7 @@
 			copyToTr.find(".addItemRateOver").val(copyFromTr.find(".addItemRateOver").val());
 			copyToTr.find(".addPostage").val(copyFromTr.find(".addPostage").val());
 			copyToTr.find(".addPurchasingCost").val(copyFromTr.find(".addPurchasingCost").val());
+			copyToTr.find(".addDepartmentNm").val(copyFromTr.find(".addDepartmentNm").val());
 
 			copyFromTr.find(".orderCheckFlg").prop('checked', false);
 			copyFromTr.find(".addManagementCode").val("");
@@ -1178,6 +1189,7 @@
 			copyFromTr.find(".addItemRateOver").val(0);
 			copyFromTr.find(".addPostage").val(0);
 			copyFromTr.find(".addPurchasingCost").val(0);
+			copyFromTr.find(".addDepartmentNm").val(0);
 		}
 
 		//追加分最終行の削除
@@ -1202,6 +1214,7 @@
 			domesticRow.find(".addItemRateOver").val(0);
 			domesticRow.find(".addPostage").val(0);
 			domesticRow.find(".addPurchasingCost").val(0);
+			domesticRow.find(".addDepartmentNm").val(0);
 		}
 
 		//検索ボタン処理

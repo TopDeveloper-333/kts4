@@ -934,7 +934,9 @@ public class SaleDisplayService extends SaleService {
 			throws DaoException {
 
 		for (ExtendSalesItemDTO dto : salesItemList) {
-
+			if(dto.getPostage() > 0 && dto.getOrderNum() > 0) {
+				dto.setCost(dto.getCost() - Math.abs((dto.getPostage() / dto.getOrderNum())));
+			}
 			updateSalesItem(dto);
 		}
 	}

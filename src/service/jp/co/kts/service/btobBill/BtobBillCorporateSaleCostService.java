@@ -192,16 +192,17 @@ public class BtobBillCorporateSaleCostService {
 
 		// 売上原価一覧リストから1件ずつ取り出しアップデート
 		for(ExtendCorporateSalesItemDTO dto : salesCostList){
+			dto.setUpdatedFlag(1);
 			setCheckFlags(dto);
 			saleDAO.updateCorpSalesCost(dto);
 			
-			DomesticExhibitionDAO domesticDAO = new DomesticExhibitionDAO();
-			DomesticExhibitionDTO domesticDto = new DomesticExhibitionDTO();
-			
-			domesticDto.setManagementCode(dto.getItemCode());
-			domesticDto.setPostage(dto.getDomePostage());
-			
-			domesticDAO.updateItemCodeDomesticExhibition(domesticDto);
+//			DomesticExhibitionDAO domesticDAO = new DomesticExhibitionDAO();
+//			DomesticExhibitionDTO domesticDto = new DomesticExhibitionDTO();
+//			
+//			domesticDto.setManagementCode(dto.getItemCode());
+//			domesticDto.setPostage(dto.getDomePostage());
+//			
+//			domesticDAO.updateItemCodeDomesticExhibition(domesticDto);
 			
 		}
 
@@ -236,7 +237,7 @@ public class BtobBillCorporateSaleCostService {
 		// Kind原価
 		salesCostList.get(saleCostListIdx).setKindCost(salesItemDTO.getKindCost());
 
-		salesCostList.get(saleCostListIdx).setDomePostage(salesItemDTO.getDomePostage());
+		salesCostList.get(saleCostListIdx).setPostage(salesItemDTO.getPostage());
 		// 定価
 		salesCostList.get(saleCostListIdx).setListPrice(salesItemDTO.getListPrice());
 		// 商品掛け率

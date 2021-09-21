@@ -20,13 +20,13 @@ import org.apache.struts.upload.FormFile;
 
 import jp.co.keyaki.cleave.fw.core.ActionContext;
 import jp.co.keyaki.cleave.fw.dao.DaoException;
-import jp.co.kts.app.common.entity.ExcelImportDTO;
+import jp.co.kts.app.common.entity.SalesSlipDTO;
 import jp.co.kts.app.common.entity.MstItemDTO;
 import jp.co.kts.app.common.entity.MstUserDTO;
 import jp.co.kts.app.common.entity.WarehouseStockDTO;
 import jp.co.kts.app.extendCommon.entity.ExtendMstSupplierDTO;
 import jp.co.kts.app.extendCommon.entity.ItemCostPriceDTO;
-import jp.co.kts.app.output.entity.ActionErrorExcelImportDTO;
+import jp.co.kts.app.output.entity.SaleSlipErrorExcelImportDTO;
 import jp.co.kts.dao.fileImport.ExcelImportDAO;
 import jp.co.kts.dao.mst.SupplierDAO;
 import jp.co.kts.service.common.Result;
@@ -34,28 +34,21 @@ import jp.co.kts.service.common.ServiceConst;
 import jp.co.kts.service.mst.UserService;
 import jp.co.kts.ui.web.struts.WebConst;
 
-/**
- * エクセルインポートクラス
- *
- * @author aito
- *
- */
-public class ExcelImportService {
-
+public class SaleSlipImportService {
 	protected HSSFWorkbook wb;
 	// protected XSSFWorkbook xwb;
 
 	private static final String EXCEL_XLS_CONTENT_TYPE = "application/vnd.ms-excel";
 	private static final String EXCEL_XLS_CONTENT_TYPE_2 = "application/octet-stream";
 	private static final int ITEM_COST_CORPORATION_NUM_START = 1;
-	private static final int ITEM_COST_CORPORATION_NUM_END = 16;
-	private static final int ITEM_PRICE_CORPORATION_NUM_START = 17;
-	private static final int ITEM_PRICE_CORPORATION_NUM_END = 29;
+	private static final int ITEM_COST_CORPORATION_NUM_END = 15;
+	private static final int ITEM_PRICE_CORPORATION_NUM_START = 16;
+	private static final int ITEM_PRICE_CORPORATION_NUM_END = 27;
 
 	private static final int ITEM_COST_NOT_AUTH_START = 1;
-	private static final int ITEM_COST_NOT_AUTH_END = 13;
-	private static final int ITEM_PRICE_NOT_AUTH_START = 15;
-	private static final int ITEM_PRICE_NOT_AUTH_END = 26;
+	private static final int ITEM_COST_NOT_AUTH_END = 12;
+	private static final int ITEM_PRICE_NOT_AUTH_START = 13;
+	private static final int ITEM_PRICE_NOT_AUTH_END = 24;
 	// private static final String EXCEL_XLSM_CONTENT_TYPE =
 	// "application/vnd.ms-excel.sheet.macroEnabled.12";
 	// private static final String EXCEL_XLSX_CONTENT_TYPE =
@@ -84,9 +77,9 @@ public class ExcelImportService {
 	 * @return
 	 * @throws Exception
 	 */
-	public ActionErrorExcelImportDTO validate(FormFile excelImportForm) throws Exception {
+	public SaleSlipErrorExcelImportDTO validate(FormFile excelImportForm) throws Exception {
 
-		ActionErrorExcelImportDTO dto = new ActionErrorExcelImportDTO();
+		SaleSlipErrorExcelImportDTO dto = new SaleSlipErrorExcelImportDTO();
 
 		// 2014/04/18 伊東 start
 		// ファイルのcontentTypeをチェック
@@ -122,7 +115,7 @@ public class ExcelImportService {
 	 * @param sheetName
 	 * @return
 	 */
-	protected int checkSheetName(Result<ExcelImportDTO> result, HSSFWorkbook wb, String sheetName) {
+	protected int checkSheetName(Result<SalesSlipDTO> result, HSSFWorkbook wb, String sheetName) {
 
 		int sheetNum = wb.getSheetIndex(sheetName);
 
@@ -142,7 +135,7 @@ public class ExcelImportService {
 	 * @param sheetName
 	 * @return
 	 */
-	protected int checkSheetNameCostPrice(Result<ExcelImportDTO> result, HSSFWorkbook wb, String sheetName) {
+	protected int checkSheetNameCostPrice(Result<SalesSlipDTO> result, HSSFWorkbook wb, String sheetName) {
 
 		int sheetNum = wb.getSheetIndex(sheetName);
 
@@ -157,7 +150,7 @@ public class ExcelImportService {
 	 * @param sheetName
 	 * @return
 	 */
-	protected int checkSheetNameResult(Result<ExcelImportDTO> result, HSSFWorkbook wb, String sheetName) {
+	protected int checkSheetNameResult(Result<SalesSlipDTO> result, HSSFWorkbook wb, String sheetName) {
 
 		int sheetNum = wb.getSheetIndex(sheetName);
 
@@ -661,7 +654,6 @@ public class ExcelImportService {
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_11);
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_12);
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_13);
-			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_14);
 
 			BeanUtils.setProperty(dto, "sysCorporationIdCostList", sysCorporationIdCostList);
 
@@ -679,7 +671,6 @@ public class ExcelImportService {
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_11);
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_12);
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_13);
-			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_14);
 
 			BeanUtils.setProperty(dto, "sysCorporationIdPriceList", sysCorporationIdPriceList);
 
@@ -735,7 +726,6 @@ public class ExcelImportService {
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_11);
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_12);
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_13);
-			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_14);
 
 			BeanUtils.setProperty(dto, "sysCorporationIdCostList", sysCorporationIdCostList);
 
@@ -753,7 +743,6 @@ public class ExcelImportService {
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_11);
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_12);
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_13);
-			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_14);
 
 			BeanUtils.setProperty(dto, "sysCorporationIdPriceList", sysCorporationIdPriceList);
 		}
@@ -836,8 +825,6 @@ public class ExcelImportService {
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_11);
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_12);
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_13);
-			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_14);
-
 
 			BeanUtils.setProperty(dto, "sysCorporationIdCostList", sysCorporationIdCostList);
 
@@ -855,7 +842,6 @@ public class ExcelImportService {
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_11);
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_12);
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_13);
-			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_14);
 
 			BeanUtils.setProperty(dto, "sysCorporationIdPriceList", sysCorporationIdPriceList);
 
@@ -906,7 +892,6 @@ public class ExcelImportService {
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_11);
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_12);
 			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_13);
-			sysCorporationIdCostList.add(WebConst.SYS_CORPORATION_ID_14);
 
 			BeanUtils.setProperty(dto, "sysCorporationIdCostList", sysCorporationIdCostList);
 
@@ -924,12 +909,12 @@ public class ExcelImportService {
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_11);
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_12);
 			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_13);
-			sysCorporationIdPriceList.add(WebConst.SYS_CORPORATION_ID_14);
 
 			BeanUtils.setProperty(dto, "sysCorporationIdPriceList", sysCorporationIdPriceList);
 		}
 
 		return dto;
 	}
+
 
 }

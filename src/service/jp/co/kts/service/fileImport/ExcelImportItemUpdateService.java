@@ -350,7 +350,8 @@ public class ExcelImportItemUpdateService extends ExcelImportService {
 						ServiceValidator.checkDouble(dto.getResult(), strList.get(3), "シート名「" + sheetNm + "」 " + (errorIndex) + "行目のKind原価");
 
 						// 原価の設定
-						for (int i = 4; i < 16; i++) {
+//						for (int i = 4; i < 16; i++) {
+						for (int i = 4; i < 17; i++) {
 							ServiceValidator.checkDouble(dto.getResult(), strList.get(i), "シート名「" + sheetNm + "」 " + (errorIndex) + "行目の原価");
 							//エクセルフォーマットに問題があれば、ここで終了
 							if (!dto.getResult().isSuccess()) {
@@ -358,7 +359,8 @@ public class ExcelImportItemUpdateService extends ExcelImportService {
 							}
 						}
 						// 売価の設定
-						for (int i = 16; i <= 27; i++) {
+//						for (int i = 16; i <= 27; i++) {
+						for (int i = 17; i <= 28; i++) {
 							ServiceValidator.checkDouble(dto.getResult(), strList.get(i), "シート名「" + sheetNm + "」 " + (errorIndex) + "行目の売価");
 							//エクセルフォーマットに問題があれば、ここで終了
 							if (!dto.getResult().isSuccess()) {
@@ -371,7 +373,8 @@ public class ExcelImportItemUpdateService extends ExcelImportService {
 
 						// 原価の設定
 						//TODO いずれ定数化今は勘弁して
-						for (int i = 1; i < 13; i++) {
+						for (int i = 1; i < 14; i++) {
+//						for (int i = 1; i < 13; i++) {
 							ServiceValidator.checkDouble(dto.getResult(), strList.get(i), "シート名「" + sheetNm + "」 " + (errorIndex) + "行目の原価");
 							//エクセルフォーマットに問題があれば、ここで終了
 							if (!dto.getResult().isSuccess()) {
@@ -380,7 +383,8 @@ public class ExcelImportItemUpdateService extends ExcelImportService {
 							}
 						}
 						// 売価の設定
-						for (int i = 13; i <= 24; i++) {
+//						for (int i = 13; i <= 24; i++) {
+						for (int i = 14; i <= 25; i++) {
 							ServiceValidator.checkDouble(dto.getResult(), strList.get(i), "シート名「" + sheetNm + "」 " + (errorIndex) + "行目の売価");
 							//エクセルフォーマットに問題があれば、ここで終了
 							if (!dto.getResult().isSuccess()) {
@@ -500,13 +504,13 @@ public class ExcelImportItemUpdateService extends ExcelImportService {
 
 								dao.insertItemCost(itemCostDto);
 							} else {
-								dto.getResult().addErrorMessage("LED00147", sheetNm , itemCostPriceDto.getItemCode());
+								dto.getResult().addErrorMessage("LED7", sheetNm , itemCostPriceDto.getItemCode());
 								continue;
 							}
 
 							// フォーマットに対して全ての法人のレコードが存在するが登録しようとしている値に問題がある場合はエラーとする。
-							dto.getResult().addErrorMessage("LED00147", sheetNm , itemCostPriceDto.getItemCode());
-							continue;
+						//	dto.getResult().addErrorMessage("LED00147", sheetNm , itemCostPriceDto.getItemCode());
+						//	continue;
 
 						}
 					}

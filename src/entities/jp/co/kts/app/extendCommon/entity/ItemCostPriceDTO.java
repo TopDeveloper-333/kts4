@@ -68,6 +68,10 @@ public class ItemCostPriceDTO {
 
 	/** 原価13（ウルトラレーシング事業部）*/
 	private int itemCost13;
+	/** bellwork */
+
+	private int itemCost14;
+
 
 	/** システム商品売価ID */
 	private long sysItemPriceId;
@@ -107,6 +111,11 @@ public class ItemCostPriceDTO {
 
 	/** 売価13（ウルトラレーシング事業部）*/
 	private int itemPrice13;
+
+	/** bellwork */
+
+	private int itemPrice14;
+
 
 
 	/** システム法人Id */
@@ -450,6 +459,23 @@ public class ItemCostPriceDTO {
 	    this.itemCost13 = itemCost13;
 	}
 
+	
+	/**
+	 * 原価14（bellwork）を取得する。
+	 * @return int bellwork事業部原価
+	 */
+	public int getItemCost14() {
+		return itemCost14;
+	}
+
+	/**
+	 * 原価14（bellwork）を設定します。
+	 * @param int 原価14
+	 */
+	public void setItemCost14(int itemCost14) {
+	    this.itemCost14 = itemCost14;
+	}
+	
 	/**
 	 * システム商品売価IDを取得します。
 	 * @return システム商品売価ID
@@ -659,6 +685,24 @@ public class ItemCostPriceDTO {
 		this.itemPrice13 = itemPrice13;
 	}
 
+	/**
+	 * 売価14（bellwork）を取得する。
+	 * @return int ウルトラレーシング事業部売価
+	 */
+	public int getItemPrice14() {
+		return itemPrice14;
+	}
+
+
+	/**
+	 * 売価14（bellwork）を設定する。
+	 * @param int 売価13
+	 */
+	public void setItemPrice14(int itemPrice14) {
+		this.itemPrice14 = itemPrice14;
+	}
+	
+	
 	/**
 	 * システム法人Idを取得します。
 	 * @return システム法人Id

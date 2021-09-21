@@ -1338,7 +1338,9 @@ function goExportEstimate(){
 	$.ajax({
 		url: "./exportCorporateEstimate.do",
 		type: 'POST',
-
+		data : {
+			'tax' : $("#tax").val(),
+		},
 		success: function(data, text_status, xhr){
 			$("#estimateOutputFlag").val('1');
 			$(".overlay").css("display", "none");
@@ -1361,7 +1363,9 @@ function goExportOrderAcceptance(){
 	$.ajax({
 		url: "./exportCorporateOrderAcceptance.do",
 		type: 'POST',
-
+		data : {
+			'tax' : $("#tax").val(),
+		},
 		success: function(data, text_status, xhr){
 			$("#orderAcceptanceOutputFlag").val('1');
 			$(".overlay").css("display", "none");
@@ -1926,6 +1930,7 @@ document.addEventListener("readystatechange", function(){
 
 				<html:hidden property="corporateSalesItemList[${idx}].sysCorporateSalesItemId" />
 				<html:hidden property="corporateSalesItemList[${idx}].sysItemId" />
+				<html:hidden property="corporateSalesItemList[${idx}].postage" />
 <%-- 				<html:hidden property="salesItemList[${idx}].sysItemId" /> --%>
 				<tr style="background-color: ${backgroundColor};" class="corporateSalesItemRow">
 					<td><html:checkbox property="corporateSalesItemList[${idx}].returnFlg" styleClass="changeColorCheck"/></td>
@@ -1937,7 +1942,16 @@ document.addEventListener("readystatechange", function(){
 					<td><html:text property="corporateSalesItemList[${idx}].orderNum" styleClass="num orderNum numText ime_off" maxlength="4" /></td>
 					<td><span class="itemPieceRate" ><html:text property="corporateSalesItemList[${idx}].pieceRate" styleClass="price_w80 pieceRate priceTextMinus ime_off" maxlength="9"/></span></td>
 <%-- 					<td><html:text property="salesItemList[${idx}].cost" styleClass="price_w80 cost priceTextMinus" disabled="${disabled}" maxlength="9"/></td> --%>
-					<td><span class="itemCost"><html:text property="corporateSalesItemList[${idx}].cost" styleClass="price_w80 cost priceTextMinus ime_off" maxlength="9"/></span></td>
+
+	
+					<logic:notEqual name="corporateSaleForm" property="corporateSalesItemList[${idx}].updatedFlag" value="1">
+						<td><span class="itemCost"><html:text property="corporateSalesItemList[${idx}].domeCost" styleClass="price_w80 cost priceTextMinus ime_off" maxlength="9"/></span></td>
+					</logic:notEqual>
+					<logic:equal name="corporateSaleForm" property="corporateSalesItemList[${idx}].updatedFlag" value="1">
+						<td><span class="itemCost"><html:text property="corporateSalesItemList[${idx}].cost" styleClass="price_w80 cost priceTextMinus ime_off" maxlength="9"/></span></td>
+					</logic:equal>
+
+
 					<td><span class="price_w80"><span class="subtotal">0</span>&nbsp;(<span class="subtotalWithTax">0</span>)</span></td>
 					<td class="nw"><html:text property="corporateSalesItemList[${idx}].scheduledLeavingDate" styleClass="calender scheduledLeavingDate ime_off" maxlength="10" /></td>
 					<td>

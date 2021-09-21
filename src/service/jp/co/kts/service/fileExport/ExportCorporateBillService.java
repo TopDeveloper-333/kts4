@@ -384,7 +384,8 @@ public class ExportCorporateBillService extends CorporationService {
 		 * 請求書では、Brembo事業部の場合のみ注意文言を表示させる
 		 * 他の帳票（見積書・注文請書）も同様。
 		 */
-		if (corporation.getSysCorporationId() == 12) {
+//		if (corporation.getSysCorporationId() == 12) {
+		if (true) {
 			// フォントとサイズの設定
 			pdfContentByte.setFontAndSize(baseFont, 11);
 
@@ -1048,7 +1049,7 @@ public class ExportCorporateBillService extends CorporationService {
 			pdfPTable.addCell(blankCell);
 			pdfPTable.addCell(sumPriceRateCell);
 			rowNum++;
-
+			
 			//消費税表示
 			cellItemNm = new PdfPCell(new Paragraph("＜消費税合計＞　", font));
 			PdfPCell taxSumCell = new PdfPCell(new Paragraph(
@@ -1314,6 +1315,7 @@ public class ExportCorporateBillService extends CorporationService {
 
 		//個別税計算用
 		int slipPriceSum = 0;
+		int slipPriceTaxSum = 0;
 		//最初の伝票の消費税率を初期値とする。
 		int taxRate = 0;
 		if (billItemList.size() > 0
@@ -1349,20 +1351,20 @@ public class ExportCorporateBillService extends CorporationService {
 					//税計算と消費税合計
 					//消費税率によって出力を変更するため格納する変数を分ける。
 					if (taxRate == WebConst.TAX_RATE_8) {
-						lowRateTax += (int) ((double) slipPriceSum * taxRate / 100);
+						lowRateTax += (int) ((double) slipPriceTaxSum * taxRate / 100);
 						lowRateSlipPriceSum += slipPriceSum;
 					} else if (taxRate == WebConst.TAX_RATE_10) {
-						highRateTax += (int) ((double) slipPriceSum * taxRate / 100);
+						highRateTax += (int) ((double) slipPriceTaxSum * taxRate / 100);
 						;
 						highRateSlipPriceSum += slipPriceSum;
 					}
 
-					slipPriceSum = (int) ((double) slipPriceSum * taxRate / 100);
-					billTaxSum += slipPriceSum;
+					slipPriceTaxSum = (int) ((double) slipPriceTaxSum * taxRate / 100);
+					billTaxSum += slipPriceTaxSum;
 					//記入
 					cellItemNm = new PdfPCell(new Paragraph("＜ 消 費 税 ＞　", font));
 					cellItemNm.setHorizontalAlignment(2);
-					slipTax = new PdfPCell(new Paragraph(String.valueOf(slipPriceSum), font));
+					slipTax = new PdfPCell(new Paragraph(String.valueOf(slipPriceTaxSum), font));
 					slipTax.setHorizontalAlignment(2);
 					pdfPTable.addCell(blankCell);
 					pdfPTable.addCell(blankCell);
@@ -1400,6 +1402,7 @@ public class ExportCorporateBillService extends CorporationService {
 					//次の伝票の処理を行うため、伝票税計算リセット
 					taxRate = corporateBillDAO.getTaxRateOfSlip(item.getSlipNo());
 					slipPriceSum = 0;
+					slipPriceTaxSum = 0;
 
 				}
 				//日付
@@ -1466,6 +1469,12 @@ public class ExportCorporateBillService extends CorporationService {
 			//伝票税計算リセット用に金額加算
 			slipPriceSum += item.getPieceRate() * item.getOrderNum();
 
+			//値引き（77）のみ税計算をさせないため別管理する
+			if (StringUtils.equals(item.getItemCode(), "77")) {
+			} else {
+				slipPriceTaxSum += item.getPieceRate() * item.getOrderNum();
+			}
+
 			//			cellSalesDate.setHorizontalAlignment(1);
 			//			cellItemCd.setHorizontalAlignment(2);
 			cellItemNm.setHorizontalAlignment(0);
@@ -1499,20 +1508,20 @@ public class ExportCorporateBillService extends CorporationService {
 			//税計算と消費税合計
 			//消費税率によって出力を変更するため格納する変数を分ける。
 			if (taxRate == WebConst.TAX_RATE_8) {
-				lowRateTax += (int) ((double) slipPriceSum * taxRate / 100);
+				lowRateTax += (int) ((double) slipPriceTaxSum * taxRate / 100);
 				lowRateSlipPriceSum += slipPriceSum;
 			} else if (taxRate == WebConst.TAX_RATE_10) {
-				highRateTax += (int) ((double) slipPriceSum * taxRate / 100);
+				highRateTax += (int) ((double) slipPriceTaxSum * taxRate / 100);
 				;
 				highRateSlipPriceSum += slipPriceSum;
 			}
 			taxRate = corporateBillDAO.getTaxRateOfSlip(slipNo);
-			slipPriceSum = (int) ((double) slipPriceSum * taxRate / 100);
-			billTaxSum += slipPriceSum;
+			slipPriceTaxSum = (int) ((double) slipPriceTaxSum * taxRate / 100);
+			billTaxSum += slipPriceTaxSum;
 			//記入
 			cellItemNm = new PdfPCell(new Paragraph("＜ 消 費 税 ＞　", font));
 			cellItemNm.setHorizontalAlignment(2);
-			slipTax = new PdfPCell(new Paragraph(String.valueOf(slipPriceSum), font));
+			slipTax = new PdfPCell(new Paragraph(String.valueOf(slipPriceTaxSum), font));
 			slipTax.setHorizontalAlignment(2);
 			pdfPTable.addCell(blankCell);
 			pdfPTable.addCell(blankCell);
@@ -1533,6 +1542,7 @@ public class ExportCorporateBillService extends CorporationService {
 			
 			//伝票税計算リセット
 			slipPriceSum = 0;
+			slipPriceTaxSum = 0;
 
 			//空白行
 			pdfPTable.addCell(blankCell);
@@ -2636,9 +2646,9 @@ public class ExportCorporateBillService extends CorporationService {
 			ExtendMstClientDTO client = clientService.getDispClient(billListDTO.getSysClientId());
 			//得意先が削除されている場合があるので、得意先が取得できなかった場合は請求書を作成しない。
 			//得意先が消えることは通常ないようなのでコメントアウト。一応処理は残しておきます。
-			//			if (client == null) {
-			//				continue;
-			//			}
+//			if (client == null) {
+//				continue;
+//			}
 			corporateBillDTO.setClientBillingNm(client.getClientNm());
 
 			//締日
@@ -2839,7 +2849,10 @@ public class ExportCorporateBillService extends CorporationService {
 				//伝票番号が同じものなら加算
 				if (slipNo.equals(itemDTO.getOrderNo())) {
 					//額の加算をしてから税計算を行う
-					slipPriceSum += (itemDTO.getPieceRate() * itemDTO.getOrderNum());
+					if (StringUtils.equals(itemDTO.getItemCode(), "77")) {
+					} else {
+						slipPriceSum += itemDTO.getPieceRate() * itemDTO.getOrderNum();
+					}
 
 				} else {
 					// 伝票番号の切り替わりを確認したら税計算＆リセット
@@ -2857,7 +2870,10 @@ public class ExportCorporateBillService extends CorporationService {
 						}
 					}
 					//額の加算
-					slipPriceSum += (itemDTO.getPieceRate() * itemDTO.getOrderNum());
+					if (StringUtils.equals(itemDTO.getItemCode(), "77")) {
+					} else {
+						slipPriceSum += itemDTO.getPieceRate() * itemDTO.getOrderNum();
+					}
 				}
 			}
 			//最終伝票用税計算

@@ -38,6 +38,7 @@
 		<form-bean name="corporationForm" type="jp.co.kts.ui.mst.CorporationForm" />
 		<form-bean name="csvImportForm" type="jp.co.kts.ui.fileImport.CsvImportForm" />
 		<form-bean name="excelImportForm" type="jp.co.kts.ui.fileImport.ExcelImportForm" />
+		<form-bean name="saleSlipImportForm" type="jp.co.kts.ui.fileImport.SaleSlipImportForm" />
 		<form-bean name="itemForm" type="jp.co.kts.ui.item.ItemForm" />
 		<form-bean name="saleForm" type="jp.co.kts.ui.sale.SaleForm" />
 		<form-bean name="domesticExhibitionImportForm" type="jp.co.kts.ui.fileImport.DomesticExhibitionImportForm" />
@@ -1229,6 +1230,22 @@
 			name="saleForm" scope="session" validate="false">
 			<set-property property="nonSecureAction" value="false" />
 			<set-property property="tokenType" value="nocheck" />
+		</action>
+
+		<action path="/initSaleSlipExcelImport" type="jp.co.kts.ui.fileImport.SaleSlipImportAction"
+			name="saleSlipImportForm" scope="session" validate="false">
+			<set-property property="nonSecureAction" value="false" />
+			<set-property property="tokenType" value="nocheck" />
+			<forward name="success" path="/WEB-INF/page/import/saleSlipImport.jsp" />
+			<forward name="failure" path="/WEB-INF/page/import/saleSlipImport.jsp" />
+		</action>
+
+		<action path="/saleSlipExcelImport" type="jp.co.kts.ui.fileImport.SaleSlipImportAction"
+			name="saleSlipImportForm" scope="session" validate="false">
+			<set-property property="nonSecureAction" value="false" />
+			<set-property property="tokenType" value="nocheck" />
+			<forward name="success" path="/WEB-INF/page/import/saleSlipImport.jsp" />
+			<forward name="failure" path="/WEB-INF/page/import/saleSlipImport.jsp" />
 		</action>
 
 	<!-- ============== 売上統計 =============== -->

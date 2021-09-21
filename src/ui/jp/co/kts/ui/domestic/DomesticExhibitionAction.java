@@ -156,7 +156,16 @@ public class DomesticExhibitionAction extends AppBaseAction {
 			}
 			
 		}
+		//インスタンス生成
+		MakerService makerService = new MakerService();
+
+		form.setDomesticMakerNmList(makerService.getMakerInfo());
+
+		DomesticExhibitionService service = new DomesticExhibitionService();
+
+		DomesticExhibitionSearchDTO dto = form.getDomesticExhibitionSearchDTO();
 		if (StringUtils.isEmpty(form.getDomesticExhibitionSearchDTO().getItemNm()) &&
+				StringUtils.isEmpty(form.getDomesticExhibitionSearchDTO().getDepartmentNm()) &&
 				StringUtils.isEmpty(form.getDomesticExhibitionSearchDTO().getItemRateOver()) &&
 				StringUtils.isEmpty(form.getDomesticExhibitionSearchDTO().getListPriceFrom()) &&
 				StringUtils.isEmpty(form.getDomesticExhibitionSearchDTO().getListPriceTo()) &&
@@ -171,6 +180,8 @@ public class DomesticExhibitionAction extends AppBaseAction {
 				) {
 			RegistryMessageDTO messageDTO = new RegistryMessageDTO();
 
+			String msg = form.getRegistryDto().getMessage();
+			String path = appMapping.getPath();
 			// 国内商品の登録・更新・削除から遷移してきた場合は、登録しましたのメッセージを出力する。
 			if (StringUtils.isEmpty(form.getRegistryDto().getMessage()) || "/searchDomesticExhibition".equals(appMapping.getPath())) {
 				messageDTO.setMessage("検索条件を設定して検索してください。");
@@ -179,18 +190,12 @@ public class DomesticExhibitionAction extends AppBaseAction {
 				form.setMessageFlg("0");
 			}
 
+			DomesticExhibitionSearchDTO domesticExhibitionSearchDTO = new DomesticExhibitionSearchDTO();
+			form.setDomesticExhibitionSearchDTO(domesticExhibitionSearchDTO);
+			form.setDomesticExhibitionList(new ArrayList<DomesticExhibitionDTO>());
 			/**
 			 *  前の検索結果を残さないために一覧結果を初期化する。
 			 */
-			//インスタンス生成
-			MakerService makerService = new MakerService();
-			DomesticExhibitionSearchDTO domesticExhibitionSearchDTO = new DomesticExhibitionSearchDTO();
-
-			form.setDomesticExhibitionSearchDTO(domesticExhibitionSearchDTO);
-			form.setDomesticExhibitionList(new ArrayList<DomesticExhibitionDTO>());
-			form.setDomesticMakerNmList(makerService.getMakerInfo());
-
-			DomesticExhibitionService service = new DomesticExhibitionService();
 			//追加分listをセット
 			form.setAddDomesticExhibitionList(service.initAddDomesticExhibitionList());
 
@@ -198,9 +203,6 @@ public class DomesticExhibitionAction extends AppBaseAction {
 
 		}
 
-
-		//インスタンス生成
-		DomesticExhibitionService service = new DomesticExhibitionService();
 
 		//更新・削除から呼び出されていない場合、メッセージを初期化
 		if (!form.getMessageFlg().equals("1") || "/searchDomesticExhibition".equals(appMapping.getPath())) {

@@ -1059,6 +1059,9 @@ public class CorporateSaleDisplayService extends CorporateSaleService {
 			if (StringUtils.equals(dto.getDeleteFlag(), "1")) {
 				deleteCorporateSalesItem(dto.getSysCorporateSalesItemId());
 			} else {
+				if(dto.getPostage() > 0 && dto.getOrderNum() > 0) {
+					dto.setCost(dto.getCost() - Math.abs((dto.getPostage() / dto.getOrderNum())));
+				}
 				updateCorporateSalesItem(dto);
 			}
 		}

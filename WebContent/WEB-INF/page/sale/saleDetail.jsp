@@ -882,7 +882,13 @@ function PxTextareaAdjuster(textarea){
 						<td><html:text property="salesItemList[${idx}].orderNum" styleClass="num orderNum numText" maxlength="4" /></td>
 						<td><html:text property="salesItemList[${idx}].pieceRate" styleClass="price_w80 pieceRate priceTextMinus price_cost_area" maxlength="9"/></td>
 	<%-- 					<td><html:text property="salesItemList[${idx}].cost" styleClass="price_w80 cost priceTextMinus" disabled="${disabled}" maxlength="9"/></td> --%>
-						<td><html:text property="salesItemList[${idx}].cost" styleClass="price_w80 cost priceTextMinus price_cost_area" maxlength="9"/></td>
+	
+						<logic:notEqual name="saleForm" property="salesItemList[${idx}].updatedFlag" value="1">
+							<td><html:text property="salesItemList[${idx}].domeCost" styleClass="price_w80 cost priceTextMinus price_cost_area" maxlength="9"/></td>
+						</logic:notEqual>
+						<logic:equal name="saleForm" property="salesItemList[${idx}].updatedFlag" value="1">
+							<td><html:text property="salesItemList[${idx}].cost" styleClass="price_w80 cost priceTextMinus price_cost_area" maxlength="9"/></td>
+						</logic:equal>
 						<td></td>
 					</tr>
 					<tr>

@@ -1381,7 +1381,9 @@ function goExportEstimate(){
 	$.ajax({
 		url: "./exportCorporateEstimate.do",
 		type: 'POST',
-
+		data : {
+			'tax' : $("#tax").val(),
+		},
 		success: function(data, text_status, xhr){
 			$("#estimateOutputFlag").val('1');
 			$(".overlay").css("display", "none");
@@ -1404,7 +1406,9 @@ function goExportOrderAcceptance(){
 	$.ajax({
 		url: "./exportCorporateOrderAcceptance.do",
 		type: 'POST',
-
+		data : {
+			'tax' : $("#tax").val(),
+		},
 		success: function(data, text_status, xhr){
 			$("#orderAcceptanceOutputFlag").val('1');
 			$(".overlay").css("display", "none");
@@ -1964,6 +1968,7 @@ document.addEventListener("readystatechange", function(){
 
 				<html:hidden property="corporateSalesItemList[${idx}].sysCorporateSalesItemId" />
 				<html:hidden property="corporateSalesItemList[${idx}].sysItemId" />
+				<html:hidden property="corporateSalesItemList[${idx}].postage" />
 <%-- 				<html:hidden property="salesItemList[${idx}].sysItemId" /> --%>
 				<tr style="background-color: ${backgroundColor};" class="corporateSalesItemRow">
 					<td><html:checkbox property="corporateSalesItemList[${idx}].returnFlg" styleClass="changeColorCheck"/></td>

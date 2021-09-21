@@ -139,6 +139,8 @@ public class DomesticImportUpdateService extends DomesticExhibitionImportService
 				String strPostage = strList.get(9);
 				//仕入原価を一時的に取得します
 				String purchasingCost = strList.get(10);
+				//担当部署ー名を一時的に取得します
+				String departmentNm = strList.get(12);
 
 				//定価が空の場合「0」を入れる
 				if (StringUtils.isBlank(strListPrice)){
@@ -272,6 +274,8 @@ public class DomesticImportUpdateService extends DomesticExhibitionImportService
 				domesticExhibitionDto.setPostage(priceCalcDto.getPostage());
 				domesticExhibitionDto.setPurchasingCost(priceCalcDto.getPurchasingCost());
 				domesticExhibitionDto.setOpenPriceFlg(priceCalcDto.getOpenPriceFlg());
+
+				domesticExhibitionDto.setDepartmentNm(departmentNm);
 
 				domesticExhibitionList.add(setDomesticExhibitionDTO(domesticExhibitionDto, strList));
 				errorIndex++;

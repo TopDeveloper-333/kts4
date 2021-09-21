@@ -125,14 +125,29 @@ function filupload_01click() {
 				<p class="fileName"><nested:write property="fileName"/></p>
 			<br/>
 			</nested:notEmpty>
+			<nested:notEmpty property="errorMessageList">
+				<nested:iterate property="errorMessageList">
+						<p class="errorMessage"><nested:write property="errorMessage"/></p>
+				</nested:iterate>
+			</nested:notEmpty>
 			<nested:notEmpty property="errorMessageListBlue">
 				<nested:iterate property="errorMessageListBlue">
 						<p class="errorMessageBlue"><nested:write property="errorMessage"/></p>
 				</nested:iterate>
 			</nested:notEmpty>
-			<nested:notEmpty property="errorMessageList">
-				<nested:iterate property="errorMessageList">
-						<p class="errorMessage"><nested:write property="errorMessage"/></p>
+			<nested:notEmpty property="errorMessageListGreen">
+				<nested:iterate property="errorMessageListGreen">
+						<p class="errorMessageGreen"><nested:write property="errorMessage"/></p>
+				</nested:iterate>
+			</nested:notEmpty>
+			<nested:notEmpty property="errrorMessageListYellow">
+				<nested:iterate property="errrorMessageListYellow">
+						<p class="errorMessageYellow"><nested:write property="errorMessage"/></p>
+				</nested:iterate>
+			</nested:notEmpty>
+			<nested:notEmpty property="errorMessageListPurple">
+				<nested:iterate property="errorMessageListPurple">
+						<p class="errorMessagePurple"><nested:write property="errorMessage"/></p>
 				</nested:iterate>
 			</nested:notEmpty>
 
@@ -156,13 +171,6 @@ function filupload_01click() {
 						<p class="errorMessageYellow"><nested:write name="map" property="value"/></p>
 					</nested:iterate>
 			</nested:notEmpty>
-			<nested:notEmpty property="errorMessageListPurple">
-				<nested:iterate property="errorMessageListPurple">
-						<p class="errorMessagePurple"><nested:write property="errorMessage"/></p>
-				</nested:iterate>
-			</nested:notEmpty>
-
-
 		</nested:nest>
 
 		<nested:notEmpty property="csvErrorList">

@@ -69,6 +69,8 @@ public class ExtendSalesItemDTO extends SalesItemDTO {
 	private int profit;
 	
 	private int storeFlag;
+	
+	private int postage;
 
 	/*  2015/12/15 ooyama ADD END 法人間請求書機能対応  */
 
@@ -299,4 +301,11 @@ public class ExtendSalesItemDTO extends SalesItemDTO {
 		this.storeFlag = storeFlag;
 	}
 
+	public int getPostage() {
+		return postage;
+	}
+
+	public void setPostage(int postage) {
+		this.postage = postage;
+	}
 }

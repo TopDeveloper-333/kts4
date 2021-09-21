@@ -493,27 +493,27 @@ public class SaleCsvService extends SaleService {
 			}
 			
 			// For CorporateSalesSlipDto
-//			List<ExtendCorporateSalesSlipDTO> list = getCorporateSaleSlipByOrderNo(csvImportDTO.getOrderNo());
-//			if (list != null) {
-//				
-//				for (int j=0; j< list.size(); j++) {
-//					ExtendCorporateSalesSlipDTO corpSalesSlipDTO = list.get(j);
-//					
-//					// update : ExtendCorporateSalesSlipDTO ==== save jis, transport system
-//					corpSalesSlipDTO.setTransportCorporationSystem(csvImportDTO.getTransportCorporationSystem());
-//					corpSalesSlipDTO.setSlipNo(csvImportDTO.getSlipNo());
-//					
-//					long sysCorpSalesSlipId = corpSalesSlipDTO.getSysCorporateSalesSlipId();
-//					corpSalesSlipDTO.setSysCorporateSalesSlipId(sysCorpSalesSlipId);
-//					
-//					System.out.println("Found CorpSaleSlip DTO: (id, orderno, slipno)" + 
-//							sysCorpSalesSlipId + ":" + corpSalesSlipDTO.getOrderNo() + ":" + corpSalesSlipDTO.getSlipNo());
-//
-//					CorporateSaleDAO corpSaleDAO = new CorporateSaleDAO();
-//					errorDTO.setTrueCount(errorDTO.getTrueCount() + corpSaleDAO.updateCorporateSalesSlip(corpSalesSlipDTO));					
-//				}
-//				
-//			}
+			List<ExtendCorporateSalesSlipDTO> list = getCorporateSaleSlipByOrderNo(csvImportDTO.getOrderNo());
+			if (list != null) {
+				
+				for (int j=0; j< list.size(); j++) {
+					ExtendCorporateSalesSlipDTO corpSalesSlipDTO = list.get(j);
+					
+					// update : ExtendCorporateSalesSlipDTO ==== save jis, transport system
+					corpSalesSlipDTO.setTransportCorporationSystem(csvImportDTO.getTransportCorporationSystem());
+					corpSalesSlipDTO.setSlipNo(csvImportDTO.getSlipNo());
+					
+					long sysCorpSalesSlipId = corpSalesSlipDTO.getSysCorporateSalesSlipId();
+					corpSalesSlipDTO.setSysCorporateSalesSlipId(sysCorpSalesSlipId);
+					
+					System.out.println("Found CorpSaleSlip DTO: (id, orderno, slipno)" + 
+							sysCorpSalesSlipId + ":" + corpSalesSlipDTO.getOrderNo() + ":" + corpSalesSlipDTO.getSlipNo());
+
+					CorporateSaleDAO corpSaleDAO = new CorporateSaleDAO();
+					errorDTO.setTrueCount(errorDTO.getTrueCount() + corpSaleDAO.updateCorporateSalesSlip(corpSalesSlipDTO));					
+				}
+				
+			}
 
 		}
 		return errorDTO;

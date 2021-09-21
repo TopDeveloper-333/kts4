@@ -880,6 +880,9 @@ public class BtobBillService {
 		///XXX 伝票のデータ出力処理　start
 		// 商品テーブル部の出力　（行ごとのループ）
 		for (BtobBillItemDTO itemDTO : billItemList) {
+			if(itemDTO.getSlipNo() == null) {
+				continue;
+			}
 
 			// 売上か業販の伝票かを判定
 			if (!corpSalesFlag.equals(itemDTO.getCorporateSalesFlg())) {
@@ -1434,12 +1437,17 @@ public class BtobBillService {
 					itemDTO.setOrderNum(saleItemDTO.getOrderNum());
 				}
 			}
+
 			// 単価
 			if (saleItemDTO.getCost() == 0) {
 				//原価が未設定の場合、請求書に出力しない
 				continue;
 			} else {
-				itemDTO.setPieceRate(saleItemDTO.getCost());
+				if(saleItemDTO.getUpdatedFlag() == 1) {
+					itemDTO.setPieceRate(saleItemDTO.getCost()+saleItemDTO.getPostage()/Math.abs(saleItemDTO.getOrderNum()));
+				}else {
+					itemDTO.setPieceRate(saleItemDTO.getCost()+saleItemDTO.getDomePostage()/Math.abs(saleItemDTO.getOrderNum()));
+				}
 			}
 
 			// 税率
@@ -1447,8 +1455,16 @@ public class BtobBillService {
 
 			// リストに追加
 			billItemList.add(itemDTO);
+			
+			if(saleItemDTO.getUpdatedFlag() == 1) {
+			}else {
+				saleItemDTO.setUpdatedFlag(1);
+				saleItemDTO.setPostage(saleItemDTO.getDomePostage());
+				saleDAO.updateSalesItem(saleItemDTO);
+			}
+			
 		}
-
+		
 		// 業販伝票の情報を設定する
 		for (ExtendCorporateSalesItemDTO corpSaleItemDTO : corpSaleItemList) {
 			BtobBillItemDTO itemDTO = new BtobBillItemDTO();
@@ -1494,7 +1510,11 @@ public class BtobBillService {
 				//原価が未設定の場合、請求書に出力しない
 				continue;
 			} else {
-				itemDTO.setPieceRate(corpSaleItemDTO.getCost());
+				if(corpSaleItemDTO.getUpdatedFlag() == 1) {
+					itemDTO.setPieceRate(corpSaleItemDTO.getCost()+corpSaleItemDTO.getPostage()/Math.abs(corpSaleItemDTO.getOrderNum()));
+				}else {
+					itemDTO.setPieceRate(corpSaleItemDTO.getCost()+corpSaleItemDTO.getDomePostage()/Math.abs(corpSaleItemDTO.getOrderNum()));
+				}
 			}
 
 			// 税率
@@ -1502,6 +1522,13 @@ public class BtobBillService {
 
 			// リストに追加
 			billItemList.add(itemDTO);
+			
+			if(corpSaleItemDTO.getUpdatedFlag() == 1) {
+			}else {
+				corpSaleItemDTO.setPostage(corpSaleItemDTO.getDomePostage());
+				corpSaleItemDTO.setUpdatedFlag(1);
+				corpSaleDAO.updateCorporateSalesItem(corpSaleItemDTO);
+			}
 		}
 
 		// リストが0件の場合、エラー
@@ -1815,7 +1842,11 @@ public class BtobBillService {
 			//業販
 			for (ExtendCorporateSalesItemDTO dto : corpList) {
 
-				sumKindCost += (dto.getKindCost() * dto.getOrderNum());
+				if(dto.getUpdatedFlag() == 1) {
+					sumKindCost += (dto.getKindCost() * dto.getOrderNum() + dto.getPostage());
+				}else {
+					sumKindCost += (dto.getKindCost() * dto.getOrderNum() + dto.getDomePostage());
+				}
 				//				sumCost += (dto.getCost() * dto.getOrderNum());
 			}
 		}
@@ -1823,8 +1854,11 @@ public class BtobBillService {
 		if (salesList != null && salesList.size() != 0) {
 			//売上
 			for (ExtendCorporateSalesItemDTO dto : salesList) {
-
-				sumKindCost += (dto.getKindCost() * dto.getOrderNum());
+				if(dto.getUpdatedFlag() == 1) {
+					sumKindCost += (dto.getKindCost() * dto.getOrderNum() + dto.getPostage());
+				}else {
+					sumKindCost += (dto.getKindCost() * dto.getOrderNum() + dto.getDomePostage());
+				}
 				//			sumCost += (dto.getCost() * dto.getOrderNum());
 			}
 		}

@@ -1322,7 +1322,7 @@ public class CorporateSaleAction extends AppBaseAction {
 		try{
 			ExportCorporateEstimateService exportEstimateService = new ExportCorporateEstimateService();
 
-			exportEstimateService.estimate(response,form.getCorporateSalesSlipDTO());
+			exportEstimateService.estimate(response,form.getCorporateSalesSlipDTO(), request.getParameter("tax"));
 
 		}catch (Exception e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -1362,7 +1362,7 @@ public class CorporateSaleAction extends AppBaseAction {
 
 			// exportEstimateService.estimateList(response,form.getCorporateSalesSlipList());
 			// 見積書を作成する対象を検索結果すべてに変更
-			exportEstimateService.estimateList(response, saleAllSlipList);
+			exportEstimateService.estimateList(response, saleAllSlipList, request.getParameter("tax"));
 
 		} catch (Exception e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -1423,7 +1423,7 @@ public class CorporateSaleAction extends AppBaseAction {
 		try{
 			ExportCorporateOrderAcceptanceService exportOrderAcceptanceService = new ExportCorporateOrderAcceptanceService();
 
-			exportOrderAcceptanceService.orderAcceptance(response,form.getCorporateSalesSlipDTO());
+			exportOrderAcceptanceService.orderAcceptance(response,form.getCorporateSalesSlipDTO(), request.getParameter("tax"));
 
 		}catch (Exception e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -1453,7 +1453,7 @@ public class CorporateSaleAction extends AppBaseAction {
 		try{
 			ExportCorporateOrderAcceptanceService exportOrderAcceptanceService = new ExportCorporateOrderAcceptanceService();
 
-			exportOrderAcceptanceService.orderAcceptanceList(response,form.getCorporateSalesSlipList());
+			exportOrderAcceptanceService.orderAcceptanceList(response,form.getCorporateSalesSlipList(), request.getParameter("tax"));
 
 		}catch (Exception e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

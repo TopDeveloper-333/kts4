@@ -88,6 +88,9 @@ public class DomesticExhibitionDTO {
 	/** セット商品フラグ */
 	private String setItemFlg;
 
+	/** 担当部署名 */
+	private String departmentNm;
+
 	/** 画面ロード時の実行処理タイプ */
 	private String onloadActionType = "0";
 	/**
@@ -495,6 +498,20 @@ public class DomesticExhibitionDTO {
 	 */
 	public void setOnloadActionType(String onloadActionType) {
 		this.onloadActionType = onloadActionType;
+	}
+
+	/**
+	 * @return departmentNm
+	 */
+	public String getDepartmentNm() {
+		return departmentNm;
+	}
+
+	/**
+	 * @param onloadActionType セットする onloadActionType
+	 */
+	public void setDepartmentNm(String departmentNm) {
+		this.departmentNm = departmentNm;
 	}
 
 }

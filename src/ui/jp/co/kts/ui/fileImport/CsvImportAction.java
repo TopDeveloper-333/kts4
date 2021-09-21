@@ -273,20 +273,20 @@ public class CsvImportAction extends AppBaseAction{
 
 		begin();
 
-		if (!StringUtils.equals(form.getDeliveryRadio(), "save")) {
-
-			return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_FAILURE);
-		}
-
+		/*
+		 * if (!StringUtils.equals(form.getDeliveryRadio(), "save")) {
+		 * 
+		 * return appMapping.findForward(StrutsBaseConst.FORWARD_NAME_FAILURE); }
+		 */
 		//csv_importテーブルへ格納とimportDTOへ格納
-		if (form.getDeliveryCompanyId() == 0) {
+/*		if (form.getDeliveryCompanyId() == 0) {
 			// 助ネコ CSV
 			form.setCsvErrorDTO(new CsvImportService().importFile(form.getCorporationId(), form.getFileUp(), form.getCsvImportList()));
 		}
 		else {
-			// Other delivery csv
+*/			// Other delivery csv
 			form.setCsvErrorDTO(new CsvDirectImportService().importFile(form.getDeliveryCompanyId(), form.getCorporationId(), form.getFileUp(), form.getCsvImportList()));
-		}
+//		}
 
 		if (!form.getCsvErrorDTO().isSuccess()) {
 			rollback();
@@ -296,13 +296,13 @@ public class CsvImportAction extends AppBaseAction{
 
 		//売上伝票の上書
 		SaleCsvService saleCsvService = new SaleCsvService();
-		if (form.getDeliveryCompanyId() == 0) {
-			form.setCsvErrorDTO(saleCsvService.saveSlipNo(form.getCsvImportList()));
-		}
-		else {
-			// other delivery company
+		/*
+		 * if (form.getDeliveryCompanyId() == 0) {
+		 * form.setCsvErrorDTO(saleCsvService.saveSlipNo(form.getCsvImportList())); }
+		 * else {
+		 */			// other delivery company
 			form.setCsvErrorDTO(saleCsvService.saveSlipNoOnly(form.getCsvImportList()));
-		}
+//		}
 		form.setTrueCount(form.getCsvErrorDTO().getTrueCount());
 
 		//仕様変更
